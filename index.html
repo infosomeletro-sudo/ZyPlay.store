@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | ARENA SUPREMA</title>
+    <title>ZYPLAY | SUPREME ARENA</title>
     
     <meta name="google-adsense-account" content="ca-pub-9159169630954848">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9159169630954848" crossorigin="anonymous"></script>
@@ -12,208 +12,209 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
-        body { background: #000; color: #fff; font-family: 'Orbitron', sans-serif; }
+        body, html { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .retro-font { font-family: 'Press Start 2P', cursive; }
-        .neon-blue { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .game-img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; border: 2px solid #333; }
+
+        /* FUNDO ANIMADO RETRO-WAVE */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; filter: blur(1px); }
+
+        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); }
+        .neon-text { text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff; }
+        
+        .game-window { display: none; position: fixed; inset: 0; background: #000; z-index: 500; }
         .hidden { display: none; }
         
-        /* Efeito de Scanner */
-        .scanline { width: 100%; height: 4px; background: rgba(0, 210, 255, 0.2); position: fixed; top: 0; z-index: 999; animation: scan 6s linear infinite; pointer-events: none; }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-
-        .btn-action { background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: 0.3s; }
-        .btn-action:hover { transform: scale(1.05); filter: brightness(1.2); }
+        input { background: rgba(255,255,255,0.05) !important; border: 1px solid #333 !important; color: #00d2ff !important; }
+        input:focus { border-color: #00d2ff !important; box-shadow: 0 0 10px #00d2ff; }
     </style>
 </head>
-<body class="pb-20">
-    <div class="scanline"></div>
+<body>
 
-    <div id="auth-screen" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass p-8 rounded-[40px] border-t-4 border-cyan-500 shadow-2xl">
-            <h1 class="retro-font text-center text-xl neon-blue mb-8">ZYPLAY ARENA</h1>
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="auth-screen" class="fixed inset-0 z-[600] flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass p-8 rounded-[30px] text-center border-t-4 border-cyan-500">
+            <h1 class="retro-font text-lg neon-text mb-8">ZYPLAY</h1>
             
-            <div class="flex gap-4 mb-6">
-                <button onclick="aba('login')" class="flex-1 pb-2 border-b-2 border-cyan-500 font-bold text-xs uppercase">Login</button>
-                <button onclick="aba('cadastro')" class="flex-1 pb-2 border-b-2 border-zinc-800 font-bold text-xs uppercase">Cadastro</button>
+            <div class="flex mb-6 bg-zinc-900 rounded-full p-1">
+                <button id="tab-l" onclick="showAuth('login')" class="flex-1 py-2 rounded-full text-[10px] font-bold bg-cyan-600">LOGIN</button>
+                <button id="tab-c" onclick="showAuth('cadastro')" class="flex-1 py-2 rounded-full text-[10px] font-bold">CADASTRO</button>
             </div>
 
-            <div id="box-login" class="space-y-4">
-                <input type="text" id="l-nome" placeholder="NOME DO JOGADOR" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-cyan-500">
-                <input type="email" id="l-email" placeholder="E-MAIL" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-cyan-500">
-                <button onclick="entrar()" class="w-full btn-action py-4 rounded-2xl font-black tracking-widest uppercase text-xs">LOGAR NA CONTA</button>
+            <div id="form-login" class="space-y-4">
+                <input type="text" id="l-user" placeholder="NOME DE USUÁRIO" class="w-full p-4 rounded-xl outline-none">
+                <input type="password" id="l-pass" placeholder="SENHA" class="w-full p-4 rounded-xl outline-none">
+                <button onclick="fazerLogin()" class="w-full bg-cyan-600 py-4 rounded-xl font-black text-xs">ENTRAR NA ARENA</button>
             </div>
 
-            <div id="box-cadastro" class="hidden space-y-4">
-                <input type="text" id="r-nome" placeholder="CRIE UM NOME" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
-                <input type="email" id="r-email" placeholder="SEU MELHOR E-MAIL" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
-                <input type="password" id="r-pass" placeholder="SENHA" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
-                <input type="password" id="r-pass2" placeholder="CONFIRMAR SENHA" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
-                <button onclick="cadastrar()" class="w-full bg-green-600 py-4 rounded-2xl font-black uppercase text-xs">CRIAR PERFIL REAL</button>
+            <div id="form-cadastro" class="hidden space-y-4">
+                <input type="text" id="r-user" placeholder="ESCOLHA UM NOME" class="w-full p-4 rounded-xl outline-none">
+                <input type="email" id="r-email" placeholder="E-MAIL REAL" class="w-full p-4 rounded-xl outline-none">
+                <input type="password" id="r-pass" placeholder="CRIE UMA SENHA" class="w-full p-4 rounded-xl outline-none">
+                <input type="password" id="r-pass-conf" placeholder="CONFIRME A SENHA" class="w-full p-4 rounded-xl outline-none">
+                <button onclick="fazerCadastro()" class="w-full bg-green-600 py-4 rounded-xl font-black text-xs">FINALIZAR CADASTRO</button>
             </div>
         </div>
     </div>
 
-    <div id="ad-interstitial" class="fixed inset-0 z-[300] bg-black hidden flex flex-col items-center justify-center p-8 text-center">
-        <p class="retro-font text-[10px] text-yellow-500 mb-8">ANÚNCIO DE NÍVEL - CARREGANDO...</p>
-        <div class="w-full max-w-lg h-64 bg-zinc-900 rounded-2xl flex items-center justify-center border border-dashed border-zinc-500">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <div id="game-window" class="game-window">
+        <div class="h-14 flex justify-between items-center px-4 bg-zinc-900 border-b border-cyan-500">
+            <span id="game-title" class="retro-font text-[8px] text-cyan-500">CARREGANDO...</span>
+            <button onclick="fecharJogo()" class="bg-red-600 px-4 py-1 rounded text-[10px] font-bold">SAIR E SALVAR</button>
         </div>
-        <button id="btn-fechar-ad" onclick="fecharAd()" class="mt-8 text-zinc-500 font-bold uppercase text-xs underline">Fechar anúncio após 5s</button>
+        <iframe id="emu-frame" src="" class="w-full h-full border-none"></iframe>
     </div>
 
     <div id="main-app" class="hidden">
-        <nav class="p-6 flex justify-between items-center glass sticky top-0 z-50">
-            <span class="retro-font text-[10px] neon-blue">ZYPLAY</span>
+        <nav class="p-6 glass sticky top-0 z-50 flex justify-between items-center">
+            <span class="retro-font text-[10px] neon-text">ZYPLAY</span>
             <div class="text-right">
-                <p id="nome-display" class="text-[9px] font-black text-cyan-500 uppercase">JOGADOR</p>
+                <p id="user-display" class="text-[10px] text-cyan-400 font-bold">@PLAYER</p>
                 <p id="zc-display" class="text-yellow-400 font-black text-sm">500 ZC</p>
             </div>
         </nav>
 
-        <main class="p-4 space-y-6">
-            <div class="p-2 border border-white/5 rounded-xl text-center text-[8px] text-zinc-700 uppercase">
-                Espaço Publicitário AdSense
-                <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto"></ins>
+        <main class="p-6">
+            <div class="mb-8 p-4 border border-dashed border-cyan-900 rounded-xl text-center text-[9px] text-zinc-600">
+                GOOGLE ADSENSE - PUBLICIDADE
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
             </div>
 
-            <div class="flex justify-between items-center">
-                <h2 class="retro-font text-[9px]">ARENA MULTIPLAYER</h2>
-                <div class="bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-400 text-[10px] font-bold">LVL <span id="lvl-display">1</span></div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="retro-font text-[8px] text-zinc-400 italic underline">ARENA MULTIJOGADOR LVL <span id="lvl-display">1</span></h2>
             </div>
 
-            <div class="grid grid-cols-2 gap-4" id="arena-grid">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="game-list">
                 </div>
         </main>
 
-        <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-cyan-500/30 flex gap-2">
-            <input type="text" id="pix-key" placeholder="PIX ou PAYPAL" class="flex-1 bg-black p-3 rounded-xl text-xs border border-zinc-800 outline-none">
-            <button onclick="sacar()" class="bg-green-600 px-6 rounded-xl font-bold text-[10px]">SACAR</button>
-        </div>
+        <footer class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-cyan-500/30 flex gap-4">
+            <input type="text" id="pix-field" placeholder="CHAVE PIX OU PAYPAL" class="flex-1 p-3 rounded-xl text-xs outline-none">
+            <button onclick="solicitarSaque()" class="bg-green-600 px-6 rounded-xl font-bold text-[10px]">SACAR</button>
+        </footer>
     </div>
 
     <script>
-        const LINK_V = "https://script.google.com/macros/s/AKfycbw0LnuhMhVyA9BDV7gYIjzILsiNLMJ7GiBSkvJeJJ9m5PvPY5f6yHsIaQcWMLZ1aBfr/exec";
-        const LINK_S = "https://script.google.com/macros/s/AKfycby3-2feqPT5hVCuZZOeDSSNdlFZYVDzbRduDwiDLMpNfWFDudOvM9c2npL9xJGsAnapfw/exec";
-        
+        const API = "https://script.google.com/macros/s/AKfycbw0LnuhMhVyA9BDV7gYIjzILsiNLMJ7GiBSkvJeJJ9m5PvPY5f6yHsIaQcWMLZ1aBfr/exec";
         let saldo = 500;
         let nivel = 1;
-        let nomeReal = "";
-        let emailReal = "";
+        let player = "";
 
-        const jogos = [
-            { n: "Super Mario", img: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2v7z.png", url: "https://web.emulatorjs.org/snes/?game=super-mario-world" },
-            { n: "Tetris Attack", img: "https://static.miraheze.org/blueblurwiki/b/b3/Tetris_Attack_Cover_Art.jpg", url: "https://web.emulatorjs.org/snes/?game=tetris-attack" },
-            { n: "Dino Run", img: "https://play-lh.googleusercontent.com/4S0tA61_T6T7_Y-uO6QzO6n_TjM-YmB5z-5yH_Xw_Y", url: "https://wayou.github.io/t-rex-runner/" },
-            { n: "Sonic Mania", img: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7f.png", url: "https://web.emulatorjs.org/megadrive/?game=sonic" }
+        // JOGOS REAIS (EMULADORES)
+        const db_games = [
+            { n: "Super Mario World", url: "https://web.emulatorjs.org/snes/?game=super-mario-world" },
+            { n: "Tetris Attack", url: "https://web.emulatorjs.org/snes/?game=tetris-attack" },
+            { n: "Street Fighter 2", url: "https://web.emulatorjs.org/snes/?game=street-fighter-ii" },
+            { n: "Donkey Kong Country", url: "https://web.emulatorjs.org/snes/?game=donkey-kong-country" },
+            { n: "Mortal Kombat 3", url: "https://web.emulatorjs.org/snes/?game=mortal-kombat-3" },
+            { n: "Sonic Mania", url: "https://web.emulatorjs.org/megadrive/?game=sonic" }
         ];
 
-        function aba(tipo) {
-            document.getElementById('box-login').classList.toggle('hidden', tipo === 'cadastro');
-            document.getElementById('box-cadastro').classList.toggle('hidden', tipo === 'login');
+        // ANIMAÇÃO DE FUNDO
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let points = [];
+        for(let i=0; i<50; i++) points.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: Math.random()*2-1, vy: Math.random()*2-1});
+        
+        function animate() {
+            ctx.fillStyle = "rgba(0,0,0,0.05)";
+            ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.strokeStyle = "#00d2ff22";
+            points.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.stroke();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // LÓGICA DE LOGIN E CADASTRO
+        function showAuth(t) {
+            document.getElementById('form-login').classList.toggle('hidden', t === 'cadastro');
+            document.getElementById('form-cadastro').classList.toggle('hidden', t === 'login');
+            document.getElementById('tab-l').className = t === 'login' ? 'flex-1 py-2 rounded-full text-[10px] font-bold bg-cyan-600' : 'flex-1 py-2 rounded-full text-[10px] font-bold';
+            document.getElementById('tab-c').className = t === 'cadastro' ? 'flex-1 py-2 rounded-full text-[10px] font-bold bg-green-600' : 'flex-1 py-2 rounded-full text-[10px] font-bold';
         }
 
-        async function cadastrar() {
-            const n = document.getElementById('r-nome').value;
+        async function fazerCadastro() {
+            const u = document.getElementById('r-user').value;
             const e = document.getElementById('r-email').value;
-            const p1 = document.getElementById('r-pass').value;
-            const p2 = document.getElementById('r-pass2').value;
-
-            if(!n || !e || p1 !== p2) return alert("Dados inválidos ou senhas não conferem!");
-            
-            await enviar(LINK_V, { tipo: "NOVO_CADASTRO", nome: n, email: e, senha: p1 });
-            alert("CADASTRO REALIZADO! Faça login com os mesmos dados.");
-            aba('login');
+            const p = document.getElementById('r-pass').value;
+            const pc = document.getElementById('r-pass-conf').value;
+            if(!u || !e || p !== pc) return alert("Erro no formulário!");
+            await fetch(API, {method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "CADASTRO", user: u, email: e, pass: p})});
+            alert("CADASTRO REALIZADO!");
+            showAuth('login');
         }
 
-        function entrar() {
-            nomeReal = document.getElementById('l-nome').value;
-            emailReal = document.getElementById('l-email').value;
-
-            if(!nomeReal || !emailReal) return alert("Insira seu NOME e E-MAIL reais!");
-
-            document.getElementById('nome-display').innerText = nomeReal;
+        function fazerLogin() {
+            player = document.getElementById('l-user').value;
+            const p = document.getElementById('l-pass').value;
+            if(!player || !p) return alert("Preencha tudo!");
+            document.getElementById('user-display').innerText = `@${player}`;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            gerarArena();
+            renderGames();
         }
 
-        function gerarArena() {
-            const grid = document.getElementById('arena-grid');
-            grid.innerHTML = "";
-            for(let i=0; i<40; i++) {
-                const j = jogos[i % jogos.length];
+        function renderGames() {
+            const grid = document.getElementById('game-list');
+            for(let i=0; i<60; i++) {
+                const g = db_games[i % db_games.length];
                 grid.innerHTML += `
-                    <div class="game-card glass p-3 rounded-3xl" onclick="duelar('${j.n}')">
-                        <img src="${j.img}" class="game-img shadow-lg shadow-cyan-500/20">
-                        <p class="text-[9px] font-black uppercase mb-1">${j.n} #${i+1}</p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[8px] text-zinc-500 font-bold">COST: ${50 * nivel} ZC</span>
-                            <span class="text-[8px] text-green-400 font-bold">WIN: +100%</span>
-                        </div>
+                    <div class="glass p-4 rounded-2xl text-center border-b-2 border-zinc-800" onclick="iniciarJogo('${g.url}', '${g.n}')">
+                        <i class="fa-solid fa-gamepad text-cyan-500 mb-2"></i>
+                        <p class="text-[9px] font-bold uppercase truncate">${g.n}</p>
+                        <p class="text-[7px] text-green-500 mt-2 font-black">MULTIPLAYER ON</p>
                     </div>
                 `;
             }
         }
 
-        function duelar(jogo) {
+        function iniciarJogo(url, nome) {
             const custo = 50 * nivel;
-            if(saldo < custo) return alert("SALDO INSUFICIENTE!");
-
+            if(saldo < custo) return alert("MOEDAS INSUFICIENTES!");
             saldo -= custo;
-            const venceu = Math.random() > 0.45;
-            
-            if(venceu) {
-                saldo += (custo * 2.1);
-                nivel++;
-                mostrarAd(); // MOSTRA PROPAGANDA AO SUBIR DE NÍVEL
-            } else {
-                if(nivel >= 25) saldo = 0; // Perde tudo em nível alto
-                alert(`DERROTA! Você perdeu moedas. Tente novamente no nível ${nivel}`);
-            }
+            document.getElementById('game-title').innerText = `DUELO: ${nome} (LVL ${nivel})`;
+            document.getElementById('emu-frame').src = url;
+            document.getElementById('game-window').style.display = 'block';
             updateUI();
         }
 
-        function mostrarAd() {
-            document.getElementById('ad-interstitial').classList.remove('hidden');
-            let tempo = 5;
-            const btn = document.getElementById('btn-fechar-ad');
-            const timer = setInterval(() => {
-                tempo--;
-                btn.innerText = `FECHAR EM ${tempo}s`;
-                if(tempo <= 0) {
-                    clearInterval(timer);
-                    btn.innerText = "FECHAR ANÚNCIO X";
-                    btn.classList.add('text-white');
-                }
-            }, 1000);
+        function fecharJogo() {
+            const venceu = Math.random() > 0.45;
+            if(venceu) {
+                const ganho = 50 * nivel * 2;
+                saldo += ganho;
+                nivel++;
+                alert(`VITÓRIA! +${ganho} ZC. Você avançou para o Nível ${nivel}.`);
+            } else {
+                if(nivel >= 25) saldo = 0;
+                alert(`DERROTA NO NÍVEL ${nivel}!`);
+            }
+            document.getElementById('game-window').style.display = 'none';
+            document.getElementById('emu-frame').src = "";
+            updateUI();
+            fetch(API, {method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "LOG", user: player, saldo})});
         }
 
-        function fecharAd() {
-            document.getElementById('ad-interstitial').classList.add('hidden');
-            alert(`NÍVEL ALCANÇADO: ${nivel}! Moedas creditadas.`);
-        }
-
-        function sacar() {
-            const k = document.getElementById('pix-key').value;
+        function solicitarSaque() {
+            const pix = document.getElementById('pix-field').value;
             if(saldo < 1000) return alert("MÍNIMO 1000 ZC");
-            enviar(LINK_S, { tipo: "SAQUE", nome: nomeReal, email: emailReal, chave: k, valor: (saldo/1000).toFixed(2) });
-            alert("SAQUE SOLICITADO! Prazo: 3 dias.");
+            alert("PEDIDO DE SAQUE ENVIADO! Prazo: 3 dias úteis.");
             saldo = 0; updateUI();
         }
 
         function updateUI() {
-            document.getElementById('zc-display').innerText = `${saldo.toFixed(0)} ZC`;
+            document.getElementById('zc-display').innerText = `${saldo} ZC`;
             document.getElementById('rs-display').innerText = `R$ ${(saldo/1000).toFixed(2)}`;
             document.getElementById('lvl-display').innerText = nivel;
-        }
-
-        async function enviar(u, p) {
-            try { fetch(u, { method: 'POST', mode: 'no-cors', body: JSON.stringify({...p, date: new Date().toLocaleString()}) }); } catch(e){}
         }
     </script>
 </body>
