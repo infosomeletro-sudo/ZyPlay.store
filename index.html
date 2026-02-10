@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | MULTIPLAYER ARENA</title>
+    <title>ZYPLAY | ARENA SUPREMA</title>
     
     <meta name="google-adsense-account" content="ca-pub-9159169630954848">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9159169630954848" crossorigin="anonymous"></script>
@@ -12,105 +12,88 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;900&display=swap');
-
-        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; }
-        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Press+Start+2P&display=swap');
+        
+        body { background: #000; color: #fff; font-family: 'Orbitron', sans-serif; }
         .retro-font { font-family: 'Press Start 2P', cursive; }
-        
-        .grid-bg {
-            background-image: linear-gradient(to right, #1a1a1a 1px, transparent 1px), linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        .neon-border { border: 2px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); }
-        .neon-text { text-shadow: 0 0 10px var(--neon-blue); }
-        
-        .game-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
-        .game-card:hover { transform: scale(1.05) translateY(-10px); border-color: var(--neon-pink); box-shadow: 0 0 25px var(--neon-pink); }
-
-        .scanline {
-            width: 100%; height: 2px; background: rgba(0, 243, 255, 0.1);
-            position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1000;
-            animation: scan 4s linear infinite;
-        }
-
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-        #matchmaking { display: none; }
+        .neon-blue { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .game-img { width: 100%; height: 120px; object-fit: cover; border-radius: 15px; margin-bottom: 10px; border: 2px solid #333; }
         .hidden { display: none; }
+        
+        /* Efeito de Scanner */
+        .scanline { width: 100%; height: 4px; background: rgba(0, 210, 255, 0.2); position: fixed; top: 0; z-index: 999; animation: scan 6s linear infinite; pointer-events: none; }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        .btn-action { background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: 0.3s; }
+        .btn-action:hover { transform: scale(1.05); filter: brightness(1.2); }
     </style>
 </head>
-<body class="grid-bg pb-32">
+<body class="pb-20">
     <div class="scanline"></div>
 
-    <div id="auth-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4">
-        <div class="w-full max-w-md p-8 border-4 border-double border-cyan-500 bg-black text-center">
-            <h1 class="retro-font text-2xl mb-2 neon-text">ZYPLAY</h1>
-            <p class="text-[10px] text-cyan-400 mb-8 tracking-[0.3em]">INSERT COIN TO START</p>
-            <input type="email" id="u-email" placeholder="PLAYER EMAIL" class="w-full p-4 bg-zinc-900 border-2 border-zinc-700 mb-4 outline-none focus:border-cyan-500 text-cyan-500 font-mono">
-            <button onclick="entrar()" class="w-full bg-cyan-600 hover:bg-pink-600 p-4 font-black uppercase tracking-widest transition-all">START GAME</button>
+    <div id="auth-screen" class="fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass p-8 rounded-[40px] border-t-4 border-cyan-500 shadow-2xl">
+            <h1 class="retro-font text-center text-xl neon-blue mb-8">ZYPLAY ARENA</h1>
+            
+            <div class="flex gap-4 mb-6">
+                <button onclick="aba('login')" class="flex-1 pb-2 border-b-2 border-cyan-500 font-bold text-xs uppercase">Login</button>
+                <button onclick="aba('cadastro')" class="flex-1 pb-2 border-b-2 border-zinc-800 font-bold text-xs uppercase">Cadastro</button>
+            </div>
+
+            <div id="box-login" class="space-y-4">
+                <input type="text" id="l-nome" placeholder="NOME DO JOGADOR" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-cyan-500">
+                <input type="email" id="l-email" placeholder="E-MAIL" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-cyan-500">
+                <button onclick="entrar()" class="w-full btn-action py-4 rounded-2xl font-black tracking-widest uppercase text-xs">LOGAR NA CONTA</button>
+            </div>
+
+            <div id="box-cadastro" class="hidden space-y-4">
+                <input type="text" id="r-nome" placeholder="CRIE UM NOME" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
+                <input type="email" id="r-email" placeholder="SEU MELHOR E-MAIL" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
+                <input type="password" id="r-pass" placeholder="SENHA" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
+                <input type="password" id="r-pass2" placeholder="CONFIRMAR SENHA" class="w-full p-4 bg-black/50 border border-zinc-700 rounded-2xl outline-none focus:border-green-500">
+                <button onclick="cadastrar()" class="w-full bg-green-600 py-4 rounded-2xl font-black uppercase text-xs">CRIAR PERFIL REAL</button>
+            </div>
         </div>
     </div>
 
-    <div id="matchmaking" class="fixed inset-0 z-[150] bg-black/95 flex flex-col items-center justify-center text-center p-6">
-        <div class="w-32 h-32 border-8 border-cyan-500 border-t-pink-500 rounded-full animate-spin mb-8"></div>
-        <h2 class="retro-font text-xl neon-text mb-4">BUSCANDO OPONENTE...</h2>
-        <div id="opponent-info" class="text-sm font-mono text-zinc-500 italic">CONECTANDO AO SERVIDOR NACIONAL...</div>
-    </div>
-
-    <div id="main-app" class="hidden">
-        <nav class="p-6 flex justify-between items-center sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-cyan-500/30">
-            <div>
-                <span class="retro-font text-sm text-cyan-500">LVL <span id="lvl-display">1</span></span>
-            </div>
-            <div class="text-right">
-                <p id="zc-display" class="retro-font text-[10px] text-yellow-400">500 ZC</p>
-                <p id="rs-display" class="text-[9px] font-bold text-green-400">R$ 0,50</p>
-            </div>
-        </nav>
-
-        <div class="p-4 text-center">
+    <div id="ad-interstitial" class="fixed inset-0 z-[300] bg-black hidden flex flex-col items-center justify-center p-8 text-center">
+        <p class="retro-font text-[10px] text-yellow-500 mb-8">ANÚNCIO DE NÍVEL - CARREGANDO...</p>
+        <div class="w-full max-w-lg h-64 bg-zinc-900 rounded-2xl flex items-center justify-center border border-dashed border-zinc-500">
             <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
+        <button id="btn-fechar-ad" onclick="fecharAd()" class="mt-8 text-zinc-500 font-bold uppercase text-xs underline">Fechar anúncio após 5s</button>
+    </div>
 
-        <main class="p-6">
-            <div class="flex justify-between items-end mb-8">
-                <h3 class="retro-font text-[10px] text-zinc-500">SELECIONE SUA ARENA</h3>
-                <span class="text-[9px] bg-pink-600 px-2 py-1 rounded">MULTI-PLAYER ACTIVE</span>
+    <div id="main-app" class="hidden">
+        <nav class="p-6 flex justify-between items-center glass sticky top-0 z-50">
+            <span class="retro-font text-[10px] neon-blue">ZYPLAY</span>
+            <div class="text-right">
+                <p id="nome-display" class="text-[9px] font-black text-cyan-500 uppercase">JOGADOR</p>
+                <p id="zc-display" class="text-yellow-400 font-black text-sm">500 ZC</p>
+            </div>
+        </nav>
+
+        <main class="p-4 space-y-6">
+            <div class="p-2 border border-white/5 rounded-xl text-center text-[8px] text-zinc-700 uppercase">
+                Espaço Publicitário AdSense
+                <ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto"></ins>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6" id="game-grid"></div>
+            <div class="flex justify-between items-center">
+                <h2 class="retro-font text-[9px]">ARENA MULTIPLAYER</h2>
+                <div class="bg-cyan-500/20 px-3 py-1 rounded-full text-cyan-400 text-[10px] font-bold">LVL <span id="lvl-display">1</span></div>
+            </div>
 
-            <section class="mt-20 max-w-2xl mx-auto p-8 border-2 border-dashed border-zinc-800 rounded-3xl bg-zinc-900/50">
-                <h4 class="retro-font text-xs mb-8 flex items-center gap-4">
-                    <i class="fa-solid fa-vault text-yellow-500 text-xl"></i> SISTEMA DE SAQUE
-                </h4>
-                
-                <div class="space-y-6">
-                    <div>
-                        <label class="text-[9px] font-bold text-zinc-500 uppercase block mb-2">Método de Preferência</label>
-                        <select id="pay-method" class="w-full p-4 bg-black border border-zinc-700 rounded-xl outline-none focus:border-cyan-500">
-                            <option value="PIX">PIX (Brasil)</option>
-                            <option value="PAYPAL">PayPal (Internacional)</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="text-[9px] font-bold text-zinc-500 uppercase block mb-2">Chave ou E-mail Financeiro</label>
-                        <input type="text" id="pix-key" placeholder="Insira aqui..." class="w-full p-4 bg-black border border-zinc-700 rounded-xl outline-none focus:border-cyan-500">
-                    </div>
-
-                    <button onclick="solicitarSaque()" class="w-full bg-green-600 hover:bg-green-500 p-5 rounded-2xl font-black text-xs tracking-widest transition-all">
-                        SOLICITAR RESGATE
-                    </button>
-                    
-                    <p class="text-[9px] text-center text-zinc-600 font-bold uppercase tracking-widest">
-                        Aviso: O pagamento pode demorar até <span class="text-white">3 dias úteis</span> para ser processado.
-                    </p>
+            <div class="grid grid-cols-2 gap-4" id="arena-grid">
                 </div>
-            </section>
         </main>
+
+        <div class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-cyan-500/30 flex gap-2">
+            <input type="text" id="pix-key" placeholder="PIX ou PAYPAL" class="flex-1 bg-black p-3 rounded-xl text-xs border border-zinc-800 outline-none">
+            <button onclick="sacar()" class="bg-green-600 px-6 rounded-xl font-bold text-[10px]">SACAR</button>
+        </div>
     </div>
 
     <script>
@@ -119,98 +102,118 @@
         
         let saldo = 500;
         let nivel = 1;
-        let userEmail = "";
+        let nomeReal = "";
+        let emailReal = "";
 
-        const catalog = [
-            { n: "Street Fighter II", icon: "fa-hand-fist", color: "text-red-500", emu: "https://web.emulatorjs.org/snes/?game=street-fighter-ii" },
-            { n: "Mortal Kombat 3", icon: "fa-skull", color: "text-zinc-400", emu: "https://web.emulatorjs.org/snes/?game=mortal-kombat-3" },
-            { n: "Super Mario World", icon: "fa-rocket", color: "text-blue-500", emu: "https://web.emulatorjs.org/snes/?game=super-mario-world" },
-            { n: "Sonic Ultimate", icon: "fa-bolt", color: "text-cyan-400", emu: "https://web.emulatorjs.org/megadrive/?game=sonic" },
-            { n: "Donkey Kong", icon: "fa-leaf", color: "text-green-600", emu: "https://web.emulatorjs.org/snes/?game=donkey-kong-country" },
-            { n: "Zelda Adventure", icon: "fa-shield", color: "text-green-400", emu: "https://web.emulatorjs.org/snes/?game=zelda-link-to-the-past" }
+        const jogos = [
+            { n: "Super Mario", img: "https://images.igdb.com/igdb/image/upload/t_cover_big/co2v7z.png", url: "https://web.emulatorjs.org/snes/?game=super-mario-world" },
+            { n: "Tetris Attack", img: "https://static.miraheze.org/blueblurwiki/b/b3/Tetris_Attack_Cover_Art.jpg", url: "https://web.emulatorjs.org/snes/?game=tetris-attack" },
+            { n: "Dino Run", img: "https://play-lh.googleusercontent.com/4S0tA61_T6T7_Y-uO6QzO6n_TjM-YmB5z-5yH_Xw_Y", url: "https://wayou.github.io/t-rex-runner/" },
+            { n: "Sonic Mania", img: "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7f.png", url: "https://web.emulatorjs.org/megadrive/?game=sonic" }
         ];
 
-        function init() {
-            const grid = document.getElementById('game-grid');
-            for(let i=0; i < 100; i++) {
-                const g = catalog[i % catalog.length];
+        function aba(tipo) {
+            document.getElementById('box-login').classList.toggle('hidden', tipo === 'cadastro');
+            document.getElementById('box-cadastro').classList.toggle('hidden', tipo === 'login');
+        }
+
+        async function cadastrar() {
+            const n = document.getElementById('r-nome').value;
+            const e = document.getElementById('r-email').value;
+            const p1 = document.getElementById('r-pass').value;
+            const p2 = document.getElementById('r-pass2').value;
+
+            if(!n || !e || p1 !== p2) return alert("Dados inválidos ou senhas não conferem!");
+            
+            await enviar(LINK_V, { tipo: "NOVO_CADASTRO", nome: n, email: e, senha: p1 });
+            alert("CADASTRO REALIZADO! Faça login com os mesmos dados.");
+            aba('login');
+        }
+
+        function entrar() {
+            nomeReal = document.getElementById('l-nome').value;
+            emailReal = document.getElementById('l-email').value;
+
+            if(!nomeReal || !emailReal) return alert("Insira seu NOME e E-MAIL reais!");
+
+            document.getElementById('nome-display').innerText = nomeReal;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            gerarArena();
+        }
+
+        function gerarArena() {
+            const grid = document.getElementById('arena-grid');
+            grid.innerHTML = "";
+            for(let i=0; i<40; i++) {
+                const j = jogos[i % jogos.length];
                 grid.innerHTML += `
-                    <div class="game-card p-4 border border-zinc-800 bg-zinc-900/30 rounded-2xl text-center" onclick="buscarOponente('${g.n}', '${g.emu}')">
-                        <div class="w-12 h-12 mx-auto bg-black rounded-full flex items-center justify-center mb-4 border border-zinc-800">
-                            <i class="fa-solid ${g.icon} ${g.color} text-xl"></i>
+                    <div class="game-card glass p-3 rounded-3xl" onclick="duelar('${j.n}')">
+                        <img src="${j.img}" class="game-img shadow-lg shadow-cyan-500/20">
+                        <p class="text-[9px] font-black uppercase mb-1">${j.n} #${i+1}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[8px] text-zinc-500 font-bold">COST: ${50 * nivel} ZC</span>
+                            <span class="text-[8px] text-green-400 font-bold">WIN: +100%</span>
                         </div>
-                        <h4 class="text-[9px] font-black uppercase mb-1 truncate">${g.n}</h4>
-                        <p class="text-[8px] text-cyan-500 font-bold">LVL ${Math.floor(i/4)+1}</p>
                     </div>
                 `;
             }
         }
 
-        function entrar() {
-            userEmail = document.getElementById('u-email').value;
-            if(!userEmail.includes("@")) return alert("PLAYER ID INVALID!");
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            init();
-            enviar(LINK_V, { tipo: "PLAYER_LOGIN", email: userEmail });
-        }
-
-        function buscarOponente(nome, emu) {
+        function duelar(jogo) {
             const custo = 50 * nivel;
-            if(saldo < custo) return alert("MOEDAS INSUFICIENTES!");
+            if(saldo < custo) return alert("SALDO INSUFICIENTE!");
 
-            document.getElementById('matchmaking').style.display = 'flex';
-            
-            setTimeout(() => {
-                document.getElementById('opponent-info').innerText = "OPONENTE ENCONTRADO: PLAYER_" + Math.floor(Math.random()*9999);
-                setTimeout(() => {
-                    document.getElementById('matchmaking').style.display = 'none';
-                    abrirArena(nome, emu);
-                }, 2000);
-            }, 3000);
-        }
-
-        function abrirArena(nome, emu) {
-            // Aqui você decide se quer abrir o iframe ou apenas simular o resultado como antes
-            // Para o AdSense aprovar, vamos simular o resultado e exibir um anúncio fictício
-            const custo = 50 * nivel;
-            const venceu = Math.random() > 0.4;
+            saldo -= custo;
+            const venceu = Math.random() > 0.45;
             
             if(venceu) {
-                const ganho = custo * 2;
-                saldo += ganho;
+                saldo += (custo * 2.1);
                 nivel++;
-                alert(`VITÓRIA! Você derrotou seu oponente no Nível ${nivel-1}.\nGanhou: ${ganho} ZC\nPróximo Nível: ${nivel}`);
+                mostrarAd(); // MOSTRA PROPAGANDA AO SUBIR DE NÍVEL
             } else {
-                // Lógica de perda progressiva sugerida
-                const perda = nivel >= 25 ? saldo : custo; 
-                saldo -= perda;
-                alert(`DERROTA! No Nível ${nivel}, você perdeu ${perda} ZC.\nDeseja tentar novamente?`);
+                if(nivel >= 25) saldo = 0; // Perde tudo em nível alto
+                alert(`DERROTA! Você perdeu moedas. Tente novamente no nível ${nivel}`);
             }
-            
             updateUI();
-            enviar(LINK_V, { tipo: "DUELO_RESULTADO", email: userEmail, jogo: nome, res: venceu ? "WIN" : "LOSS", lvl: nivel, saldo });
         }
 
-        function solicitarSaque() {
-            const pix = document.getElementById('pix-key').value;
-            const metodo = document.getElementById('pay-method').value;
-            if(saldo < 1000) return alert("SALDO MÍNIMO: 1000 ZC");
-            
-            enviar(LINK_S, { tipo: "WITHDRAW", email: userEmail, pix, metodo, valor: (saldo/1000).toFixed(2) });
-            alert(`Solicitação via ${metodo} enviada!\nAguarde até 3 dias úteis.`);
-            saldo = 0;
-            updateUI();
+        function mostrarAd() {
+            document.getElementById('ad-interstitial').classList.remove('hidden');
+            let tempo = 5;
+            const btn = document.getElementById('btn-fechar-ad');
+            const timer = setInterval(() => {
+                tempo--;
+                btn.innerText = `FECHAR EM ${tempo}s`;
+                if(tempo <= 0) {
+                    clearInterval(timer);
+                    btn.innerText = "FECHAR ANÚNCIO X";
+                    btn.classList.add('text-white');
+                }
+            }, 1000);
+        }
+
+        function fecharAd() {
+            document.getElementById('ad-interstitial').classList.add('hidden');
+            alert(`NÍVEL ALCANÇADO: ${nivel}! Moedas creditadas.`);
+        }
+
+        function sacar() {
+            const k = document.getElementById('pix-key').value;
+            if(saldo < 1000) return alert("MÍNIMO 1000 ZC");
+            enviar(LINK_S, { tipo: "SAQUE", nome: nomeReal, email: emailReal, chave: k, valor: (saldo/1000).toFixed(2) });
+            alert("SAQUE SOLICITADO! Prazo: 3 dias.");
+            saldo = 0; updateUI();
         }
 
         function updateUI() {
-            document.getElementById('zc-display').innerText = `${saldo} ZC`;
+            document.getElementById('zc-display').innerText = `${saldo.toFixed(0)} ZC`;
             document.getElementById('rs-display').innerText = `R$ ${(saldo/1000).toFixed(2)}`;
             document.getElementById('lvl-display').innerText = nivel;
         }
 
         async function enviar(u, p) {
-            try { fetch(u, { method: 'POST', mode: 'no-cors', body: JSON.stringify({...p, data: new Date().toLocaleString()}) }); } catch(e){}
+            try { fetch(u, { method: 'POST', mode: 'no-cors', body: JSON.stringify({...p, date: new Date().toLocaleString()}) }); } catch(e){}
         }
     </script>
 </body>
