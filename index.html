@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | SUPREME ARENA</title>
+    <title>ZYPLAY | ARENA VALIDADA</title>
     
     <meta name="google-adsense-account" content="ca-pub-9159169630954848">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9159169630954848" crossorigin="anonymous"></script>
@@ -13,21 +13,12 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        body, html { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .retro-font { font-family: 'Press Start 2P', cursive; }
-
-        /* FUNDO ANIMADO RETRO-WAVE */
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; filter: blur(1px); }
-
-        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 0 20px rgba(0, 210, 255, 0.1); }
-        .neon-text { text-shadow: 0 0 10px #00d2ff, 0 0 20px #00d2ff; }
-        
-        .game-window { display: none; position: fixed; inset: 0; background: #000; z-index: 500; }
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+        .glass { background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px); border: 1px solid #00d2ff; }
         .hidden { display: none; }
-        
-        input { background: rgba(255,255,255,0.05) !important; border: 1px solid #333 !important; color: #00d2ff !important; }
-        input:focus { border-color: #00d2ff !important; box-shadow: 0 0 10px #00d2ff; }
+        input[type="checkbox"] { accent-color: #00d2ff; }
     </style>
 </head>
 <body>
@@ -36,32 +27,43 @@
 
     <div id="auth-screen" class="fixed inset-0 z-[600] flex items-center justify-center p-4">
         <div class="w-full max-w-md glass p-8 rounded-[30px] text-center border-t-4 border-cyan-500">
-            <h1 class="retro-font text-lg neon-text mb-8">ZYPLAY</h1>
+            <h1 class="retro-font text-lg text-cyan-500 mb-8 uppercase">ZyPlay System</h1>
             
-            <div class="flex mb-6 bg-zinc-900 rounded-full p-1">
-                <button id="tab-l" onclick="showAuth('login')" class="flex-1 py-2 rounded-full text-[10px] font-bold bg-cyan-600">LOGIN</button>
-                <button id="tab-c" onclick="showAuth('cadastro')" class="flex-1 py-2 rounded-full text-[10px] font-bold">CADASTRO</button>
-            </div>
-
             <div id="form-login" class="space-y-4">
-                <input type="text" id="l-user" placeholder="NOME DE USUÁRIO" class="w-full p-4 rounded-xl outline-none">
-                <input type="password" id="l-pass" placeholder="SENHA" class="w-full p-4 rounded-xl outline-none">
-                <button onclick="fazerLogin()" class="w-full bg-cyan-600 py-4 rounded-xl font-black text-xs">ENTRAR NA ARENA</button>
+                <input type="text" id="l-user" placeholder="USUÁRIO" class="w-full p-4 bg-zinc-900 rounded-xl border border-zinc-700 outline-none focus:border-cyan-500">
+                <input type="password" id="l-pass" placeholder="SENHA" class="w-full p-4 bg-zinc-900 rounded-xl border border-zinc-700 outline-none focus:border-cyan-500">
+                <button onclick="fazerLogin()" class="w-full bg-cyan-600 py-4 rounded-xl font-black text-xs uppercase">Acessar Arena</button>
+                <p class="text-[10px] text-zinc-500">Não tem conta? <button onclick="toggleAuth()" class="text-cyan-400">Cadastre-se</button></p>
             </div>
 
             <div id="form-cadastro" class="hidden space-y-4">
-                <input type="text" id="r-user" placeholder="ESCOLHA UM NOME" class="w-full p-4 rounded-xl outline-none">
-                <input type="email" id="r-email" placeholder="E-MAIL REAL" class="w-full p-4 rounded-xl outline-none">
-                <input type="password" id="r-pass" placeholder="CRIE UMA SENHA" class="w-full p-4 rounded-xl outline-none">
-                <input type="password" id="r-pass-conf" placeholder="CONFIRME A SENHA" class="w-full p-4 rounded-xl outline-none">
-                <button onclick="fazerCadastro()" class="w-full bg-green-600 py-4 rounded-xl font-black text-xs">FINALIZAR CADASTRO</button>
+                <input type="text" id="r-user" placeholder="NOME DE USUÁRIO" class="w-full p-4 bg-zinc-900 rounded-xl border border-zinc-700 outline-none focus:border-green-500">
+                <input type="email" id="r-email" placeholder="SEU E-MAIL REAL" class="w-full p-4 bg-zinc-900 rounded-xl border border-zinc-700 outline-none focus:border-green-500">
+                <input type="password" id="r-pass" placeholder="CRIE UMA SENHA" class="w-full p-4 bg-zinc-900 rounded-xl border border-zinc-700 outline-none focus:border-green-500">
+                
+                <div class="text-left space-y-2 py-2">
+                    <label class="flex items-center gap-2 text-[10px] text-zinc-400">
+                        <input type="checkbox" id="age-check"> Declaro ter mais de 16 anos.
+                    </label>
+                    <label class="flex items-center gap-2 text-[10px] text-zinc-400">
+                        <input type="checkbox" id="bot-check"> Não sou um robô.
+                    </label>
+                </div>
+
+                <button id="btn-cad" onclick="enviarCodigo()" class="w-full bg-green-600 py-4 rounded-xl font-black text-xs uppercase">Enviar Código p/ E-mail</button>
+                
+                <div id="verify-box" class="hidden pt-4 border-t border-zinc-800">
+                    <input type="text" id="v-code" placeholder="CÓDIGO DE 6 DÍGITOS" class="w-full p-4 bg-zinc-900 rounded-xl border border-cyan-500 outline-none text-center tracking-widest">
+                    <button onclick="validarCadastro()" class="w-full mt-2 bg-white text-black py-4 rounded-xl font-black text-xs uppercase">Confirmar e Criar Conta</button>
+                </div>
+                <p class="text-[10px] text-zinc-500"><button onclick="toggleAuth()" class="text-red-400 text-xs">Voltar</button></p>
             </div>
         </div>
     </div>
 
-    <div id="game-window" class="game-window">
+    <div id="game-window" class="fixed inset-0 z-[500] bg-black hidden">
         <div class="h-14 flex justify-between items-center px-4 bg-zinc-900 border-b border-cyan-500">
-            <span id="game-title" class="retro-font text-[8px] text-cyan-500">CARREGANDO...</span>
+            <span id="game-title" class="retro-font text-[8px] text-cyan-500">PLAYING</span>
             <button onclick="fecharJogo()" class="bg-red-600 px-4 py-1 rounded text-[10px] font-bold">SAIR E SALVAR</button>
         </div>
         <iframe id="emu-frame" src="" class="w-full h-full border-none"></iframe>
@@ -69,152 +71,116 @@
 
     <div id="main-app" class="hidden">
         <nav class="p-6 glass sticky top-0 z-50 flex justify-between items-center">
-            <span class="retro-font text-[10px] neon-text">ZYPLAY</span>
+            <span class="retro-font text-[10px] text-cyan-500">ZYPLAY</span>
             <div class="text-right">
-                <p id="user-display" class="text-[10px] text-cyan-400 font-bold">@PLAYER</p>
+                <p id="user-display" class="text-[10px] text-cyan-400 font-bold uppercase"></p>
                 <p id="zc-display" class="text-yellow-400 font-black text-sm">500 ZC</p>
             </div>
         </nav>
 
         <main class="p-6">
-            <div class="mb-8 p-4 border border-dashed border-cyan-900 rounded-xl text-center text-[9px] text-zinc-600">
-                GOOGLE ADSENSE - PUBLICIDADE
+            <div class="mb-6 p-4 border border-zinc-800 rounded-xl text-center">
+                <p class="text-[8px] text-zinc-600 mb-2 uppercase">Publicidade AdSense</p>
                 <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
             </div>
 
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="retro-font text-[8px] text-zinc-400 italic underline">ARENA MULTIJOGADOR LVL <span id="lvl-display">1</span></h2>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="game-list">
-                </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="game-list"></div>
         </main>
 
-        <footer class="fixed bottom-0 left-0 right-0 p-4 glass border-t border-cyan-500/30 flex gap-4">
-            <input type="text" id="pix-field" placeholder="CHAVE PIX OU PAYPAL" class="flex-1 p-3 rounded-xl text-xs outline-none">
-            <button onclick="solicitarSaque()" class="bg-green-600 px-6 rounded-xl font-bold text-[10px]">SACAR</button>
+        <footer class="fixed bottom-0 left-0 right-0 p-4 glass flex gap-2">
+            <input type="text" id="pix-field" placeholder="Chave PIX ou PayPal" class="flex-1 bg-black p-3 rounded-xl text-xs border border-zinc-800">
+            <button onclick="alert('Solicitado! Prazo 3 dias.')" class="bg-green-600 px-6 rounded-xl font-bold text-[10px]">SACAR</button>
         </footer>
     </div>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbw0LnuhMhVyA9BDV7gYIjzILsiNLMJ7GiBSkvJeJJ9m5PvPY5f6yHsIaQcWMLZ1aBfr/exec";
         let saldo = 500;
-        let nivel = 1;
-        let player = "";
+        let codigoGerado = "";
+        let playerEmail = "";
 
-        // JOGOS REAIS (EMULADORES)
-        const db_games = [
+        const jogos = [
             { n: "Super Mario World", url: "https://web.emulatorjs.org/snes/?game=super-mario-world" },
             { n: "Tetris Attack", url: "https://web.emulatorjs.org/snes/?game=tetris-attack" },
-            { n: "Street Fighter 2", url: "https://web.emulatorjs.org/snes/?game=street-fighter-ii" },
-            { n: "Donkey Kong Country", url: "https://web.emulatorjs.org/snes/?game=donkey-kong-country" },
-            { n: "Mortal Kombat 3", url: "https://web.emulatorjs.org/snes/?game=mortal-kombat-3" },
-            { n: "Sonic Mania", url: "https://web.emulatorjs.org/megadrive/?game=sonic" }
+            { n: "Sonic Ultimate", url: "https://web.emulatorjs.org/megadrive/?game=sonic" },
+            { n: "Donkey Kong Country", url: "https://web.emulatorjs.org/snes/?game=donkey-kong-country" }
         ];
 
-        // ANIMAÇÃO DE FUNDO
+        // Animação Fundo
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        let points = [];
-        for(let i=0; i<50; i++) points.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: Math.random()*2-1, vy: Math.random()*2-1});
-        
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         function animate() {
-            ctx.fillStyle = "rgba(0,0,0,0.05)";
-            ctx.fillRect(0,0,canvas.width, canvas.height);
-            ctx.strokeStyle = "#00d2ff22";
-            points.forEach(p => {
-                p.x += p.vx; p.y += p.vy;
-                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.stroke();
-            });
+            ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "#00d2ff";
+            for(let i=0; i<2; i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
             requestAnimationFrame(animate);
         }
         animate();
 
-        // LÓGICA DE LOGIN E CADASTRO
-        function showAuth(t) {
-            document.getElementById('form-login').classList.toggle('hidden', t === 'cadastro');
-            document.getElementById('form-cadastro').classList.toggle('hidden', t === 'login');
-            document.getElementById('tab-l').className = t === 'login' ? 'flex-1 py-2 rounded-full text-[10px] font-bold bg-cyan-600' : 'flex-1 py-2 rounded-full text-[10px] font-bold';
-            document.getElementById('tab-c').className = t === 'cadastro' ? 'flex-1 py-2 rounded-full text-[10px] font-bold bg-green-600' : 'flex-1 py-2 rounded-full text-[10px] font-bold';
+        function toggleAuth() {
+            document.getElementById('form-login').classList.toggle('hidden');
+            document.getElementById('form-cadastro').classList.toggle('hidden');
         }
 
-        async function fazerCadastro() {
-            const u = document.getElementById('r-user').value;
-            const e = document.getElementById('r-email').value;
-            const p = document.getElementById('r-pass').value;
-            const pc = document.getElementById('r-pass-conf').value;
-            if(!u || !e || p !== pc) return alert("Erro no formulário!");
-            await fetch(API, {method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "CADASTRO", user: u, email: e, pass: p})});
-            alert("CADASTRO REALIZADO!");
-            showAuth('login');
+        async function enviarCodigo() {
+            if(!document.getElementById('age-check').checked || !document.getElementById('bot-check').checked) {
+                return alert("Você deve ser humano e maior de 16 anos!");
+            }
+            playerEmail = document.getElementById('r-email').value;
+            if(!playerEmail.includes("@")) return alert("E-mail inválido!");
+
+            codigoGerado = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            // Simulação de envio para a planilha/email via Apps Script
+            fetch(API, {method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "VERIFICAÇÃO", email: playerEmail, codigo: codigoGerado})});
+            
+            alert("CÓDIGO ENVIADO! Verifique sua caixa de entrada (ou spam).");
+            document.getElementById('verify-box').classList.remove('hidden');
+            document.getElementById('btn-cad').classList.add('hidden');
+        }
+
+        function validarCadastro() {
+            const digitado = document.getElementById('v-code').value;
+            if(digitado === codigoGerado) {
+                alert("CONTA ATIVADA COM SUCESSO!");
+                toggleAuth();
+            } else {
+                alert("CÓDIGO INCORRETO!");
+            }
         }
 
         function fazerLogin() {
-            player = document.getElementById('l-user').value;
-            const p = document.getElementById('l-pass').value;
-            if(!player || !p) return alert("Preencha tudo!");
-            document.getElementById('user-display').innerText = `@${player}`;
+            const user = document.getElementById('l-user').value;
+            if(!user) return alert("Digite o usuário");
+            document.getElementById('user-display').innerText = user;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            renderGames();
+            render();
         }
 
-        function renderGames() {
+        function render() {
             const grid = document.getElementById('game-list');
-            for(let i=0; i<60; i++) {
-                const g = db_games[i % db_games.length];
-                grid.innerHTML += `
-                    <div class="glass p-4 rounded-2xl text-center border-b-2 border-zinc-800" onclick="iniciarJogo('${g.url}', '${g.n}')">
-                        <i class="fa-solid fa-gamepad text-cyan-500 mb-2"></i>
-                        <p class="text-[9px] font-bold uppercase truncate">${g.n}</p>
-                        <p class="text-[7px] text-green-500 mt-2 font-black">MULTIPLAYER ON</p>
-                    </div>
-                `;
+            for(let i=0; i<40; i++) {
+                const j = jogos[i % jogos.length];
+                grid.innerHTML += `<div class="glass p-4 rounded-2xl text-center" onclick="jogar('${j.url}','${j.n}')">
+                    <i class="fa-solid fa-gamepad text-cyan-500 mb-2"></i>
+                    <p class="text-[9px] font-bold uppercase">${j.n}</p>
+                </div>`;
             }
         }
 
-        function iniciarJogo(url, nome) {
-            const custo = 50 * nivel;
-            if(saldo < custo) return alert("MOEDAS INSUFICIENTES!");
-            saldo -= custo;
-            document.getElementById('game-title').innerText = `DUELO: ${nome} (LVL ${nivel})`;
+        function jogar(url, nome) {
+            document.getElementById('game-window').classList.remove('hidden');
             document.getElementById('emu-frame').src = url;
-            document.getElementById('game-window').style.display = 'block';
-            updateUI();
+            document.getElementById('game-title').innerText = nome;
         }
 
         function fecharJogo() {
-            const venceu = Math.random() > 0.45;
-            if(venceu) {
-                const ganho = 50 * nivel * 2;
-                saldo += ganho;
-                nivel++;
-                alert(`VITÓRIA! +${ganho} ZC. Você avançou para o Nível ${nivel}.`);
-            } else {
-                if(nivel >= 25) saldo = 0;
-                alert(`DERROTA NO NÍVEL ${nivel}!`);
-            }
-            document.getElementById('game-window').style.display = 'none';
+            document.getElementById('game-window').classList.add('hidden');
             document.getElementById('emu-frame').src = "";
-            updateUI();
-            fetch(API, {method: 'POST', mode: 'no-cors', body: JSON.stringify({tipo: "LOG", user: player, saldo})});
-        }
-
-        function solicitarSaque() {
-            const pix = document.getElementById('pix-field').value;
-            if(saldo < 1000) return alert("MÍNIMO 1000 ZC");
-            alert("PEDIDO DE SAQUE ENVIADO! Prazo: 3 dias úteis.");
-            saldo = 0; updateUI();
-        }
-
-        function updateUI() {
+            saldo += 100; // Recompensa por jogar
             document.getElementById('zc-display').innerText = `${saldo} ZC`;
-            document.getElementById('rs-display').innerText = `R$ ${(saldo/1000).toFixed(2)}`;
-            document.getElementById('lvl-display').innerText = nivel;
         }
     </script>
 </body>
