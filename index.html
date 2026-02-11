@@ -2,239 +2,259 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>ZYPLAY STORE | Arena Gamer</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>ZYPLAY STORE | Arena Oficial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap');
         
-        :root {
-            --zy-blue: #0062ff;
-            --zy-gold: #ffcc00;
-        }
+        :root { --zy-blue: #0062ff; --zy-gold: #ffcc00; --bg-main: #020205; }
 
         body { 
-            background: #020205; 
-            color: #fff; 
-            font-family: 'Rajdhani', sans-serif;
-            background-image: linear-gradient(to bottom, rgba(2, 2, 5, 0.9), rgba(2, 2, 5, 0.95)),
+            background: var(--bg-main); color: #fff; font-family: 'Rajdhani', sans-serif;
+            background-image: linear-gradient(to bottom, rgba(2, 2, 5, 0.92), rgba(2, 2, 5, 0.96)),
                 url('https://www.agame.com/assets/gamesgames/backgrounds/default-1.jpg'); 
-            background-attachment: fixed;
-            background-size: cover;
+            background-attachment: fixed; background-size: cover;
+            overflow-x: hidden;
         }
 
         .zy-font { font-family: 'Orbitron', sans-serif; }
 
-        /* Estilo do Card de Login */
+        /* Estilo do Card de Auth conforme seu print */
         .auth-card {
             background: rgba(10, 10, 20, 0.98);
             border: 1px solid var(--zy-blue);
-            box-shadow: 0 0 40px rgba(0, 98, 255, 0.4);
-            border-radius: 12px;
+            box-shadow: 0 0 50px rgba(0, 98, 255, 0.25);
+            border-radius: 20px;
         }
 
+        .input-group { position: relative; }
+        .input-eye { position: absolute; right: 15px; top: 38px; cursor: pointer; color: #444; z-index: 10; }
+
+        /* Grid de Jogos Profissional */
         .game-tile {
-            background: rgba(20, 20, 30, 0.8);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .game-tile:hover {
-            transform: translateY(-5px);
-            border-color: var(--zy-blue);
-            box-shadow: 0 0 20px var(--zy-blue);
+        .game-tile:hover { 
+            transform: scale(1.05); border-color: var(--zy-blue);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(0, 98, 255, 0.3);
         }
 
-        .error-box { 
-            color: #ff4444; 
-            font-size: 11px; 
-            display: none; 
-            background: rgba(255, 0, 0, 0.1);
-            padding: 8px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 0, 0, 0.2);
-        }
-
+        /* Iframe Engine */
         #game-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 10000;
-            background: #000;
-            display: none;
-            flex-direction: column;
+            position: fixed; inset: 0; z-index: 10000; background: #000;
+            display: none; flex-direction: column;
         }
 
-        .z-coins-display {
-            background: linear-gradient(90deg, #ffcc00, #ff8800);
-            color: #000;
-            font-weight: 900;
+        .error-anim { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
     </style>
 </head>
 <body>
 
     <div id="login-overlay" class="fixed inset-0 flex items-center justify-center p-4 z-[20000] bg-black">
-        <div class="auth-card max-w-sm w-full p-8 text-center">
-            <h2 class="zy-font text-blue-500 mb-6 text-xl tracking-tighter uppercase">ZyPlaY STORE</h2>
+        <div class="auth-card max-w-sm w-full p-8 border-t-4 border-t-blue-600">
+            <div class="text-center mb-8">
+                <h2 class="zy-font text-2xl text-white tracking-tighter italic">ZYPLAY<span class="text-blue-600">STORE</span></h2>
+                <div class="h-1 w-10 bg-blue-600 mx-auto mt-1"></div>
+            </div>
             
-            <div id="msg-erro" class="error-box"></div>
+            <div id="msg-erro" class="error-anim text-[#ff4444] text-xs font-bold bg-red-500/10 border border-red-500/20 p-3 rounded-lg mb-5 hidden text-center"></div>
 
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="text-[10px] text-zinc-500 uppercase font-bold ml-1">Email / Usuário</label>
-                    <input type="text" id="email" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded text-sm outline-none focus:border-blue-500" placeholder="exemplo@zyplay.com">
-                </div>
-                <div>
-                    <label class="text-[10px] text-zinc-500 uppercase font-bold ml-1">Password</label>
-                    <input type="password" id="password" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded text-sm outline-none focus:border-blue-500" placeholder="••••••••">
+            <div class="space-y-5">
+                <div class="input-group">
+                    <label class="text-[10px] text-zinc-500 uppercase font-black ml-1 tracking-widest">Identificação</label>
+                    <input type="text" id="email" class="w-full bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600 transition" placeholder="Email ou Usuário">
                 </div>
                 
-                <button onclick="tentarLogin()" class="w-full bg-blue-700 hover:bg-blue-600 py-4 rounded zy-font text-xs font-bold transition shadow-lg">ENTRAR NA ARENA</button>
+                <div class="input-group">
+                    <label class="text-[10px] text-zinc-500 uppercase font-black ml-1 tracking-widest">Senha de Acesso</label>
+                    <input type="password" id="password" class="w-full bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600 transition" placeholder="••••••••">
+                    <i class="fa-solid fa-eye input-eye" id="togglePass" onclick="togglePassword()"></i>
+                </div>
+                
+                <button onclick="tentarLogin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl zy-font text-xs font-black transition-all shadow-lg active:scale-95 uppercase">Entrar na Arena</button>
+                
+                <div class="text-center">
+                    <button onclick="window.open('https://forms.google.com/...', '_blank')" class="text-[11px] text-zinc-500 hover:text-blue-400 font-bold uppercase transition">Não tem conta? Cadastre-se aqui</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="arena-content" class="hidden min-h-screen">
-        <header class="p-4 bg-black/80 backdrop-blur-md border-b border-blue-900/50 sticky top-0 z-[500]">
+        <header class="p-4 bg-black/90 backdrop-blur-xl border-b border-blue-900/30 sticky top-0 z-[500]">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-6">
-                    <h1 class="zy-font text-xl font-black italic tracking-tighter">ZYPLAY<span class="text-blue-500">STORE</span></h1>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="z-coins-display px-4 py-1 rounded-full flex items-center gap-2">
-                        <span id="saldo-txt" class="zy-font text-xs">2.00 ZC</span>
-                        <i class="fa-solid fa-coins"></i>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-play text-xs"></i>
                     </div>
-                    <button onclick="logout()" class="text-zinc-500 text-xs hover:text-white uppercase font-bold">Sair</button>
+                    <h1 class="zy-font text-lg font-black tracking-tighter">ZYPLAY</h1>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-2xl flex items-center gap-2">
+                        <span id="saldo-txt" class="zy-font text-xs text-yellow-500 font-black">2.00 ZC</span>
+                        <div class="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] text-black font-bold">Z</div>
+                    </div>
+                    <button onclick="logout()" class="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-red-500 transition">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto p-6">
-            <div class="mb-10 p-10 rounded-[40px] bg-gradient-to-r from-blue-900/30 to-black border border-blue-500/20 relative overflow-hidden">
+            <div class="mb-12 p-8 md:p-12 rounded-[32px] bg-gradient-to-br from-blue-700/20 via-black to-black border border-white/5 relative overflow-hidden group">
                 <div class="relative z-10">
-                    <h2 class="zy-font text-2xl uppercase">Ganhe <span class="text-yellow-400">Zcoins</span> Grátis</h2>
-                    <p class="text-zinc-400 text-sm mt-2 max-w-md">Nossa nova moeda chegou! Jogue agora, assista aos replays e acumule Zcons para trocar na loja.</p>
+                    <h2 class="zy-font text-2xl md:text-4xl uppercase mb-4">Nova Moeda <br><span class="text-blue-500">ZCOINS ATIVADA</span></h2>
+                    <p class="text-zinc-500 text-sm max-w-md mb-6">Ganhe Zcoins por cada minuto jogado. Troque por saldo real ou itens exclusivos na nossa loja.</p>
+                    <button class="bg-white text-black px-8 py-3 rounded-full font-black text-[10px] uppercase zy-font group-hover:bg-blue-600 group-hover:text-white transition-all">Começar Coleção</button>
                 </div>
-                <i class="fa-solid fa-gamepad absolute -right-4 -bottom-4 text-9xl opacity-5"></i>
+                <i class="fa-solid fa-coins absolute -right-10 -bottom-10 text-[200px] text-white/5 -rotate-12 group-hover:scale-110 transition-transform"></i>
             </div>
 
-            <h3 class="zy-font text-xs text-blue-500 mb-8 flex items-center gap-2 uppercase italic tracking-widest">
-                <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span> Arena de Jogos em Alta
-            </h3>
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="zy-font text-[10px] text-blue-500 uppercase tracking-[4px] italic">● Arena de Jogos</h3>
+                <div class="h-px flex-1 bg-zinc-800 ml-6"></div>
+            </div>
             
-            <div id="jogos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 pb-20">
+            <div id="jogos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 pb-32">
                 </div>
         </main>
     </div>
 
     <div id="game-screen">
-        <div class="p-4 bg-zinc-900 flex justify-between items-center border-b border-blue-600 shadow-2xl">
-            <button onclick="fecharJogo()" class="text-zinc-400 text-xs font-bold uppercase hover:text-white"><i class="fa-solid fa-chevron-left mr-2"></i> Voltar à Loja</button>
-            <span id="game-title" class="zy-font text-blue-500 text-[10px]"></span>
-            <div class="text-yellow-500 text-[10px] font-black animate-bounce">ZCOINS ATIVOS</div>
+        <div class="p-3 bg-zinc-950 flex justify-between items-center border-b border-blue-600/50">
+            <button onclick="fecharJogo()" class="bg-zinc-900 px-4 py-2 rounded-lg text-zinc-400 text-[10px] font-black uppercase hover:bg-zinc-800">
+                <i class="fa-solid fa-xmark mr-2"></i> Fechar Jogo
+            </button>
+            <div class="flex flex-col items-center">
+                <span id="game-title" class="zy-font text-blue-500 text-[9px] uppercase tracking-widest"></span>
+                <span class="text-[8px] text-yellow-500 font-bold tracking-tighter">MINERANDO ZCOINS...</span>
+            </div>
+            <div class="w-20"></div> </div>
+        <div class="flex-1 relative">
+            <iframe id="game-frame" class="w-full h-full border-none bg-black" src="" allowfullscreen></iframe>
         </div>
-        <iframe id="game-frame" class="w-full h-full border-none bg-black" src=""></iframe>
     </div>
 
     <script>
-        // LISTA DE JOGOS NO SEU REPOSITÓRIO (URLs de exemplo)
-        const jogos = [
-            { n: "My Parking Lot", c: "Puzzle", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
-            { n: "Cyber Truck", c: "Ação", i: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", u: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
-            { n: "Combat Online", c: "Multiplayer", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
-            { n: "Princess Fashion", c: "Meninas", i: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", u: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
-            { n: "Vex Arena", c: "Ação", i: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", u: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
-            { n: "Bubble Master", c: "Puzzle", i: "https://img.gamedistribution.com/649e378c33a94848bc95376043216893-512x512.jpg", u: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/" },
-            // Simulando muitos jogos
-            { n: "Z-War", c: "Ação", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
-            { n: "Moto X3M", c: "Corrida", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" }
+        // LISTA DE JOGOS DO SERVIDOR (Adicione as URLs do seu repositório aqui)
+        const db_jogos = [
+            { id: 1, n: "My Parking Lot", c: "Puzzle", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
+            { id: 2, n: "Cyber Truck", c: "Ação", i: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", u: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
+            { id: 3, n: "Combat Online", c: "Tiro", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
+            { id: 4, n: "Princess Fashion", c: "Meninas", i: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", u: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
+            { id: 5, n: "Vex 7", c: "Aventura", i: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", u: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
+            { id: 6, n: "Bubble Master", c: "Puzzle", i: "https://img.gamedistribution.com/649e378c33a94848bc95376043216893-512x512.jpg", u: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/" }
         ];
 
-        let saldo = parseFloat(localStorage.getItem('zy_saldo')) || 2.00;
+        let saldoZ = parseFloat(localStorage.getItem('zy_saldo')) || 2.00;
 
-        // VERIFICAÇÃO AUTOMÁTICA DE LOGIN AO CARREGAR
         window.onload = function() {
-            const logado = localStorage.getItem('zy_logado');
-            if(logado === 'true') {
-                mostrarArena();
+            // Verifica Login Persistente
+            if(localStorage.getItem('zy_session') === 'active') {
+                abrirArena();
             }
-            updateSaldoUI();
+            renderUI();
         };
 
-        function tentarLogin() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            const erroBox = document.getElementById('msg-erro');
-
-            erroBox.style.display = 'none';
-
-            // LÓGICA DE VALIDAÇÃO
-            if(email === "") {
-                erroBox.innerText = "Email/Usuário não cadastrado.";
-                erroBox.style.display = 'block';
-                return;
-            }
-            if(pass !== "123") { // Sua senha teste
-                erroBox.innerText = "Senha incorreta. Tente novamente.";
-                erroBox.style.display = 'block';
-                return;
-            }
-
-            // SE TUDO OK: SALVA NO NAVEGADOR
-            localStorage.setItem('zy_logado', 'true');
-            localStorage.setItem('zy_user', email);
-            mostrarArena();
+        function togglePassword() {
+            const p = document.getElementById('password');
+            const i = document.getElementById('togglePass');
+            p.type = p.type === "password" ? "text" : "password";
+            i.classList.toggle('fa-eye');
+            i.classList.toggle('fa-eye-slash');
         }
 
-        function mostrarArena() {
+        function tentarLogin() {
+            const user = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const erro = document.getElementById('msg-erro');
+            
+            erro.classList.add('hidden');
+
+            // Simulação de Validação (Substituir pelo seu fetch do Sheets)
+            if(!user) {
+                erro.innerText = "Email/Usuário não cadastrado.";
+                erro.classList.remove('hidden');
+                return;
+            }
+            if(pass !== "123") {
+                erro.innerText = "Senha incorreta. Tente novamente.";
+                erro.classList.remove('hidden');
+                return;
+            }
+
+            // SUCESSO - SALVA SESSÃO
+            localStorage.setItem('zy_session', 'active');
+            localStorage.setItem('zy_user', user);
+            abrirArena();
+        }
+
+        function abrirArena() {
             document.getElementById('login-overlay').style.display = 'none';
             document.getElementById('arena-content').classList.remove('hidden');
-            renderizarJogos();
-        }
-
-        function renderizarJogos() {
+            
             const grid = document.getElementById('jogos-grid');
             grid.innerHTML = "";
-            // Mostrando a lista 2 vezes para encher a tela
-            [...jogos, ...jogos].forEach(j => {
-                grid.innerHTML += `
-                    <div class="game-tile cursor-pointer" onclick="jogar('${j.u}', '${j.n}')">
-                        <img src="${j.i}" class="w-full aspect-square object-cover">
-                        <div class="p-3">
-                            <h4 class="text-[10px] zy-font truncate">${j.n}</h4>
-                            <p class="text-[8px] text-zinc-500 font-bold uppercase">${j.c}</p>
+            // Mostra os jogos 4x para encher a arena
+            for(let k=0; k<4; k++) {
+                db_jogos.forEach(j => {
+                    grid.innerHTML += `
+                        <div class="game-tile cursor-pointer" onclick="iniciarJogo('${j.u}', '${j.n}')">
+                            <img src="${j.i}" class="w-full aspect-square object-cover bg-zinc-900" onerror="this.src='https://via.placeholder.com/512x512/111/0062ff?text=ZYPLAY+GAME'">
+                            <div class="p-3">
+                                <h4 class="text-[10px] zy-font truncate">${j.n}</h4>
+                                <div class="flex justify-between items-center mt-1">
+                                    <span class="text-[8px] text-zinc-500 font-bold uppercase">${j.c}</span>
+                                    <span class="text-[8px] text-yellow-500 font-black">+ZC</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
+            }
         }
 
-        function jogar(url, nome) {
+        function iniciarJogo(url, nome) {
             document.getElementById('game-title').innerText = nome;
             document.getElementById('game-frame').src = url;
             document.getElementById('game-screen').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Trava scroll do fundo
         }
 
         function fecharJogo() {
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('game-frame').src = "";
-            saldo += 0.50; // Ganha Zcoins ao jogar
-            localStorage.setItem('zy_saldo', saldo);
-            updateSaldoUI();
+            if(confirm("Deseja fechar o jogo? Seus ganhos serão processados.")) {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('game-frame').src = "";
+                document.body.style.overflow = 'auto';
+                
+                // Soma Zcoins (Simulando ganho por sessão)
+                saldoZ += 0.25;
+                localStorage.setItem('zy_saldo', saldoZ);
+                renderUI();
+            }
         }
 
-        function updateSaldoUI() {
-            document.getElementById('saldo-txt').innerText = `${saldo.toFixed(2)} ZC`;
+        function renderUI() {
+            document.getElementById('saldo-txt').innerText = `${saldoZ.toFixed(2)} ZC`;
         }
 
         function logout() {
-            localStorage.removeItem('zy_logado');
-            location.reload();
+            if(confirm("Deseja sair da sua conta?")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
     </script>
 </body>
