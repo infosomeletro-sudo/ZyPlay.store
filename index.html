@@ -2,196 +2,253 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>ZYPLAY | Jogue My Parking Lot online de graça</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZYPLAY ARENA | Jogue, Ganhe & Lucre</title>
 
+    <meta name="description" content="A maior arena de jogos online com recompensas. Jogue My Parking Lot e centenas de outros jogos de ação, multiplayer e puzzles."/>
+    <link rel="canonical" href="https://zyplay.com.br"/>
     <link rel="preconnect" href="https://cookie-cdn.cookiepro.com">
     <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" data-domain-script="09e65784-0b1e-4f9c-be0b-94aca56745a4"></script>
 
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "@id": "https://zyplay.com/my-parking-lot#webapp",
-      "name": "My Parking Lot - ZYPLAY Edition",
-      "url": "https://zyplay.com/my-parking-lot",
-      "operatingSystem": "Windows, Android, iOS",
-      "applicationCategory": "Game",
-      "genre": "Jogos de Quebra Cabeça",
-      "description": "My Parking Lot é um jogo de puzzle de blocos deslizantes. Remova os carros estrategicamente na ZYPLAY Arena.",
-      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "ratingCount": "1250" },
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
-    }
-    </script>
-
-    <meta name="description" content="Jogue My Parking Lot na ZYPLAY. O melhor puzzle de estacionamento com recompensas reais."/>
-    <link rel="canonical" href="https://zyplay.com/my-parking-lot"/>
-    <meta property="og:title" content="ZYPLAY ARENA | My Parking Lot"/>
-    <meta property="og:image" content="https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg"/>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&family=Press+Start+2P&display=swap');
-        body { background: #050505; color: #fff; font-family: 'Poppins', sans-serif; }
-        .retro-font { font-family: 'Press Start 2P', cursive; }
-        .glass { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border: 1px solid #1a1a1a; }
-        .neon-glow { box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); border: 1px solid #00f2ff; }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
         
-        /* Estilo de Card Ojogos */
-        .tile-wrapper { transition: 0.3s; position: relative; border-radius: 12px; overflow: hidden; background: #111; }
-        .tile-wrapper:hover { transform: scale(1.05); z-index: 10; outline: 3px solid #00f2ff; }
-        
-        /* Age Gate Overlay */
-        .confirm-age { z-index: 99999; position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; }
-        .hidden { display: none !important; }
+        :root {
+            --zy-blue: #0355ff;
+            --zy-cyan: #00f2ff;
+            --bg-dark: #050505;
+        }
 
-        /* Scanline efeito retro */
-        .scanline { position: fixed; top: 0; pointer-events: none; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 1000; }
+        body { background: var(--bg-dark); color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
+
+        /* Estilo Profissional de Scroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--zy-blue); border-radius: 10px; }
+
+        /* Background Animado */
+        .hero-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle at 2px 2px, #1a1a1a 1px, transparent 0);
+            background-size: 40px 40px; z-index: -1; opacity: 0.5;
+        }
+
+        /* Menu Lateral (Drawer) */
+        #sidebar {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Cards de Jogos Estilo Premium */
+        .game-card {
+            position: relative; border-radius: 16px; overflow: hidden;
+            transition: all 0.3s ease; background: #111;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--zy-cyan);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(3, 85, 255, 0.2);
+        }
+        .game-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; transition: 0.5s; }
+        .game-card:hover img { transform: scale(1.1); filter: brightness(1.2); }
+
+        .reward-badge {
+            position: absolute; top: 10px; right: 10px;
+            background: linear-gradient(90deg, #ff0055, #ff5500);
+            font-size: 9px; font-weight: 900; padding: 4px 8px;
+            border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Modal Player */
+        #game-modal { background: #000; z-index: 10000; }
+        
+        .zyplay-btn {
+            background: linear-gradient(135deg, var(--zy-blue), #002e8a);
+            transition: 0.3s;
+        }
+        .zyplay-btn:hover { box-shadow: 0 0 25px var(--zy-blue); transform: scale(1.02); }
+
+        /* Age Gate */
+        #age-gate { z-index: 20000; background: #000; }
     </style>
 </head>
-<body class="desktop">
+<body>
 
-    <div class="scanline"></div>
+    <div class="hero-mesh"></div>
 
-    <div id="age-gate-container" class="confirm-age">
-        <div class="max-w-md w-full p-8 glass rounded-[40px] text-center border-t-4 border-blue-600">
-            <h3 class="text-xl font-bold mb-2">VERIFIQUE SUA IDADE</h3>
-            <p class="text-zinc-400 text-sm mb-6">Para acessar a ZYPLAY Arena, confirme seu ano de nascimento.</p>
-            <select id="birthdate" class="w-full p-4 bg-zinc-900 border border-zinc-700 rounded-xl mb-6 text-white outline-none">
-                <option value="" disabled selected>Escolha o ano</option>
-            </select>
-            <button onclick="checkAgeGate()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black uppercase text-xs tracking-widest transition">Confirmar Entrada</button>
+    <div id="age-gate" class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 w-full max-w-sm p-8 rounded-[40px] border border-zinc-800 text-center">
+            <img src="https://gamesgamescdn.com/assets/gamesgames/logos/valentine/gamesgames.pt-BR.desktop-43ea4abd827008ec7f26b4cf25538f0b86fcf1a5f57b7fd2c5bb30128639c0b4.png" class="h-6 mx-auto mb-6">
+            <h2 class="text-2xl font-black mb-2 italic">ARENA 18+</h2>
+            <p class="text-zinc-500 text-xs mb-8">Confirme seu nascimento para desbloquear as recompensas PIX.</p>
+            <select id="birthyear" class="w-full bg-black p-4 rounded-2xl border border-zinc-700 mb-6 font-bold"></select>
+            <button onclick="unlockArena()" class="w-full zyplay-btn py-4 rounded-2xl font-black uppercase text-sm tracking-widest">Entrar e Ganhar</button>
         </div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen">
-        <header class="p-4 glass sticky top-0 z-[500] border-b border-zinc-800">
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 z-[1000] -translate-x-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-10">
+                <span class="font-black text-blue-500 italic">ZYMENU</span>
+                <button onclick="toggleMenu()" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="space-y-2">
+                <button onclick="filterGames('all')" class="w-full text-left p-4 hover:bg-white/5 rounded-xl transition flex items-center gap-4"><i class="fa-solid fa-house text-blue-500"></i> Todos os Jogos</button>
+                <button onclick="filterGames('acao')" class="w-full text-left p-4 hover:bg-white/5 rounded-xl transition flex items-center gap-4"><i class="fa-solid fa-gun text-red-500"></i> Ação & Tiro</button>
+                <button onclick="filterGames('meninas')" class="w-full text-left p-4 hover:bg-white/5 rounded-xl transition flex items-center gap-4"><i class="fa-solid fa-heart text-pink-500"></i> Para Meninas</button>
+                <button onclick="filterGames('multiplayer')" class="w-full text-left p-4 hover:bg-white/5 rounded-xl transition flex items-center gap-4"><i class="fa-solid fa-users text-green-500"></i> Multiplayer</button>
+                <button onclick="filterGames('puzzle')" class="w-full text-left p-4 hover:bg-white/5 rounded-xl transition flex items-center gap-4"><i class="fa-solid fa-puzzle-piece text-yellow-500"></i> Quebra-Cabeça</button>
+            </nav>
+        </div>
+    </aside>
+
+    <div id="app" class="hidden">
+        
+        <header class="sticky top-0 z-[500] bg-black/80 backdrop-blur-lg border-b border-white/5 p-4">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
-                    <img src="https://gamesgamescdn.com/assets/gamesgames/logos/valentine/gamesgames.pt-BR.desktop-43ea4abd827008ec7f26b4cf25538f0b86fcf1a5f57b7fd2c5bb30128639c0b4.png" alt="ZYPLAY" class="h-8 brightness-150">
-                    <span class="retro-font text-[8px] text-blue-400 hidden md:block">ARENA VALIDADA</span>
+                    <button onclick="toggleMenu()" class="text-2xl"><i class="fa-solid fa-bars-staggered"></i></button>
+                    <img src="https://gamesgamescdn.com/assets/gamesgames/logos/valentine/gamesgames.pt-BR.desktop-43ea4abd827008ec7f26b4cf25538f0b86fcf1a5f57b7fd2c5bb30128639c0b4.png" class="h-5">
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="bg-zinc-900 border border-zinc-800 px-5 py-2 rounded-2xl flex items-center gap-3">
                     <div class="text-right">
-                        <p class="text-[9px] text-zinc-500 uppercase font-bold">Saldo Arena</p>
-                        <p id="balance-display" class="text-green-400 font-black text-xl">R$ 0,00</p>
+                        <p class="text-[8px] font-bold text-zinc-500 uppercase tracking-tighter">Banca Atual</p>
+                        <p id="balance" class="text-green-400 font-black italic">R$ 2,00</p>
                     </div>
+                    <i class="fa-solid fa-wallet text-blue-500"></i>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-6">
+        <main class="max-w-7xl mx-auto p-4 md:p-8">
             
-            <div class="mb-8 p-6 rounded-3xl bg-gradient-to-r from-blue-900/40 to-black border border-blue-500/30 flex justify-between items-center">
+            <div class="mb-10 w-full bg-gradient-to-r from-blue-900/20 to-transparent border border-blue-500/20 p-6 rounded-[32px] flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
-                    <h2 class="font-black text-lg">INDIQUE UM AMIGO</h2>
-                    <p class="text-xs text-zinc-400">Ganhe R$ 2,00 por cada novo cadastro ativo.</p>
+                    <h1 class="text-2xl font-black italic">ARENA DE RECOMPENSAS <span class="text-blue-500 underline">ZYPLAY</span></h1>
+                    <p class="text-zinc-400 text-sm">Ganhos turbinados: + R$ 0,50 por anúncio assistido!</p>
                 </div>
-                <button onclick="copyLink()" class="bg-blue-600 px-6 py-2 rounded-full font-bold text-xs uppercase">Copiar Link</button>
+                <button class="bg-white text-black px-8 py-3 rounded-full font-black text-xs uppercase hover:bg-blue-500 hover:text-white transition">Assistir e Ganhar</button>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                
-                <div class="tile-wrapper cursor-pointer" onclick="openGame('https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/', 'My Parking Lot')">
-                    <img src="https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg" class="w-full aspect-video object-cover">
-                    <div class="p-3">
-                        <p class="text-[10px] font-bold uppercase truncate">My Parking Lot</p>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-[8px] bg-blue-600 px-2 py-0.5 rounded">PUZZLE</span>
-                            <span class="text-[10px] text-green-400 font-bold">R$ JOGAR</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tile-wrapper cursor-pointer" onclick="openGame('https://www.retrogames.cc/embed/16847-super-mario-world-usa.html', 'Ultimate Mario')">
-                    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9iZCZjdD1n/L8G8pYFpHyO1O/giphy.gif" class="w-full aspect-video object-cover">
-                    <div class="p-3">
-                        <p class="text-[10px] font-bold uppercase truncate">Ultimate Mario HTML5</p>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-[8px] bg-red-600 px-2 py-0.5 rounded">RETRO</span>
-                        </div>
-                    </div>
-                </div>
-                
+            <div id="game-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 </div>
         </main>
 
-        <footer class="fixed bottom-0 w-full glass p-4 border-t border-blue-500/50 z-[500]">
-            <div class="max-w-4xl mx-auto flex gap-3">
-                <input type="text" id="pix-chave" placeholder="SUA CHAVE PIX" class="flex-1 bg-black border border-zinc-800 p-4 rounded-2xl text-xs outline-none focus:border-blue-500">
-                <button onclick="requestWithdraw()" class="bg-green-600 hover:bg-green-500 px-8 rounded-2xl font-black text-xs uppercase tracking-widest">Sacar</button>
+        <footer class="fixed bottom-0 w-full p-4 bg-black/90 backdrop-blur-xl border-t border-white/5 z-[900]">
+            <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+                <input type="text" id="pix" placeholder="Sua Chave PIX para resgate" class="flex-1 bg-zinc-900 p-4 rounded-2xl text-xs outline-none focus:border-blue-500 border border-zinc-800">
+                <button onclick="solicitarSaque()" class="zyplay-btn px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest italic">Sacar Agora</button>
             </div>
         </footer>
     </div>
 
-    <div id="game-player" class="fixed inset-0 z-[10000] bg-black hidden flex flex-col">
-        <div class="h-14 glass flex justify-between items-center px-6 border-b border-blue-500">
-            <span id="playing-now" class="retro-font text-[9px] text-blue-400 italic uppercase">ZYPLAYING...</span>
-            <button onclick="closeGame()" class="bg-red-600 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase">Sair e Salvar</button>
+    <div id="game-modal" class="fixed inset-0 hidden flex flex-col">
+        <div class="p-4 flex justify-between items-center border-b border-zinc-800">
+            <div class="flex items-center gap-4">
+                <button onclick="closeGame()" class="text-zinc-500 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
+                <span id="current-game-title" class="font-black text-xs uppercase text-blue-500"></span>
+            </div>
+            <div class="bg-blue-600/10 px-4 py-1 rounded-full border border-blue-600/30">
+                <span id="game-timer" class="text-[10px] font-mono text-blue-400 font-bold">GANHANDO...</span>
+            </div>
         </div>
-        <iframe id="iframe-game" src="" class="flex-1 w-full border-none"></iframe>
+        <iframe id="game-iframe" src="" class="flex-1 w-full border-none"></iframe>
     </div>
 
     <script>
-        let saldo = 0.00;
+        let balance = 2.00;
+        let games = [
+            { n: "My Parking Lot", cat: "puzzle", img: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", url: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
+            { n: "Dream Pet Link", cat: "puzzle", img: "https://gamesgamescdn.com/system/static/thumbs/spil_thumb_big/15221/jpeg_1464611715_dream-pet-link200x120.jpg", url: "https://html5.gamedistribution.com/8378878546b447438c8c4f92323e2a04/" },
+            { n: "Mafia Trick", cat: "acao", img: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", url: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
+            { n: "Princess DressUp", cat: "meninas", img: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", url: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
+            { n: "Combat Online", cat: "multiplayer", img: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", url: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
+            { n: "Vex 7", cat: "acao", img: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", url: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
+            { n: "Insta Girls", cat: "meninas", img: "https://img.gamedistribution.com/7b3b3a5160884d66838b00204786311b-512x512.jpg", url: "https://html5.gamedistribution.com/7b3b3a5160884d66838b00204786311b/" },
+            { n: "EvoWorld.io", cat: "multiplayer", img: "https://img.gamedistribution.com/8e5b47a9640b490d8109d94101e12727-512x512.jpg", url: "https://html5.gamedistribution.com/8e5b47a9640b490d8109d94101e12727/" }
+        ];
 
-        // Preencher anos do Age Gate
-        const selectYear = document.getElementById('birthdate');
-        const currentYear = new Date().getFullYear();
-        for(let i = currentYear; i >= 1930; i--) {
+        // POPULAR ANOS
+        const yearSelect = document.getElementById('birthyear');
+        for(let i = 2026; i >= 1930; i--) {
             let opt = document.createElement('option');
-            opt.value = i; opt.innerHTML = i;
-            selectYear.appendChild(opt);
+            opt.value = i; opt.text = i;
+            yearSelect.add(opt);
         }
 
-        function checkAgeGate() {
-            const val = selectYear.value;
-            if(!val) return alert("Selecione seu ano!");
-            if(currentYear - val < 18) {
-                alert("Apenas para maiores de 18 anos!");
-                window.location.href = "https://kids.agame.com"; // Redirecionamento kids igual ao original
-            } else {
-                localStorage.setItem('userAgeConfirmed', 'true');
-                document.getElementById('age-gate-container').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-            }
+        function unlockArena() {
+            const y = yearSelect.value;
+            if(2026 - y < 18) return alert("Apenas para 18+");
+            document.getElementById('age-gate').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            renderGames('all');
         }
 
-        function openGame(url, nome) {
-            const aposta = confirm("MODO ARENA ZYPLAY:\n\nDeseja ativar o MODO RECOMPENSA? (Custo R$ 1,00)");
-            if(aposta && saldo < 1.00 && saldo != 0) return alert("Saldo insuficiente.");
+        function toggleMenu() {
+            const side = document.getElementById('sidebar');
+            side.style.transform = side.style.transform === 'translateX(0%)' ? 'translateX(-100%)' : 'translateX(0%)';
+        }
+
+        function renderGames(filter) {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = "";
+            const filtered = filter === 'all' ? games : games.filter(g => g.cat === filter);
             
-            document.getElementById('playing-now').innerText = `JOGANDO: ${nome}`;
-            document.getElementById('iframe-game').src = url;
-            document.getElementById('game-player').classList.remove('hidden');
+            filtered.forEach(game => {
+                grid.innerHTML += `
+                    <div class="game-card cursor-pointer" onclick="launchGame('${game.url}', '${game.n}')">
+                        <div class="reward-badge">R$ GANHAR</div>
+                        <img src="${game.img}" alt="${game.n}">
+                        <div class="p-3">
+                            <h3 class="text-[10px] font-black uppercase truncate">${game.n}</h3>
+                            <p class="text-[8px] text-blue-500 font-bold mt-1">${game.cat.toUpperCase()}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterGames(cat) {
+            renderGames(cat);
+            toggleMenu();
+        }
+
+        function launchGame(url, title) {
+            // SIMULAÇÃO DE ANÚNCIO (DINHEIRO ENTRANDO)
+            console.log("AdSense Interstitial Triggered");
+            document.getElementById('current-game-title').innerText = title;
+            document.getElementById('game-iframe').src = url;
+            document.getElementById('game-modal').classList.remove('hidden');
+            
+            // Ganho passivo por tempo
+            window.gameTimer = setInterval(() => {
+                balance += 0.01;
+                updateUI();
+            }, 5000);
         }
 
         function closeGame() {
-            if(confirm("Confirmar fim da sessão? Seus ganhos serão computados.")) {
-                document.getElementById('game-player').classList.add('hidden');
-                document.getElementById('iframe-game').src = "";
-                saldo += 1.50; // Crédito simulado
-                document.getElementById('balance-display').innerText = `R$ ${saldo.toFixed(2)}`;
+            if(confirm("Encerrar sessão? Seus ganhos de tempo serão salvos!")) {
+                clearInterval(window.gameTimer);
+                document.getElementById('game-modal').classList.add('hidden');
+                document.getElementById('game-iframe').src = "";
+                balance += 0.20; // Bônus de fechamento por anúncio
+                updateUI();
             }
         }
 
-        function copyLink() {
-            navigator.clipboard.writeText("https://zyplay.arena/convite?id=123");
-            alert("Link de indicação copiado!");
+        function updateUI() {
+            document.getElementById('balance').innerText = `R$ ${balance.toFixed(2)}`;
         }
 
-        function requestWithdraw() {
-            const pix = document.getElementById('pix-chave').value;
-            if(!pix) return alert("Informe a chave PIX");
-            if(saldo < 10) return alert("Saque mínimo de R$ 10,00");
-            alert("Pedido de saque enviado para processamento!");
-        }
-
-        // Verifica se já confirmou idade antes
-        if(localStorage.getItem('userAgeConfirmed') === 'true') {
-            document.getElementById('age-gate-container').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
+        function solicitarSaque() {
+            if(balance < 30) return alert("Mínimo para saque: R$ 30,00");
+            alert("Solicitação enviada! Verifique seu e-mail para confirmação do PIX.");
         }
     </script>
 </body>
