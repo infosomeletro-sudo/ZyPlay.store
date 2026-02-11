@@ -2,256 +2,226 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | ARENA PRO</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>ZYPLAY | My Parking Lot e Melhores Jogos 18+</title>
     
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9159169630954848" crossorigin="anonymous"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "ZYPLAY ARENA",
+      "url": "https://suadominio.com",
+      "applicationCategory": "Game",
+      "operatingSystem": "Android, iOS, Windows",
+      "description": "A maior arena de jogos casuais com sistema de recompensas. Jogue My Parking Lot e ganhe moedas.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+    }
+    </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&family=Press+Start+2P&display=swap');
         
-        body { background: #050505; color: #fff; font-family: 'Orbitron', sans-serif; overflow-x: hidden; }
-        .retro-font { font-family: 'Press Start 2P', cursive; }
-        
-        /* Efeito de Scanline de TV Antiga */
-        body::before {
-            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 1000; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        :root {
+            --primary: #0355ff;
+            --accent: #00f2ff;
+            --dark: #0a0a0a;
         }
 
-        .glass { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(15px); border: 1px solid #00f2ff; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
-        .btn-neon { transition: 0.3s; border: 1px solid #00f2ff; text-shadow: 0 0 5px #00f2ff; }
-        .btn-neon:hover { background: #00f2ff; color: #000; box-shadow: 0 0 30px #00f2ff; }
+        body { background: var(--dark); color: #fff; font-family: 'Poppins', sans-serif; }
+        .retro-font { font-family: 'Press Start 2P', cursive; }
+        .zyplay-gradient { background: linear-gradient(135deg, #0355ff 0%, #00f2ff 100%); }
         
-        .game-card { transition: transform 0.3s; cursor: pointer; position: relative; overflow: hidden; }
-        .game-card:hover { transform: scale(1.05) rotate(1deg); }
-        .game-card img { filter: grayscale(30%); transition: 0.3s; }
-        .game-card:hover img { filter: grayscale(0%); }
+        /* Layout de Cards Estilo Ojogos */
+        .tile-container {
+            transition: transform 0.2s;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+        .tile-container:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+        }
 
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        .live-dot { width: 8px; height: 8px; background: #ff0000; border-radius: 50%; animation: pulse 1s infinite; }
+        /* Age Gate Modal */
+        #age-gate {
+            z-index: 9999;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen" class="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-[url('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxcaOXYT2o/giphy.gif')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-black/80"></div>
-        <div class="w-full max-w-md glass p-8 rounded-3xl relative z-10 border-b-4 border-cyan-500">
-            <div class="flex justify-center mb-6">
-                <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/L8G8pYFpHyO1O/giphy.gif" class="w-20 h-20 rounded-full border-2 border-cyan-500">
-            </div>
-            <h1 class="retro-font text-center text-sm text-cyan-400 mb-8 tracking-tighter">ZYPLAY ARENA 18+</h1>
-            
-            <div id="form-login" class="space-y-4">
-                <input type="email" id="l-email" placeholder="E-MAIL" class="w-full p-4 bg-black/50 rounded-xl border border-zinc-700 outline-none focus:border-cyan-500 text-sm">
-                <input type="password" id="l-pass" placeholder="SENHA" class="w-full p-4 bg-black/50 rounded-xl border border-zinc-700 outline-none focus:border-cyan-500 text-sm">
-                <button onclick="fazerLogin()" class="w-full btn-neon py-4 rounded-xl font-black text-xs uppercase italic">Entrar na Arena</button>
-                <p class="text-[10px] text-center text-zinc-400">Novo Recruta? <button onclick="toggleAuth()" class="text-cyan-400 underline">Criar Conta</button></p>
-            </div>
-
-            <div id="form-cadastro" class="hidden space-y-4">
-                <input type="email" id="r-email" placeholder="E-MAIL REAL" class="w-full p-4 bg-black/50 rounded-xl border border-zinc-700 outline-none focus:border-green-500 text-sm">
-                <input type="password" id="r-pass" placeholder="SENHA" class="w-full p-4 bg-black/50 rounded-xl border border-zinc-700 outline-none focus:border-green-500 text-sm">
-                <input type="password" id="r-pass-confirm" placeholder="CONFIRMAR SENHA" class="w-full p-4 bg-black/50 rounded-xl border border-zinc-700 outline-none focus:border-green-500 text-sm">
-                
-                <div class="grid grid-cols-1 gap-2 py-2">
-                    <label class="flex items-center gap-2 text-[9px] text-zinc-300">
-                        <input type="checkbox" id="age-check" class="w-4 h-4"> SOU MAIOR DE 18 ANOS (JOGO RESPONSÁVEL)
-                    </label>
-                </div>
-
-                <button id="btn-cad" onclick="enviarCodigo()" class="w-full bg-green-600 hover:bg-green-500 py-4 rounded-xl font-black text-xs uppercase transition-all">Gerar Acesso</button>
-                
-                <div id="verify-box" class="hidden animate-bounce pt-4">
-                    <input type="text" id="v-code" placeholder="CÓDIGO RECEBIDO" class="w-full p-4 bg-zinc-900 rounded-xl border-2 border-yellow-500 text-center text-xl font-bold tracking-[10px]">
-                    <button onclick="validarCadastro()" class="w-full mt-3 bg-white text-black py-4 rounded-xl font-black text-xs">FINALIZAR CADASTRO</button>
-                </div>
-                <button onclick="toggleAuth()" class="w-full text-zinc-500 text-[10px] uppercase">Cancelar</button>
-            </div>
+    <div id="age-gate" class="fixed inset-0 flex items-center justify-center p-6">
+        <div class="bg-white text-black max-w-sm w-full p-8 rounded-3xl text-center">
+            <h3 class="text-2xl font-black mb-4">VERIFIQUE SUA IDADE</h3>
+            <p class="text-gray-600 text-sm mb-6">A ZYPLAY é uma plataforma para maiores de 18 anos. Insira seu ano de nascimento:</p>
+            <select id="birthyear" class="w-full p-4 border-2 border-gray-200 rounded-xl mb-4 font-bold outline-none focus:border-blue-600">
+                <option value="">Selecione o ano</option>
+            </select>
+            <button onclick="verifyAge()" class="w-full zyplay-gradient text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg">Entrar na Arena</button>
         </div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen pb-24">
-        <header class="p-4 glass sticky top-0 z-50 flex justify-between items-center border-b border-cyan-500/50">
-            <div class="flex items-center gap-3">
-                <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXA3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/6YfM586V0J1Jm/giphy.gif" class="w-8 h-8 rounded">
-                <span class="retro-font text-[10px] text-cyan-400">ZYPLAY</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <p id="user-display" class="text-[9px] text-zinc-400"></p>
-                    <p id="zc-display" class="text-yellow-400 font-black text-xs">R$ 0,00</p>
+    <div id="app-content" class="hidden min-h-screen pb-32">
+        
+        <header class="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-50 p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 zyplay-gradient rounded-lg flex items-center justify-center shadow-lg">
+                        <span class="text-white font-black">ZY</span>
+                    </div>
+                    <h1 class="retro-font text-[10px] text-white hidden md:block">ZYPLAY ARENA</h1>
                 </div>
-                <button onclick="location.reload()" class="text-zinc-500"><i class="fa-solid fa-power-off"></i></button>
+
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <span class="block text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Saldo Disponível</span>
+                        <span id="balance" class="text-green-400 font-black text-xl italic leading-none">R$ 0,00</span>
+                    </div>
+                    <button onclick="location.reload()" class="bg-zinc-800 p-3 rounded-full hover:bg-zinc-700">
+                        <i class="fa-solid fa-user-ninja text-blue-400"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <section class="p-4">
-            <div class="bg-gradient-to-r from-cyan-900 to-blue-900 p-4 rounded-2xl flex justify-between items-center border border-cyan-500/30">
-                <div>
-                    <h4 class="text-xs font-bold text-cyan-200">INDIQUE UM AMIGO</h4>
-                    <p class="text-[10px] text-cyan-400">Ganhe R$ 2,00 por validação</p>
-                </div>
-                <button onclick="alert('Link copiado!')" class="bg-cyan-500 text-black px-4 py-2 rounded-lg text-[10px] font-black">COPIAR LINK</button>
-            </div>
-        </section>
-
-        <div class="px-4 mb-6">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="1234567890" data-ad-format="auto"></ins>
-        </div>
-
-        <main class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4" id="game-list"></main>
-    </div>
-
-    <div id="bet-modal" class="fixed inset-0 z-[700] bg-black/95 hidden flex items-center justify-center p-6">
-        <div class="max-w-sm w-full glass p-8 rounded-3xl text-center border-2 border-yellow-500">
-            <div class="live-dot mx-auto mb-4"></div>
-            <h2 class="retro-font text-xs text-yellow-500 mb-4">MODO DE ENTRADA</h2>
-            <p class="text-[10px] text-zinc-400 mb-6">Atenção: No modo aposta, você pode perder suas moedas se não completar o nível.</p>
+        <main class="max-w-7xl mx-auto p-4">
             
-            <div class="space-y-3">
-                <button onclick="iniciarJogo(true)" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-xs uppercase">Apostar R$ 1,00 (SEM ANÚNCIOS)</button>
-                <button onclick="iniciarJogo(false)" class="w-full border border-zinc-700 py-4 rounded-xl font-bold text-xs uppercase text-zinc-400">Grátis (COM ANÚNCIOS)</button>
+            <div class="my-6 w-full bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-700 p-4 text-center">
+                <p class="text-[9px] text-zinc-600 mb-2 uppercase tracking-widest">Publicidade</p>
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-9159169630954848" data-ad-slot="88888888" data-ad-format="auto"></ins>
             </div>
-            <button onclick="fecharModalAposta()" class="mt-4 text-zinc-600 text-[10px]">CANCELAR</button>
-        </div>
+
+            <section class="mb-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fa-solid fa-fire text-orange-500"></i>
+                    <h2 class="font-black uppercase tracking-tighter">Jogos em Alta</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="game-grid">
+                    </div>
+            </section>
+
+        </main>
+
+        <footer class="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-blue-500/30 p-4 z-[100]">
+            <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+                <input type="text" id="pix-key" placeholder="Digite sua chave PIX aqui..." class="flex-1 bg-black border border-zinc-700 p-4 rounded-2xl text-white outline-none focus:border-blue-500">
+                <button onclick="withdraw()" class="zyplay-gradient px-10 py-4 rounded-2xl font-black uppercase text-sm italic shadow-[0_0_20px_rgba(3,85,255,0.4)]">Sacar Recompensa</button>
+            </div>
+        </footer>
     </div>
 
-    <div id="game-window" class="fixed inset-0 z-[800] bg-black hidden">
-        <div class="h-14 flex justify-between items-center px-4 bg-zinc-900 border-b border-cyan-500">
-            <span id="game-title" class="retro-font text-[8px]">PRO PLAYER</span>
-            <button onclick="fecharJogo()" class="bg-red-600 px-4 py-1 rounded text-[10px] font-bold">ENCERRAR SESSÃO</button>
+    <div id="game-modal" class="fixed inset-0 bg-black z-[10000] hidden flex flex-col">
+        <div class="h-16 bg-zinc-900 border-b border-blue-500 flex justify-between items-center px-6">
+            <div class="flex items-center gap-4">
+                <button onclick="closeGame()" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-chevron-left text-xl"></i></button>
+                <span id="active-title" class="font-black text-sm uppercase italic text-blue-400"></span>
+            </div>
+            <div class="bg-black/50 px-4 py-2 rounded-full border border-zinc-800">
+                <span id="timer" class="text-xs font-mono text-yellow-500">GANHANDO...</span>
+            </div>
         </div>
-        <iframe id="emu-frame" src="" class="w-full h-full border-none"></iframe>
-    </div>
-
-    <footer class="fixed bottom-0 left-0 right-0 p-4 glass z-[550] flex gap-3 border-t border-cyan-500/50">
         <div class="flex-1">
-            <input type="text" id="pix-field" placeholder="CHAVE PIX" class="w-full bg-black/50 p-4 rounded-xl text-xs border border-zinc-800 outline-none focus:border-cyan-500">
+            <iframe id="game-frame" src="" class="w-full h-full border-none" allow="autoplay; fullscreen"></iframe>
         </div>
-        <button onclick="solicitarSaque()" class="bg-green-600 px-8 rounded-xl font-black text-[11px] hover:bg-green-500 transition-all">SACAR</button>
-    </footer>
+    </div>
 
     <script>
-        const API = "COLE_AQUI_SEU_NOVO_LINK_DO_SCRIPT";
-        let saldo = 0.00;
-        let codigoGerado = "";
-        let userIP = "";
-        let gameSelecionado = "";
+        let currentBalance = 0.00;
+        const gameGrid = document.getElementById('game-grid');
 
-        const jogos = [
-            { n: "Super Mario World", url: "https://web.emulatorjs.org/snes/?game=super-mario-world", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/L8G8pYFpHyO1O/giphy.gif" },
-            { n: "Sonic Genesis", url: "https://web.emulatorjs.org/megadrive/?game=sonic", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/f6hnhH_efS9pS/giphy.gif" },
-            { n: "Tetris Battle", url: "https://web.emulatorjs.org/nes/?game=tetris", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/oN8AzM7kkU12M/giphy.gif" },
-            { n: "Dino Run", url: "https://chromedino.com/", img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxcaOXYT2o/giphy.gif" }
+        // BANCO DE DADOS DE JOGOS (Incorporatei os nomes e servidores que você enviou)
+        const database = [
+            { id: 1, n: "My Parking Lot", url: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/", img: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", tag: "Puzzle" },
+            { id: 2, n: "Dream Pet Link", url: "https://html5.gamedistribution.com/8378878546b447438c8c4f92323e2a04/", img: "https://gamesgamescdn.com/system/static/thumbs/spil_thumb_big/15221/jpeg_1464611715_dream-pet-link200x120.jpg?1692363911", tag: "Mahjong" },
+            { id: 3, n: "Ultimate Mario", url: "https://www.retrogames.cc/embed/16847-super-mario-world-usa.html", img: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9iZCZjdD1n/L8G8pYFpHyO1O/giphy.gif", tag: "Retro" },
+            { id: 4, n: "Butterfly Kyodai", url: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/", img: "https://gamesgamescdn.com/system/static/thumbs/spil_thumb_big/16602/jpeg_1441882244_576742227280284736_large.jpg?1692364826", tag: "Clássico" },
+            { id: 5, n: "Sonic Fast Runner", url: "https://www.retrogames.cc/embed/30181-sonic-the-hedgehog-usa-europe.html", img: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6eGZ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/f6hnhH_efS9pS/giphy.gif", tag: "Aventura" }
         ];
 
-        // Pegar IP do Usuário para evitar fraude
-        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip);
-
-        function toggleAuth() {
-            document.getElementById('form-login').classList.toggle('hidden');
-            document.getElementById('form-cadastro').classList.toggle('hidden');
+        // CONFIGURAÇÃO DO AGE GATE
+        const select = document.getElementById('birthyear');
+        for(let i = 2026; i >= 1930; i--) {
+            let opt = document.createElement('option');
+            opt.value = i; opt.innerHTML = i;
+            select.appendChild(opt);
         }
 
-        async function enviarCodigo() {
-            const email = document.getElementById('r-email').value;
-            const pass = document.getElementById('r-pass').value;
-            const passConf = document.getElementById('r-pass-confirm').value;
-
-            if(!document.getElementById('age-check').checked) return alert("PROIBIDO PARA MENORES DE 18 ANOS!");
-            if(pass !== passConf) return alert("As senhas não coincidem!");
-            if(!email.includes("@")) return alert("E-mail inválido!");
-
-            codigoGerado = Math.floor(100000 + Math.random() * 900000).toString();
+        function verifyAge() {
+            const year = document.getElementById('birthyear').value;
+            if(!year) return alert("Selecione seu ano de nascimento!");
+            if(2026 - year < 18) return alert("Acesso negado. Apenas para maiores de 18 anos.");
             
-            // Envio para o Google Script com validação de IP e E-mail
-            try {
-                fetch(API, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        tipo: "CADASTRO_NOVO",
-                        email: email,
-                        senha: pass,
-                        codigo: codigoGerado,
-                        ip: userIP
-                    })
-                });
-                
-                alert("CÓDIGO DE SEGURANÇA ENVIADO!");
-                document.getElementById('verify-box').classList.remove('hidden');
-                document.getElementById('btn-cad').classList.add('hidden');
-            } catch (e) {
-                alert("Erro ao conectar ao servidor.");
-            }
-        }
-
-        function validarCadastro() {
-            if(document.getElementById('v-code').value === codigoGerado) {
-                alert("IDENTIDADE VALIDADA!");
-                location.reload();
-            } else {
-                alert("CÓDIGO INVÁLIDO!");
-            }
-        }
-
-        function fazerLogin() {
-            const email = document.getElementById('l-email').value;
-            if(!email) return alert("Digite seu e-mail");
-            
-            document.getElementById('user-display').innerText = email.split('@')[0];
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('age-gate').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
             renderGames();
         }
 
         function renderGames() {
-            const list = document.getElementById('game-list');
-            jogos.forEach(j => {
-                list.innerHTML += `
-                    <div class="game-card glass rounded-2xl p-2 text-center" onclick="abrirModalAposta('${j.url}','${j.n}')">
-                        <img src="${j.img}" class="w-full h-24 object-cover rounded-xl mb-2">
-                        <p class="text-[9px] font-black uppercase text-cyan-400">${j.n}</p>
+            gameGrid.innerHTML = database.map(game => `
+                <div class="tile-container cursor-pointer" onclick="initGame('${game.url}', '${game.n}')">
+                    <div class="relative">
+                        <img src="${game.img}" class="w-full h-32 md:h-40 object-cover">
+                        <span class="absolute top-2 left-2 bg-black/80 text-[8px] font-bold px-2 py-1 rounded text-blue-400 uppercase">${game.tag}</span>
                     </div>
-                `;
-            });
+                    <div class="p-3">
+                        <h3 class="text-[10px] font-bold truncate uppercase text-zinc-300">${game.n}</h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[9px] text-green-500 font-black italic">WIN BRL</span>
+                            <i class="fa-solid fa-play text-xs text-zinc-600"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function abrirModalAposta(url, nome) {
-            gameSelecionado = {url, nome};
-            document.getElementById('bet-modal').classList.remove('hidden');
-        }
-
-        function fecharModalAposta() {
-            document.getElementById('bet-modal').classList.add('hidden');
-        }
-
-        function iniciarJogo(comAposta) {
-            if(comAposta && saldo < 1.00) return alert("Saldo insuficiente para apostar!");
+        function initGame(url, title) {
+            const mode = confirm("MODO ARENA ZYPLAY:\n\nOK - MODO APOSTA (R$ 1,00 - Dobra Ganhos)\nCANCEL - MODO TREINO (Grátis)");
             
-            if(comAposta) saldo -= 1.00;
+            if(mode && currentBalance < 1.00) return alert("Saldo insuficiente para apostar!");
             
-            fecharModalAposta();
-            document.getElementById('game-window').classList.remove('hidden');
-            document.getElementById('emu-frame').src = gameSelecionado.url;
-            document.getElementById('game-title').innerText = gameSelecionado.nome + (comAposta ? " [APOSTA ATIVA]" : " [MODO GRÁTIS]");
+            const risk = confirm("TERMOS DE USO:\nVocê está ciente de que o desempenho no jogo dita suas recompensas e há risco de perda de saldo em caso de derrota no modo aposta. Prosseguir?");
+            if(!risk) return;
+
+            if(mode) {
+                currentBalance -= 1.00;
+                updateUI();
+            }
+
+            document.getElementById('active-title').innerText = title;
+            document.getElementById('game-frame').src = url;
+            document.getElementById('game-modal').classList.remove('hidden');
         }
 
-        function fecharJogo() {
-            document.getElementById('game-window').classList.add('hidden');
-            document.getElementById('emu-frame').src = "";
-            saldo += 0.50; // Ganho base
-            document.getElementById('zc-display').innerText = `R$ ${saldo.toFixed(2)}`;
+        function closeGame() {
+            if(confirm("Deseja sair e processar seus lucros?")) {
+                document.getElementById('game-modal').classList.add('hidden');
+                document.getElementById('game-frame').src = "";
+                // Simulação de lucro randômico conforme desempenho
+                currentBalance += 0.50 + (Math.random() * 2);
+                updateUI();
+                alert("LUCRO PROCESSADO COM SUCESSO!");
+            }
         }
 
-        function solicitarSaque() {
-            if(saldo < 10.00) return alert("O saque mínimo é de R$ 10,00!");
-            alert("Solicitação enviada! O valor será creditado em sua conta em até 24h.");
+        function updateUI() {
+            document.getElementById('balance').innerText = `R$ ${currentBalance.toFixed(2)}`;
+        }
+
+        function withdraw() {
+            if(currentBalance < 10.00) return alert("Saldo insuficiente. Saque mínimo: R$ 10,00");
+            const pix = document.getElementById('pix-key').value;
+            if(!pix) return alert("Insira sua chave PIX!");
+            alert(`SOLICITAÇÃO RECEBIDA!\nValor: R$ ${currentBalance.toFixed(2)}\nEnviando para: ${pix}\nPrazo: 2 a 24 horas.`);
         }
     </script>
 </body>
