@@ -2,9 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>ZYPLAY STORE | Arena de Jogos & Zcoins</title>
-
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>ZYPLAY STORE | Arena Gamer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
@@ -14,221 +13,228 @@
         :root {
             --zy-blue: #0062ff;
             --zy-gold: #ffcc00;
-            --arena-dark: #020205;
         }
 
         body { 
-            background: var(--arena-dark); 
+            background: #020205; 
             color: #fff; 
             font-family: 'Rajdhani', sans-serif;
-            background-image: 
-                linear-gradient(to bottom, rgba(2, 2, 5, 0.9), rgba(2, 2, 5, 0.95)),
-                url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=2070'); /* Arena Gamer Background */
+            background-image: linear-gradient(to bottom, rgba(2, 2, 5, 0.9), rgba(2, 2, 5, 0.95)),
+                url('https://www.agame.com/assets/gamesgames/backgrounds/default-1.jpg'); 
             background-attachment: fixed;
             background-size: cover;
         }
 
         .zy-font { font-family: 'Orbitron', sans-serif; }
 
-        /* Sidebar Melhorada */
-        #sidebar {
-            transition: 0.4s ease-in-out;
-            background: rgba(5, 5, 10, 0.95);
-            backdrop-filter: blur(15px);
-            border-right: 2px solid var(--zy-blue);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-        }
-
-        /* Card de Jogo Profissional */
-        .game-card {
-            background: rgba(20, 20, 30, 0.6);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
+        /* Estilo do Card de Login */
+        .auth-card {
+            background: rgba(10, 10, 20, 0.98);
+            border: 1px solid var(--zy-blue);
+            box-shadow: 0 0 40px rgba(0, 98, 255, 0.4);
             border-radius: 12px;
-            position: relative;
         }
-        .game-card:hover {
+
+        .game-tile {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .game-tile:hover {
+            transform: translateY(-5px);
             border-color: var(--zy-blue);
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(0, 98, 255, 0.4);
+            box-shadow: 0 0 20px var(--zy-blue);
         }
 
-        .zcoin-badge {
-            position: absolute; top: -10px; right: -5px;
-            background: linear-gradient(45deg, #ffd700, #ff8800);
-            color: #000; font-weight: 900; font-size: 10px;
-            padding: 2px 8px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        .error-box { 
+            color: #ff4444; 
+            font-size: 11px; 
+            display: none; 
+            background: rgba(255, 0, 0, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 0, 0, 0.2);
         }
 
-        /* Modal Login */
-        #auth-overlay {
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(10px);
+        #game-screen {
+            position: fixed;
+            inset: 0;
             z-index: 10000;
+            background: #000;
+            display: none;
+            flex-direction: column;
         }
 
-        input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+        .z-coins-display {
+            background: linear-gradient(90deg, #ffcc00, #ff8800);
+            color: #000;
+            font-weight: 900;
+        }
     </style>
 </head>
 <body>
 
-    <div id="auth-overlay" class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-zinc-900/80 p-10 rounded-[40px] border-t-4 border-blue-600 shadow-2xl">
-            <div class="text-center mb-8">
-                <h1 class="zy-font text-2xl font-black text-blue-500 tracking-widest">ZYPLAY STORE</h1>
-                <p class="text-zinc-500 text-xs mt-2 uppercase">Acesse sua conta da Arena</p>
-            </div>
+    <div id="login-overlay" class="fixed inset-0 flex items-center justify-center p-4 z-[20000] bg-black">
+        <div class="auth-card max-w-sm w-full p-8 text-center">
+            <h2 class="zy-font text-blue-500 mb-6 text-xl tracking-tighter uppercase">ZyPlaY STORE</h2>
             
-            <div class="space-y-4">
+            <div id="msg-erro" class="error-box"></div>
+
+            <div class="space-y-4 text-left">
                 <div>
-                    <label class="text-[10px] uppercase text-zinc-400 font-bold ml-2">Identificação / Email</label>
-                    <input type="text" id="user-login" class="w-full p-4 rounded-2xl outline-none focus:border-blue-500 transition" placeholder="Seu usuário">
+                    <label class="text-[10px] text-zinc-500 uppercase font-bold ml-1">Email / Usuário</label>
+                    <input type="text" id="email" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded text-sm outline-none focus:border-blue-500" placeholder="exemplo@zyplay.com">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase text-zinc-400 font-bold ml-2">Senha de Acesso</label>
-                    <input type="password" id="user-pass" class="w-full p-4 rounded-2xl outline-none focus:border-blue-500 transition" placeholder="••••••••">
+                    <label class="text-[10px] text-zinc-500 uppercase font-bold ml-1">Password</label>
+                    <input type="password" id="password" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded text-sm outline-none focus:border-blue-500" placeholder="••••••••">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black zy-font text-sm transition mt-4">ENTRAR NA ARENA</button>
+                
+                <button onclick="tentarLogin()" class="w-full bg-blue-700 hover:bg-blue-600 py-4 rounded zy-font text-xs font-bold transition shadow-lg">ENTRAR NA ARENA</button>
             </div>
-            <p class="text-center text-[10px] text-zinc-600 mt-6 uppercase">Sincronizado com ZY-DATABASE (Google Sheets)</p>
         </div>
     </div>
 
-    <div id="main-app" class="hidden">
-        
-        <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 z-[1000] -translate-x-full">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-10">
-                    <span class="zy-font text-blue-500 text-sm">MENU ARENA</span>
-                    <button onclick="toggleMenu()" class="text-white"><i class="fa-solid fa-chevron-left"></i></button>
-                </div>
-                <nav class="space-y-4">
-                    <a href="#" class="flex items-center gap-3 p-3 hover:bg-blue-600/20 rounded-xl transition text-blue-400"><i class="fa-solid fa-gamepad"></i> Início Arena</a>
-                    <a href="#" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition text-zinc-400"><i class="fa-solid fa-bolt"></i> Ação</a>
-                    <a href="#" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition text-zinc-400"><i class="fa-solid fa-wand-sparkles"></i> Meninas</a>
-                    <a href="#" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition text-zinc-400"><i class="fa-solid fa-trophy"></i> Multiplayer</a>
-                    <hr class="border-zinc-800">
-                    <a href="#" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition text-yellow-500"><i class="fa-solid fa-coins"></i> Loja Zcoins</a>
-                </nav>
-            </div>
-        </aside>
-
-        <header class="sticky top-0 z-[500] bg-black/60 backdrop-blur-md border-b border-blue-900/30 p-4 px-6">
+    <div id="arena-content" class="hidden min-h-screen">
+        <header class="p-4 bg-black/80 backdrop-blur-md border-b border-blue-900/50 sticky top-0 z-[500]">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-5">
-                    <button onclick="toggleMenu()" class="text-xl text-blue-500"><i class="fa-solid fa-bars-staggered"></i></button>
-                    <span class="zy-font font-black italic text-lg tracking-tighter text-white">ZYPLAY<span class="text-blue-600">STORE</span></span>
+                <div class="flex items-center gap-6">
+                    <h1 class="zy-font text-xl font-black italic tracking-tighter">ZYPLAY<span class="text-blue-500">STORE</span></h1>
                 </div>
-                
                 <div class="flex items-center gap-4">
-                    <div class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-3">
-                        <div class="text-right">
-                            <p class="text-[8px] font-bold text-blue-400 uppercase">Seu Saldo</p>
-                            <p id="zcoin-balance" class="text-yellow-400 font-black zy-font text-sm">2.00 ZC</p>
-                        </div>
-                        <img src="https://cdn-icons-png.flaticon.com/512/1490/1490817.png" class="h-6 w-6">
+                    <div class="z-coins-display px-4 py-1 rounded-full flex items-center gap-2">
+                        <span id="saldo-txt" class="zy-font text-xs">2.00 ZC</span>
+                        <i class="fa-solid fa-coins"></i>
                     </div>
+                    <button onclick="logout()" class="text-zinc-500 text-xs hover:text-white uppercase font-bold">Sair</button>
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto p-6">
-            
-            <div class="mb-10 relative overflow-hidden bg-gradient-to-r from-blue-900/40 to-black p-8 rounded-[40px] border border-blue-500/30">
-                <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div>
-                        <span class="bg-blue-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase">Nova Moeda Digital</span>
-                        <h2 class="zy-font text-3xl mt-2">GANHE <span class="text-yellow-400">ZCOINS</span></h2>
-                        <p class="text-zinc-400 text-sm mt-1 max-w-md">Assista anúncios premiados e troque suas Zcoins por itens na ZYPLAY STORE.</p>
-                    </div>
-                    <button class="bg-yellow-400 text-black px-10 py-4 rounded-2xl font-black zy-font text-xs hover:bg-white transition">GANHAR AGORA</button>
+            <div class="mb-10 p-10 rounded-[40px] bg-gradient-to-r from-blue-900/30 to-black border border-blue-500/20 relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="zy-font text-2xl uppercase">Ganhe <span class="text-yellow-400">Zcoins</span> Grátis</h2>
+                    <p class="text-zinc-400 text-sm mt-2 max-w-md">Nossa nova moeda chegou! Jogue agora, assista aos replays e acumule Zcons para trocar na loja.</p>
                 </div>
-                <i class="fa-solid fa-coins absolute -right-10 -bottom-10 text-[180px] text-white/5 -rotate-12"></i>
+                <i class="fa-solid fa-gamepad absolute -right-4 -bottom-4 text-9xl opacity-5"></i>
             </div>
 
-            <h3 class="zy-font text-xs text-blue-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-fire"></i> ARENA DE JOGOS EM ALTA</h3>
+            <h3 class="zy-font text-xs text-blue-500 mb-8 flex items-center gap-2 uppercase italic tracking-widest">
+                <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span> Arena de Jogos em Alta
+            </h3>
             
-            <div id="game-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <div id="jogos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 pb-20">
                 </div>
         </main>
     </div>
 
-    <div id="game-player" class="fixed inset-0 bg-black z-[10001] hidden flex flex-col">
-        <div class="p-4 bg-zinc-900 border-b border-blue-600 flex justify-between items-center">
-            <button onclick="closeGame()" class="text-zinc-400"><i class="fa-solid fa-arrow-left mr-2"></i> Voltar à Arena</button>
-            <span class="zy-font text-blue-500 text-[10px]" id="playing-title"></span>
-            <div class="text-yellow-400 font-bold text-xs animate-pulse">+ ZCOINS ATIVOS</div>
+    <div id="game-screen">
+        <div class="p-4 bg-zinc-900 flex justify-between items-center border-b border-blue-600 shadow-2xl">
+            <button onclick="fecharJogo()" class="text-zinc-400 text-xs font-bold uppercase hover:text-white"><i class="fa-solid fa-chevron-left mr-2"></i> Voltar à Loja</button>
+            <span id="game-title" class="zy-font text-blue-500 text-[10px]"></span>
+            <div class="text-yellow-500 text-[10px] font-black animate-bounce">ZCOINS ATIVOS</div>
         </div>
-        <iframe id="arena-iframe" class="w-full flex-1 border-none" src=""></iframe>
+        <iframe id="game-frame" class="w-full h-full border-none bg-black" src=""></iframe>
     </div>
 
     <script>
-        let saldoZcoins = 2.00;
-        const gameData = [
-            { n: "My Parking Lot", cat: "Puzzle", img: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", url: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
-            { n: "Cyber Truck", cat: "Ação", img: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", url: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
-            { n: "Princess Fashion", cat: "Meninas", img: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", url: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
-            { n: "Combat Shooter", cat: "Multiplayer", img: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", url: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
-            { n: "Vex Arena", cat: "Ação", img: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", url: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
-            { n: "Bubble Shooter", cat: "Puzzle", img: "https://img.gamedistribution.com/649e378c33a94848bc95376043216893-512x512.jpg", url: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/" },
-            // Adicione mais jogos seguindo este padrão para encher a tela
+        // LISTA DE JOGOS NO SEU REPOSITÓRIO (URLs de exemplo)
+        const jogos = [
+            { n: "My Parking Lot", c: "Puzzle", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
+            { n: "Cyber Truck", c: "Ação", i: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", u: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
+            { n: "Combat Online", c: "Multiplayer", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
+            { n: "Princess Fashion", c: "Meninas", i: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", u: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
+            { n: "Vex Arena", c: "Ação", i: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", u: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
+            { n: "Bubble Master", c: "Puzzle", i: "https://img.gamedistribution.com/649e378c33a94848bc95376043216893-512x512.jpg", u: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/" },
+            // Simulando muitos jogos
+            { n: "Z-War", c: "Ação", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
+            { n: "Moto X3M", c: "Corrida", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" }
         ];
 
-        function handleLogin() {
-            const user = document.getElementById('user-login').value;
-            const pass = document.getElementById('user-pass').value;
-            
-            if(user && pass) {
-                // Aqui você chamaria sua função que valida no Google Sheets
-                document.getElementById('auth-overlay').style.display = 'none';
-                document.getElementById('main-app').classList.remove('hidden');
-                renderArena();
-            } else {
-                alert("Por favor, preencha os dados de acesso!");
+        let saldo = parseFloat(localStorage.getItem('zy_saldo')) || 2.00;
+
+        // VERIFICAÇÃO AUTOMÁTICA DE LOGIN AO CARREGAR
+        window.onload = function() {
+            const logado = localStorage.getItem('zy_logado');
+            if(logado === 'true') {
+                mostrarArena();
             }
+            updateSaldoUI();
+        };
+
+        function tentarLogin() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const erroBox = document.getElementById('msg-erro');
+
+            erroBox.style.display = 'none';
+
+            // LÓGICA DE VALIDAÇÃO
+            if(email === "") {
+                erroBox.innerText = "Email/Usuário não cadastrado.";
+                erroBox.style.display = 'block';
+                return;
+            }
+            if(pass !== "123") { // Sua senha teste
+                erroBox.innerText = "Senha incorreta. Tente novamente.";
+                erroBox.style.display = 'block';
+                return;
+            }
+
+            // SE TUDO OK: SALVA NO NAVEGADOR
+            localStorage.setItem('zy_logado', 'true');
+            localStorage.setItem('zy_user', email);
+            mostrarArena();
         }
 
-        function toggleMenu() {
-            const s = document.getElementById('sidebar');
-            s.style.transform = s.style.transform === 'translateX(0%)' ? 'translateX(-100%)' : 'translateX(0%)';
+        function mostrarArena() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('arena-content').classList.remove('hidden');
+            renderizarJogos();
         }
 
-        function renderArena() {
-            const container = document.getElementById('game-container');
-            // Multiplicando os jogos para mostrar muitos
-            for(let i=0; i<3; i++) {
-                gameData.forEach(game => {
-                    container.innerHTML += `
-                        <div class="game-card cursor-pointer" onclick="openGame('${game.url}', '${game.n}')">
-                            <div class="zcoin-badge">+ Zcoins</div>
-                            <img src="${game.img}" class="rounded-t-xl">
-                            <div class="p-3">
-                                <h4 class="text-[10px] zy-font truncate uppercase">${game.n}</h4>
-                                <p class="text-[8px] text-zinc-500 font-bold mt-1">${game.cat}</p>
-                            </div>
+        function renderizarJogos() {
+            const grid = document.getElementById('jogos-grid');
+            grid.innerHTML = "";
+            // Mostrando a lista 2 vezes para encher a tela
+            [...jogos, ...jogos].forEach(j => {
+                grid.innerHTML += `
+                    <div class="game-tile cursor-pointer" onclick="jogar('${j.u}', '${j.n}')">
+                        <img src="${j.i}" class="w-full aspect-square object-cover">
+                        <div class="p-3">
+                            <h4 class="text-[10px] zy-font truncate">${j.n}</h4>
+                            <p class="text-[8px] text-zinc-500 font-bold uppercase">${j.c}</p>
                         </div>
-                    `;
-                });
-            }
+                    </div>
+                `;
+            });
         }
 
-        function openGame(url, title) {
-            document.getElementById('playing-title').innerText = title;
-            document.getElementById('arena-iframe').src = url;
-            document.getElementById('game-player').classList.remove('hidden');
-            
-            // Lógica de Ganho: Cada vez que abre um jogo e fecha, ganha Zcoins
-            saldoZcoins += 0.50; 
-            updateBalance();
+        function jogar(url, nome) {
+            document.getElementById('game-title').innerText = nome;
+            document.getElementById('game-frame').src = url;
+            document.getElementById('game-screen').style.display = 'flex';
         }
 
-        function closeGame() {
-            document.getElementById('game-player').classList.add('hidden');
-            document.getElementById('arena-iframe').src = "";
+        function fecharJogo() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('game-frame').src = "";
+            saldo += 0.50; // Ganha Zcoins ao jogar
+            localStorage.setItem('zy_saldo', saldo);
+            updateSaldoUI();
         }
 
-        function updateBalance() {
-            document.getElementById('zcoin-balance').innerText = `${saldoZcoins.toFixed(2)} ZC`;
+        function updateSaldoUI() {
+            document.getElementById('saldo-txt').innerText = `${saldo.toFixed(2)} ZC`;
+        }
+
+        function logout() {
+            localStorage.removeItem('zy_logado');
+            location.reload();
         }
     </script>
 </body>
