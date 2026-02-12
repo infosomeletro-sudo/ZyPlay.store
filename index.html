@@ -3,239 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | Premium Gaming Universe</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>ZYPLAY | THE ULTIMATE GAMING</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #6c42f5;
-            --primary-glow: rgba(108, 66, 245, 0.4);
+            --pink: #ff007a;
             --gold: #ffcc00;
-            --glass: rgba(255, 255, 255, 0.03);
-            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --blue: #2c2c54;
+            --sidebar-bg: #1a1a2e;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            background: var(--bg-gradient);
-            background-attachment: fixed;
+            background-color: #0f0f1b;
             color: white;
             font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* --- ANIMAÇÃO DE FUNDO --- */
-        .stars-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background: url('https://www.transparenttextures.com/patterns/stardust.png');
-            animation: moveBg 100s linear infinite;
-        }
-        @keyframes moveBg { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
-
-        /* --- PERSONAGENS ARTÍSTICOS (CENÁRIO) --- */
-        .scenery-char {
-            position: absolute;
-            z-index: 0;
-            pointer-events: none;
-            filter: drop-shadow(0 0 30px var(--primary-glow));
-            animation: float 8s infinite ease-in-out;
-            opacity: 0.5;
-        }
-        .virginia-art { width: 450px; bottom: -100px; left: -100px; }
-        .lunga-art { width: 400px; top: 10%; right: -80px; animation-delay: 2s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(2deg); }
-            50% { transform: translateY(-40px) rotate(-2deg); }
-        }
-
-        /* --- HEADER --- */
+        /* --- HEADER COM PERSONAGENS --- */
         header {
-            height: 80px;
-            padding: 0 5%;
+            background: #16213e;
+            padding: 10px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            position: relative; z-index: 100;
+            border-bottom: 4px solid var(--pink);
+            position: relative;
         }
 
-        .logo {
-            font-family: 'Orbitron';
-            font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(to right, #fff, var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-        }
-
-        .btn-google {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-        .btn-google:hover { transform: scale(1.05); background: var(--gold); }
-
-        /* --- ZYCOIN SLIM BANNER --- */
-        .zy-announcer {
-            background: rgba(108, 66, 245, 0.2);
-            border-bottom: 1px solid var(--primary);
-            padding: 8px 0;
-            text-align: center;
-            font-family: 'Orbitron';
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            color: var(--gold);
-            position: relative; z-index: 100;
-        }
-
-        /* --- MAIN LAYOUT --- */
-        .app-container {
-            display: flex;
-            height: calc(100vh - 120px);
-            position: relative; z-index: 50;
-        }
-
-        /* SIDEBAR PROFISSIONAL */
-        .sidebar {
-            width: 260px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 40px 20px;
-            border-right: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .nav-link {
+        .logo-area {
             display: flex;
             align-items: center;
             gap: 15px;
-            color: #aaa;
-            text-decoration: none;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            transition: 0.3s;
-            font-weight: 600;
         }
 
-        .nav-link:hover {
-            background: var(--glass);
-            color: white;
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
+        /* O CONTROLEZINHO NO NOME */
+        .logo-area i {
+            font-size: 2.5rem;
+            color: #00d4ff;
+            filter: drop-shadow(0 0 10px #00d4ff);
         }
 
-        /* --- MODAL DE PRIVACIDADE --- */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+        .logo-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.8rem;
+            color: var(--gold);
         }
 
-        .modal-content {
-            background: #1a1a1a;
-            padding: 40px;
-            border-radius: 20px;
-            max-width: 500px;
-            border: 1px solid var(--primary);
-            text-align: center;
-        }
-
-        /* --- COOKIE BAR --- */
-        #cookie-bar {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            padding: 15px 40px;
-            border-radius: 100px;
-            border: 1px solid var(--gold);
+        /* BOTÃO ENTRAR COM O GOOGLE PROFISSIONAL */
+        .btn-google {
+            background: white;
+            color: #444;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 30px;
-            box-shadow: 0 0 50px rgba(0,0,0,1);
+            gap: 12px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            box-shadow: 0 4px 0 #ccc;
+            transition: 0.2s;
+        }
+        .btn-google:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #ccc; }
+        .btn-google img { width: 20px; }
+
+        /* --- BANNER DA MOEDA (SLIM) --- */
+        .zycoin-banner {
+            background: linear-gradient(90deg, #0f0f1b, #ff007a, #0f0f1b);
+            text-align: center;
+            padding: 8px;
+            font-family: 'Press Start 2P';
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--gold);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-layout {
+            display: flex;
+            flex: 1;
+        }
+
+        /* SIDEBAR GAMER */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            padding: 30px 15px;
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: var(--pink);
+            border-color: var(--pink);
+            box-shadow: 0 0 15px var(--pink);
+        }
+
+        /* CONTEÚDO PRINCIPAL (ONDE FICARÃO OS 115 JOGOS) */
+        .content-area {
+            flex: 1;
+            padding: 40px;
+            position: relative;
+            background: #0f0f1b;
+        }
+
+        /* PERSONAGEM NO CANTO DO CONTEÚDO */
+        .character-link {
+            position: absolute;
+            top: 20px;
+            left: -40px;
+            width: 120px;
+            z-index: 10;
+        }
+
+        /* --- MODAL DE COOKIES --- */
+        .cookie-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            background: #1a1a2e;
+            border: 3px solid var(--gold);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 9999;
+        }
+
+        .cookie-btn {
+            background: var(--gold);
+            border: none;
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
         }
 
     </style>
 </head>
 <body>
 
-    <div class="stars-bg"></div>
-
-    <img src="jogos com autoria/virginia/virginia.jpeg" class="scenery-char virginia-art">
-    <img src="https://via.placeholder.com/400x600/000/fff?text=LUNGA+PRO" class="scenery-char lunga-art">
-
     <header>
-        <div class="logo">ZYPLAY</div>
+        <div class="logo-area">
+            <i class="fas fa-gamepad"></i> <div class="logo-text">ZYPLAY</div>
+        </div>
+
         <button class="btn-google">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_In_G_Logo.svg" width="18">
-            ENTRAR
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_In_G_Logo.svg">
+            ENTRAR COM GOOGLE
         </button>
     </header>
 
-    <div class="zy-announcer">
-        <i class="fas fa-microchip"></i> EM BREVE A NOVA MOEDA DIGITAL: ZYCOIN
+    <div class="zycoin-banner">
+        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN
     </div>
 
-    <div class="app-container">
+    <div class="main-layout">
         <aside class="sidebar">
-            <a href="#" class="nav-link"><i class="fas fa-th-large"></i> EXPLORAR</a>
-            <a href="#" class="nav-link"><i class="fas fa-fire"></i> POPULARES</a>
-            <a href="#" class="nav-link"><i class="fas fa-bookmark"></i> SALVOS</a>
-            <div style="margin-top: 50px; height: 1px; background: rgba(255,255,255,0.1);"></div>
-            <a href="#" class="nav-link" onclick="toggleModal()"><i class="fas fa-shield-alt"></i> PRIVACIDADE</a>
+            <a href="#" class="nav-btn"><i class="fas fa-home"></i> INÍCIO</a>
+            <div style="margin: 20px 0; color: #555; font-size: 0.8rem;">CATEGORIAS</div>
+            <a href="#" class="nav-btn"><i class="fas fa-bolt"></i> AÇÃO</a>
+            <a href="#" class="nav-item"></a> <a href="#" class="nav-btn"><i class="fas fa-trophy"></i> RANKING</a>
+            <a href="#" class="nav-btn" style="border-color: var(--pink);"><i class="fas fa-user-secret"></i> PRIVACIDADE</a>
         </aside>
 
-        <main style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div style="text-align: center;">
-                <h2 style="font-family: Orbitron; font-size: 3rem; margin-bottom: 10px;">BEM-VINDO</h2>
-                <p style="color: #888; letter-spacing: 5px;">A EXPERIÊNCIA GAMING DEFINITIVA</p>
+        <main class="content-area">
+            <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif?1614801127" class="character-link">
+
+            <h2 style="font-family: 'Press Start 2P'; font-size: 1rem; color: #444;">INSIRA SEUS 115 JOGOS AQUI!</h2>
+            
+            <div style="border: 2px dashed #222; height: 80%; display: flex; align-items: center; justify-content: center; color: #222;">
+                ÁREA DISPONÍVEL PARA GRID DE GAMES
             </div>
         </main>
     </div>
 
-    <div id="cookie-bar">
-        <span style="font-size: 0.9rem;">Este site utiliza cookies para otimizar sua jornada.</span>
-        <button onclick="document.getElementById('cookie-bar').remove()" 
-                style="background: var(--gold); border: none; padding: 8px 25px; border-radius: 50px; font-weight: bold; cursor: pointer;">
-            ACEITAR
-        </button>
-    </div>
-
-    <div class="modal-overlay" id="priv-modal">
-        <div class="modal-content">
-            <h2 style="color: var(--gold); margin-bottom: 20px;">Privacidade ZyPlay</h2>
-            <p style="color: #ccc; line-height: 1.6;">Sua segurança é nossa prioridade. Não compartilhamos seus dados e utilizamos criptografia de ponta para futuros ativos digitais.</p>
-            <button onclick="toggleModal()" style="margin-top: 30px; background: var(--primary); color: white; border: none; padding: 10px 40px; border-radius: 10px; cursor: pointer;">FECHAR</button>
+    <div class="cookie-box" id="cookieBox">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-cookie-bite" style="color:var(--gold); font-size: 1.5rem;"></i>
+            <strong>POLÍTICA DE COOKIES</strong>
         </div>
+        <p style="font-size: 0.8rem; color: #aaa; margin: 0;">
+            Este site utiliza cookies para salvar seu progresso. Ao continuar, você aceita nossos termos de privacidade.
+        </p>
+        <button class="cookie-btn" onclick="document.getElementById('cookieBox').style.display='none'">ENTENDI!</button>
     </div>
-
-    <script>
-        function toggleModal() {
-            const m = document.getElementById('priv-modal');
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        }
-    </script>
 
 </body>
 </html>
