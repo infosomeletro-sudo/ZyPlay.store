@@ -3,234 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | THE ULTIMATE GAMING</title>
+    <title>ZYPLAY - Gaming Experience</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
         :root {
-            --pink: #ff007a;
+            --neon-pink: #ff007a;
+            --neon-pink-glow: rgba(255, 0, 122, 0.6);
             --gold: #ffcc00;
-            --dark-blue: #1a1a2e;
-            --grid-color: rgba(255, 255, 255, 0.05);
+            --gold-glow: rgba(255, 204, 0, 0.4);
+            --cyan: #00d4ff;
+            --dark-space: #0b0b1a;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: #0f0f1b;
-            /* Fundo com efeito de grade gamer */
-            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
-                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-color: var(--dark-space);
+            /* GRADE NEON FUNDO TOTAL */
+            background-image: 
+                linear-gradient(rgba(255, 0, 122, 0.1) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 0, 122, 0.1) 2px, transparent 2px);
+            background-size: 50px 50px;
             color: white;
             font-family: 'Rajdhani', sans-serif;
-            margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* Mantém a estrutura fixa como um App */
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER ULTRA --- */
         header {
-            background: #16213e;
-            padding: 15px 50px;
+            background: #12122b;
+            height: 90px;
+            padding: 0 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 5px solid var(--pink);
+            border-bottom: 5px solid var(--neon-pink);
+            box-shadow: 0 0 30px var(--neon-pink-glow);
             z-index: 100;
         }
 
-        .logo-area {
+        .logo-box {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .logo-area i {
-            font-size: 2.5rem;
-            color: #00d4ff;
-            filter: drop-shadow(0 0 10px #00d4ff);
+        .logo-box i {
+            font-size: 3.5rem;
+            color: var(--cyan);
+            filter: drop-shadow(0 0 15px var(--cyan));
         }
 
         .logo-text {
             font-family: 'Press Start 2P', cursive;
             font-size: 1.8rem;
             color: var(--gold);
-            text-shadow: 3px 3px #000;
+            text-shadow: 4px 4px 0px #000, 0 0 10px var(--gold-glow);
+            letter-spacing: -2px;
         }
 
-        /* BOTÃO GOOGLE REAL */
+        /* BOTÃO GOOGLE PREMIUM (O QUE VOCÊ GOSTOU) */
         .btn-google {
             background: #ffffff;
             color: #333;
-            padding: 10px 25px;
+            padding: 12px 28px;
             border-radius: 8px;
-            font-weight: 700;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 12px;
-            border: 2px solid #ddd;
+            gap: 15px;
+            border: none;
             cursor: pointer;
             font-family: 'Rajdhani', sans-serif;
-            transition: 0.3s;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 0 #bbb;
+            transition: all 0.2s ease;
         }
-        .btn-google:hover { background: #f1f1f1; transform: scale(1.05); }
-        .btn-google img { width: 18px; }
 
-        /* --- BANNER ZYCOIN --- */
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #bbb, 0 0 20px rgba(255,255,255,0.4);
+            background: #f9f9f9;
+        }
+
+        .btn-google img { width: 22px; }
+
+        /* --- BANNER INFORMATIVO (EM BREVE ZYCOIN) --- */
         .zy-banner {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 12px;
-            text-align: center;
-            border-bottom: 2px solid var(--gold);
-            font-family: 'Press Start 2P';
-            font-size: 0.7rem;
+            background: var(--neon-pink);
             color: white;
-            letter-spacing: 2px;
+            text-align: center;
+            padding: 10px;
+            font-family: 'Press Start 2P';
+            font-size: 0.75rem;
+            border-bottom: 3px solid var(--gold);
+            box-shadow: 0 0 20px var(--neon-pink-glow);
+            z-index: 90;
+            text-transform: uppercase;
         }
 
-        /* --- PERSONAGENS FLUTUANTES (IGUAL À IMAGEM) --- */
+        /* --- PERSONAGENS ARTÍSTICOS --- */
         .char {
             position: absolute;
-            z-index: 50;
+            z-index: 5;
             pointer-events: none;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
-        }
-        /* Personagem estilo Mario (Direita) */
-        .char-right {
-            top: 20px;
-            right: 50px;
-            width: 150px;
-        }
-        /* Personagem estilo Link (Esquerda) */
-        .char-left {
-            top: 180px;
-            left: 20px;
-            width: 130px;
+            filter: drop-shadow(0 0 30px var(--cyan));
         }
 
-        /* --- ESTRUTURA PRINCIPAL --- */
-        .main-container {
+        /* Mario Style */
+        .char-mario {
+            top: 150px;
+            right: 40px;
+            width: 250px;
+            animation: float 4s infinite ease-in-out;
+        }
+
+        /* Link Style */
+        .char-link {
+            bottom: 50px;
+            left: 40px;
+            width: 200px;
+            animation: float 4s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        /* --- ESTRUTURA DE CONTEÚDO --- */
+        .app-body {
             display: flex;
             flex: 1;
+            z-index: 20;
             position: relative;
         }
 
-        /* MENU LATERAL */
+        /* SIDEBAR ESTILIZADA */
         .sidebar {
-            width: 280px;
-            background: rgba(26, 26, 46, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 40px 20px;
-            border-right: 2px solid #333;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            width: 320px;
+            background: rgba(18, 18, 43, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 40px 30px;
+            border-right: 4px solid var(--neon-pink);
         }
 
-        .sidebar h3 { color: #555; font-size: 0.8rem; margin-bottom: 10px; }
+        .sidebar h4 {
+            color: #4c4c6d;
+            font-size: 0.85rem;
+            margin-bottom: 25px;
+            letter-spacing: 4px;
+            font-family: 'Press Start 2P';
+        }
 
         .nav-link {
             text-decoration: none;
             color: white;
-            font-weight: 700;
-            padding: 12px 20px;
-            border: 2px solid var(--gold);
-            border-radius: 8px;
-            transition: 0.3s;
+            font-weight: 900;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 20px;
+            padding: 18px;
+            border: 3px solid var(--gold);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            background: rgba(255, 204, 0, 0.05);
         }
 
-        .nav-link:hover { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 15px var(--pink); }
+        .nav-link:hover {
+            background: var(--neon-pink);
+            border-color: #ffffff;
+            box-shadow: 0 0 30px var(--neon-pink-glow);
+            transform: translateX(15px);
+        }
 
-        /* ÁREA DOS JOGOS */
-        .game-area {
+        .nav-link i { font-size: 1.5rem; color: var(--gold); }
+        .nav-link:hover i { color: white; }
+
+        /* PAINEL CENTRAL DE JOGOS */
+        .main-stage {
             flex: 1;
-            padding: 50px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
         }
 
-        .game-area h2 {
+        .grid-placeholder {
             font-family: 'Press Start 2P';
-            font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.2);
-            margin-top: 100px;
+            color: rgba(255, 255, 255, 0.05);
+            font-size: 2.5rem;
+            text-align: center;
+            border: 5px dashed rgba(255, 255, 255, 0.03);
+            padding: 120px;
+            width: 90%;
+            border-radius: 30px;
         }
 
-        /* --- COOKIE BAR (MODERNO) --- */
-        .cookie-bar {
+        /* --- COOKIES E PRIVACIDADE (FOOTER) --- */
+        .cookie-guard {
             position: fixed;
-            bottom: 30px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1a1a2e;
-            border: 2px solid var(--gold);
-            padding: 15px 40px;
-            border-radius: 12px;
+            background: #12122b;
+            border: 3px solid var(--gold);
+            padding: 25px 50px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 40px;
             z-index: 1000;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 0 60px rgba(0,0,0,0.9);
+            width: fit-content;
         }
 
-        .cookie-bar p { font-size: 0.9rem; margin: 0; color: #ccc; }
-        .cookie-bar a { color: var(--gold); text-decoration: none; font-weight: bold; }
-        .cookie-btn {
+        .cookie-info { font-size: 1rem; color: #ccc; max-width: 400px; }
+        .cookie-info a { color: var(--gold); text-decoration: underline; font-weight: bold; }
+
+        .btn-accept-all {
             background: var(--gold);
             color: black;
             border: none;
-            padding: 8px 25px;
-            border-radius: 6px;
-            font-weight: bold;
+            padding: 12px 40px;
+            border-radius: 10px;
+            font-weight: 900;
             cursor: pointer;
+            font-family: 'Rajdhani';
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .btn-accept-all:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--gold-glow);
         }
 
     </style>
 </head>
 <body>
 
-    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="char char-right" alt="Gamer Char">
-    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif?1614801127" class="char char-left" alt="Gamer Char 2">
+    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="char char-mario" alt="Gamer Art 1">
+    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif?1614801127" class="char char-link" alt="Gamer Art 2">
 
     <header>
-        <div class="logo-area">
-            <i class="fas fa-gamepad"></i>
-            <span class="logo-text">ZYPLAY</span>
+        <div class="logo-box">
+            <i class="fas fa-gamepad"></i> <div class="logo-text">ZYPLAY</div>
         </div>
 
         <button class="btn-google">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_In_G_Logo.svg">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_In_G_Logo.svg" alt="Google">
             ENTRAR COM GOOGLE
         </button>
     </header>
 
     <div class="zy-banner">
-        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN
+        ⚠️ EM BREVE: LANÇAMENTO DA NOVA MOEDA DIGITAL ZYCOIN ⚠️
     </div>
 
-    <div class="main-container">
+    <div class="app-body">
         <aside class="sidebar">
-            <h3>MAIN-LAYOUT</h3>
-            <a href="#" class="nav-link">INÍCIO</a>
+            <h4>SISTEMA</h4>
+            <a href="#" class="nav-link"><i class="fas fa-home"></i> INÍCIO</a>
             
-            <h3>CATEGORIAS</h3>
-            <a href="#" class="nav-link">SATEGRAS</a>
-            <a href="#" class="nav-link" style="border-color: var(--pink);">RANKING</a>
-            <a href="#" class="nav-link" style="border-color: var(--pink);">PRIVACIDADE</a>
+            <h4>EXPLORAR</h4>
+            <a href="#" class="nav-link"><i class="fas fa-layer-group"></i> CATEGORIAS</a>
+            <a href="#" class="nav-link" style="border-color: var(--neon-pink);"><i class="fas fa-crown"></i> RANKING</a>
+            <a href="#" class="nav-link" style="border-color: var(--neon-pink);"><i class="fas fa-user-lock"></i> PRIVACIDADE</a>
         </aside>
 
-        <main class="game-area">
-            <h2>INSIRA SEUS 115 JOGOS AQUI!</h2>
-            <div style="border: 3px dashed #222; height: 300px; width: 100%; border-radius: 20px; margin-top: 30px;"></div>
+        <main class="main-stage">
+            <div class="grid-placeholder">
+                PRONTO PARA<br>OS JOGOS
+                <div style="font-size: 1rem; margin-top: 20px; color: #333;">AGUARDANDO CONEXÃO COM SERVIDOR...</div>
+            </div>
         </main>
     </div>
 
-    <div class="cookie-bar" id="cb">
-        <p>Este site utiliza cookies. Leia nossa <a href="#">Política de Privacidade</a>.</p>
-        <button class="cookie-btn" onclick="document.getElementById('cb').remove()">OK!</button>
+    <div class="cookie-guard" id="cookieBar">
+        <div class="cookie-info">
+            Este portal utiliza cookies para salvar sua pontuação. Ao jogar, você aceita nossos <a href="#">Termos de Privacidade</a>.
+        </div>
+        <button class="btn-accept-all" onclick="document.getElementById('cookieBar').remove()">ACEITAR</button>
     </div>
 
 </body>
