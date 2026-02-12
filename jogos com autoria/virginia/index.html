@@ -3,71 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virginia Miner - Zycoins</title>
+    <title>Virginia Miner - Desafio dos Pés</title>
     <style>
-        :root { --gold: #ffd700; --pink: #ff69b4; }
         body {
-            background: #121212; color: white; text-align: center;
+            background: #0a0a0a; color: white; text-align: center;
+            font-family: 'Arial Black', sans-serif; margin: 0;
             display: flex; flex-direction: column; justify-content: center;
-            align-items: center; height: 100vh; margin: 0; overflow: hidden;
-            font-family: sans-serif;
+            align-items: center; height: 100vh; overflow: hidden; user-select: none;
         }
-        .score { font-size: 3rem; color: var(--gold); font-weight: bold; margin-bottom: 20px; }
+        .score-container { font-size: 3.5rem; color: #ffd700; margin-bottom: 20px; }
         
-        /* Container para garantir que o clique pegue bem */
-        #char-container { position: relative; display: inline-block; cursor: pointer; }
+        #game-area { position: relative; cursor: crosshair; }
 
         #character {
-            width: 280px; border-radius: 20px;
-            transition: transform 0.1s;
-            /* Animação constante de balanço */
-            animation: balanco 2s infinite ease-in-out;
+            width: 300px; border-radius: 20px;
+            transition: transform 0.05s;
+            border: 3px solid transparent;
         }
 
-        /* Efeito de clique (ela encolhe e treme) */
-        #character:active { transform: scale(0.9) rotate(5deg); animation: none; }
+        .win-hit { animation: bounce 0.2s ease; border-color: #ffd700 !important; }
+        .lose-hit { animation: shake 0.2s ease; border-color: red !important; }
 
-        @keyframes balanco {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(2deg); }
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95) translateY(5px); }
         }
 
-        .floating-text {
-            position: absolute; color: var(--gold); font-weight: bold;
-            pointer-events: none; animation: floatUp 0.6s ease-out forwards;
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .popup {
+            position: absolute; font-weight: bold; font-size: 2rem;
+            pointer-events: none; animation: floatUp 0.6s forwards;
         }
         @keyframes floatUp {
-            from { opacity: 1; transform: translateY(0); }
             to { opacity: 0; transform: translateY(-100px); }
         }
     </style>
 </head>
 <body>
 
-    <div class="score">Zycoins: <span id="balance">0.00</span></div>
+    <div class="score-container">Zycoins: <span id="balance">0.00</span></div>
     
-    <div id="char-container" onclick="mine(event)">
-        <img src="virginia.jpeg" id="character">
+    <div id="game-area">
+        <img src="virginia.jpeg" id="character" onclick="processClick(event)">
     </div>
 
-    <p style="color: #888; margin-top: 20px;">CLIQUE NO CORPO DA VIRGÍNIA!</p>
+    <p id="hint" style="color: #ffd700; margin-top: 20px; font-size: 1.2rem;">
+        FOQUE NOS PÉS E JOELHOS!
+    </p>
 
     <script>
-        let zycoins = 0;
+        let balance = 0;
         const balanceDisplay = document.getElementById('balance');
+        const charImg = document.getElementById('character');
 
-        function mine(event) {
-            zycoins += 1.50;
-            balanceDisplay.innerText = zycoins.toFixed(2);
+        function processClick(event) {
+            const rect = event.target.getBoundingClientRect();
+            const y = event.clientY - rect.top; // Posição vertical do clique
+            const x = event.clientX - rect.left; // Posição horizontal
 
-            // Cria o efeito do número subindo onde você clicou
-            const float = document.createElement('div');
-            float.className = 'floating-text';
-            float.innerText = '+1.50';
-            float.style.left = (event.clientX - 20) + 'px';
-            float.style.top = (event.clientY - 20) + 'px';
-            document.body.appendChild(float);
-            setTimeout(() => float.remove(), 600);
+            // CALIBRAÇÃO:
+            // Em uma imagem de 300px de altura:
+            // Os joelhos e pés geralmente ficam do meio (150px) para baixo (300px).
+            // Coloquei uma margem lateral para não ganhar clicando no "ar" ao lado dos pés.
+            
+            const acertouBaixo = (y > 160 && y < 290); // Só ganha se clicar na metade de baixo
+            const centralizado = (x > 80 && x < 220);  // Garante que clicou no corpo, não no lado
+
+            if (acertouBaixo && centralizado) {
+                balance += 1.50;
+                showPopup(event.clientX, event.clientY, "+1.50", "#ffd700");
+                triggerEffect('win-hit');
+            } else {
+                balance -= 2.00;
+                if(balance < 0) balance = 0;
+                showPopup(event.clientX, event.clientY, "-2.00", "#ff0000");
+                triggerEffect('lose-hit');
+            }
+
+            balanceDisplay.innerText = balance.toFixed(2);
+        }
+
+        function triggerEffect(className) {
+            charImg.classList.remove('win-hit', 'lose-hit');
+            void charImg.offsetWidth; 
+            charImg.classList.add(className);
+        }
+
+        function showPopup(x, y, text, color) {
+            const p = document.createElement('div');
+            p.className = 'popup';
+            p.innerText = text;
+            p.style.color = color;
+            p.style.left = (x - 30) + 'px';
+            p.style.top = (y - 30) + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 600);
         }
     </script>
 </body>
