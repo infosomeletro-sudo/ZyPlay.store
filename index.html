@@ -3,160 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZyPlay Store | Dashboard</title>
+    <title>ZyPlay Store | Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #ffcc00;
-            --green: #2ecc71;
-            --bg: #0b0b0b;
-            --card: #161616;
+            --gold: #FFD700;
+            --accent: #8A2BE2;
+            --bg: #050505;
+            --card: #121212;
+            --green: #00FF7F;
         }
 
         body {
             background: var(--bg);
-            color: white;
-            font-family: 'Inter', sans-serif;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
-            padding-bottom: 50px;
+            overflow-x: hidden;
         }
 
-        /* HEADER COM SALDO REAL */
-        .top-bar {
-            background: #111;
-            padding: 20px;
-            border-bottom: 2px solid var(--gold);
+        /* BARRA DE TOPO ESTILO BANCO */
+        .header {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #222;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
         }
 
-        .balance-box {
-            text-align: right;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--gold), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .zycoin-val { color: var(--gold); font-weight: bold; font-size: 1.4rem; }
-        .real-val { color: var(--green); font-size: 1rem; display: block; }
-
-        .btn-withdraw {
-            background: var(--green);
-            color: white;
-            border: none;
+        .wallet-card {
+            background: #1a1a1a;
             padding: 10px 20px;
-            border-radius: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance-info { text-align: right; }
+        .zy-total { color: var(--gold); font-weight: bold; font-size: 1.1rem; display: block; }
+        .rs-total { color: var(--green); font-size: 0.85rem; opacity: 0.9; }
+
+        .btn-saque {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            margin-left: 15px;
+            transition: 0.3s;
         }
 
-        /* BANNER PUBLICITÁRIO */
-        .ad-container {
-            max-width: 900px;
-            margin: 20px auto;
-            background: #222;
-            border: 1px solid #333;
-            height: 100px;
+        .btn-saque:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+
+        /* PROPAGANDA DISCRETA (Estilo AdSense) */
+        .ad-banner {
+            width: 90%;
+            max-width: 970px;
+            height: 90px;
+            background: #0f0f0f;
+            margin: 30px auto;
+            border: 1px solid #222;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            color: #555;
+            color: #444;
+            font-size: 0.8rem;
+            border-radius: 4px;
         }
 
-        /* GRADE DE JOGOS */
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        /* GRID DE JOGOS ESTILO STREAMING */
+        .main-content { padding: 20px 5%; }
         
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::before { content: ''; width: 4px; height: 24px; background: var(--gold); border-radius: 2px; }
+
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
         }
 
-        .game-card {
+        .game-item {
             background: var(--card);
-            border-radius: 15px;
+            border-radius: 16px;
             overflow: hidden;
-            transition: 0.3s;
+            transition: 0.4s;
             border: 1px solid #222;
             text-decoration: none;
-            color: white;
+            color: #fff;
+            position: relative;
         }
 
-        .game-card:hover {
-            transform: scale(1.03);
+        .game-item:hover {
+            transform: translateY(-8px);
             border-color: var(--gold);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
         }
 
-        .thumb {
-            height: 140px;
-            background: linear-gradient(45deg, #222, #333);
+        .game-preview {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #1a1a1a, #252525);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.5rem;
         }
 
-        .info { padding: 15px; }
-        .info h3 { margin: 0; font-size: 1.1rem; }
-        .info p { color: #888; font-size: 0.8rem; margin: 5px 0; }
+        .game-details { padding: 15px; }
+        .game-details h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+        .game-tag {
+            font-size: 0.7rem;
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--gold);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        /* RODAPÉ */
+        footer { text-align: center; padding: 50px; color: #444; font-size: 0.8rem; }
 
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="logo" style="font-size: 1.5rem; font-weight: 900; color: var(--gold);">ZYPLAY</div>
+    <header class="header">
+        <div class="logo">ZYPLAY</div>
         
-        <div style="display: flex; align-items: center;">
-            <div class="balance-box">
-                <span class="zycoin-val" id="zy-val">150.00 ZY</span>
-                <span class="real-val" id="real-val">R$ 1,50</span>
+        <div class="wallet-card">
+            <div class="balance-info">
+                <span class="zy-total" id="zyBalance">2.450,00 ZY</span>
+                <span class="rs-total" id="rsBalance">R$ 24,50</span>
             </div>
-            <button class="btn-withdraw" onclick="alert('Mínimo para saque: R$ 20,00')">RESGATAR</button>
+            <button class="btn-saque" onclick="solicitarSaque()">SAQUE</button>
         </div>
+    </header>
+
+    <div class="ad-banner">
+        PUBLICIDADE - ESPAÇO DISPONÍVEL
     </div>
 
-    <div class="ad-container">
-        <p>PUBLICIDADE DISPONÍVEL</p>
-    </div>
-
-    <div class="container">
-        <h2 style="margin-bottom: 30px;">🎮 Biblioteca de Games</h2>
+    <main class="main-content">
+        <div class="section-title">Jogos Populares</div>
         
         <div class="game-grid">
             
-            <a href="jogos com autoria/virginia/" class="game-card">
-                <div class="thumb">💃</div>
-                <div class="info">
+            <a href="jogos com autoria/virginia/" class="game-item">
+                <div class="game-preview">💃</div>
+                <div class="game-details">
                     <h3>Virginia Miner</h3>
-                    <p>Ganhe Zycoins por precisão</p>
+                    <span class="game-tag">PRECISÃO</span>
                 </div>
             </a>
 
-            <a href="jogos de terceiros/space-game/" class="game-card">
-                <div class="thumb">🚀</div>
-                <div class="info">
+            <a href="jogos de terceiros/space-game/" class="game-item">
+                <div class="game-preview">🚀</div>
+                <div class="game-details">
                     <h3>Space Game</h3>
-                    <p>Sobrevivência espacial (CSS)</p>
+                    <span class="game-tag">CSS ONLY</span>
+                </div>
+            </a>
+
+            <a href="jogos com autoria/seu-lunga/" class="game-item">
+                <div class="game-preview">👴</div>
+                <div class="game-details">
+                    <h3>Seu Lunga</h3>
+                    <span class="game-tag">MINERADOR</span>
                 </div>
             </a>
 
             </div>
-    </div>
+    </main>
+
+    <footer>
+        ZYPLAY STORE &copy; 2026<br>
+        Manutenção de Notebooks e Impressoras & Games
+    </footer>
 
     <script>
-        // Lógica simples de conversão (Exemplo: 100 Zycoins = 1 Real)
-        function atualizarConversao(valorZy) {
-            let valorReal = valorZy / 100;
-            document.getElementById('real-val').innerText = 'R$ ' + valorReal.toLocaleString('pt-br', {minimumFractionDigits: 2});
+        function solicitarSaque() {
+            const saldoRs = 24.50;
+            if(saldoRs >= 20.00) {
+                alert("Solicitação enviada! Verificando saldo...");
+            } else {
+                alert("Saldo insuficiente para saque. Mínimo: R$ 20,00");
+            }
         }
 
-        // Inicia com o valor do exemplo
-        atualizarConversao(150);
+        // Função para converter saldo dinamicamente
+        function converter(zy) {
+            let rs = zy / 100;
+            document.getElementById('zyBalance').innerText = zy.toLocaleString('pt-br') + " ZY";
+            document.getElementById('rsBalance').innerText = "R$ " + rs.toLocaleString('pt-br', {minimumFractionDigits: 2});
+        }
     </script>
-
 </body>
 </html>
