@@ -1,259 +1,165 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-    <title>ZYPLAY STORE | Arena Gamer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZyPlay Store | Seu Portal de Games</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Rajdhani:wght@500;700&display=swap');
+        :root {
+            --primary: #ffd700;
+            --bg: #0f0f0f;
+            --card-bg: #1a1a1a;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        /* BANNER DE PROPAGANDA MANUAL */
+        .ad-space {
+            background: #222;
+            width: 90%;
+            max-width: 728px;
+            height: 90px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #444;
+            color: #666;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .ad-space img { width: 100%; height: 100%; object-fit: cover; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .grid-jogos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .game-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+            border: 2px solid #333;
+            text-decoration: none;
+            color: white;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+        }
+
+        .game-thumb {
+            width: 100%;
+            height: 150px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .game-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .game-info h3 { margin: 0 0 10px 0; font-size: 1.2rem; }
         
-        :root { --zy-blue: #0062ff; --zy-gold: #ffcc00; --bg-main: #020205; }
-
-        body { 
-            background: var(--bg-main); color: #fff; font-family: 'Rajdhani', sans-serif;
-            background-image: linear-gradient(to bottom, rgba(2, 2, 5, 0.95), rgba(2, 2, 5, 0.98)),
-                url('https://www.agame.com/assets/gamesgames/backgrounds/default-1.jpg'); 
-            background-attachment: fixed; background-size: cover;
-            overflow-x: hidden;
+        .btn-play {
+            background: var(--primary);
+            color: black;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
         }
 
-        .zy-font { font-family: 'Orbitron', sans-serif; }
-
-        .auth-card {
-            background: rgba(10, 10, 20, 0.98);
-            border: 1px solid var(--zy-blue);
-            box-shadow: 0 0 50px rgba(0, 98, 255, 0.3);
-            border-radius: 24px;
-        }
-
-        .input-group { position: relative; }
-        .input-eye { position: absolute; right: 15px; top: 38px; cursor: pointer; color: #555; z-index: 10; transition: 0.3s; }
-        .input-eye:hover { color: var(--zy-blue); }
-
-        .game-tile {
-            background: rgba(255, 255, 255, 0.03); border-radius: 15px; overflow: hidden;
-            transition: 0.4s; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .game-tile:hover { transform: scale(1.05); border-color: var(--zy-blue); }
-
-        #game-screen { position: fixed; inset: 0; z-index: 10000; background: #000; display: none; flex-direction: column; }
-        
-        .visitor-badge { background: #444 !important; color: #aaa !important; }
+        footer { text-align: center; padding: 40px; color: #555; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay" class="fixed inset-0 flex items-center justify-center p-4 z-[20000] bg-black">
-        <div class="auth-card max-w-sm w-full p-8">
+    <header>
+        <h1 class="logo">ZyPlay Store</h1>
+        <p>A maior biblioteca de jogos HTML5</p>
+    </header>
+
+    <a href="mailto:contato@seuemail.com" class="ad-space">
+        ANUNCIE AQUI - ESPAÇO DISPONÍVEL
+    </a>
+
+    <div class="container">
+        <h2>🎮 Todos os Jogos</h2>
+        
+        <div class="grid-jogos">
             
-            <div id="box-login">
-                <div class="text-center mb-6">
-                    <h2 class="zy-font text-2xl text-white italic">ZYPLAY<span class="text-blue-600">STORE</span></h2>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Bem-vindo à Arena</p>
+            <a href="jogos com autoria/virginia/" class="game-card">
+                <div class="game-thumb">💃</div>
+                <div class="game-info">
+                    <h3>Virginia Miner</h3>
+                    <div class="btn-play">JOGAR AGORA</div>
                 </div>
-                
-                <div id="login-erro" class="text-[#ff4444] text-[10px] font-bold bg-red-500/10 border border-red-500/20 p-3 rounded-lg mb-4 hidden text-center uppercase"></div>
+            </a>
 
-                <div class="space-y-4">
-                    <div class="input-group">
-                        <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Usuário</label>
-                        <input type="text" id="l-user" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600" placeholder="Seu usuário">
-                    </div>
-                    <div class="input-group">
-                        <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Senha</label>
-                        <input type="password" id="l-pass" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600" placeholder="••••••••">
-                        <i class="fa-solid fa-eye input-eye" onclick="togglePass('l-pass', this)"></i>
-                    </div>
-                    
-                    <button onclick="fazerLogin()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl zy-font text-xs font-black transition uppercase">Entrar na Arena</button>
-                    
-                    <button onclick="entrarVisitante()" class="w-full border border-zinc-700 hover:border-zinc-500 py-3 rounded-xl text-[10px] font-bold uppercase transition text-zinc-400">Jogar como Visitante</button>
-
-                    <div class="text-center pt-2">
-                        <button onclick="trocarAuth('cadastro')" class="text-[10px] text-zinc-500 uppercase font-bold hover:text-white">Não tem conta? <span class="text-blue-500">Cadastre-se</span></button>
-                    </div>
+            <a href="jogos de terceiros/space-game/" class="game-card">
+                <div class="game-thumb">🚀</div>
+                <div class="game-info">
+                    <h3>Space Game</h3>
+                    <div class="btn-play">JOGAR AGORA</div>
                 </div>
+            </a>
+
+            <a href="jogos com autoria/seu-lunga/" class="game-card">
+                <div class="game-thumb">👴</div>
+                <div class="game-info">
+                    <h3>Seu Lunga</h3>
+                    <div class="btn-play">JOGAR AGORA</div>
+                </div>
+            </a>
+
             </div>
-
-            <div id="box-cadastro" class="hidden">
-                <div class="text-center mb-6">
-                    <h2 class="zy-font text-2xl text-white italic">NOVA<span class="text-blue-600">CONTA</span></h2>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">Crie seu Perfil Arena</p>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="input-group">
-                        <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Nome</label>
-                        <input type="text" id="c-nome" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600" placeholder="Nome Completo">
-                    </div>
-                    <div class="input-group">
-                        <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Usuário / Email</label>
-                        <input type="text" id="c-user" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600" placeholder="ex: claudio77">
-                    </div>
-                    <div class="input-group">
-                        <label class="text-[10px] text-zinc-500 uppercase font-black ml-1">Senha</label>
-                        <input type="password" id="c-pass" class="w-full bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-sm outline-none focus:border-blue-600" placeholder="••••••••">
-                        <i class="fa-solid fa-eye input-eye" onclick="togglePass('c-pass', this)"></i>
-                    </div>
-                    
-                    <button onclick="finalizarCadastro()" class="w-full bg-green-600 hover:bg-green-500 py-4 rounded-xl zy-font text-xs font-black transition uppercase">Finalizar Cadastro</button>
-                    
-                    <button onclick="trocarAuth('login')" class="w-full text-[10px] text-zinc-500 font-bold uppercase">Voltar ao Login</button>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <div id="arena-content" class="hidden min-h-screen">
-        <header class="p-4 bg-black/90 backdrop-blur-md border-b border-blue-900/20 sticky top-0 z-[500]">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <h1 class="zy-font text-lg font-black italic tracking-tighter">ZYPLAY<span class="text-blue-600">STORE</span></h1>
-                
-                <div class="flex items-center gap-4">
-                    <div id="zcoin-pill" class="bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-2xl flex items-center gap-2">
-                        <span id="saldo-txt" class="zy-font text-xs text-yellow-500 font-black">0.00 ZC</span>
-                        <i class="fa-solid fa-coins text-yellow-500"></i>
-                    </div>
-                    <button onclick="logout()" class="text-zinc-600 hover:text-red-500"><i class="fa-solid fa-power-off"></i></button>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto p-6">
-            <div id="banner-propaganda" class="mb-10 p-8 rounded-[30px] bg-gradient-to-r from-blue-900/20 to-black border border-blue-500/20">
-                <h2 class="zy-font text-xl uppercase">Nova Moeda: <span class="text-yellow-400">Ganhe Zconis</span></h2>
-                <p class="text-zinc-500 text-xs mt-2">Jogue e acumule moedas virtuais. Visitantes não acumulam saldo.</p>
-            </div>
-
-            <h3 class="zy-font text-[10px] text-blue-500 mb-8 uppercase tracking-widest italic">● Arena de Jogos Disponíveis</h3>
-            
-            <div id="jogos-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 pb-32">
-                </div>
-        </main>
+    <div class="ad-space">
+        PUBLICIDADE
     </div>
 
-    <div id="game-screen">
-        <div class="p-3 bg-zinc-950 flex justify-between items-center border-b border-blue-600/30">
-            <button onclick="fecharJogo()" class="text-zinc-500 text-[10px] font-black uppercase hover:text-white"><i class="fa-solid fa-arrow-left mr-2"></i> Arena</button>
-            <span id="game-title" class="zy-font text-blue-500 text-[9px] uppercase"></span>
-            <div id="ganho-status" class="text-yellow-500 text-[8px] font-bold">RECOMPENSAS ATIVAS</div>
-        </div>
-        <iframe id="game-frame" class="w-full h-full border-none" src=""></iframe>
-    </div>
+    <footer>
+        &copy; 2026 ZyPlay Store - Todos os direitos reservados.
+    </footer>
 
-    <script>
-        const db_jogos = [
-            { n: "My Parking Lot", c: "Puzzle", i: "https://img.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140-512x512.jpg", u: "https://html5.gamedistribution.com/c9f842ab8eab48a884f3733beeffd140/" },
-            { n: "Cyber Truck", c: "Ação", i: "https://img.gamedistribution.com/00492167cc5a4435860361f19811802e-512x512.jpg", u: "https://html5.gamedistribution.com/00492167cc5a4435860361f19811802e/" },
-            { n: "Combat Online", c: "Tiro", i: "https://img.gamedistribution.com/264b360b9795493b80b7f80590897f1f-512x512.jpg", u: "https://html5.gamedistribution.com/264b360b9795493b80b7f80590897f1f/" },
-            { n: "Princess Fashion", c: "Meninas", i: "https://img.gamedistribution.com/5f38914b5329431e843e936b4476686a-512x512.jpg", u: "https://html5.gamedistribution.com/5f38914b5329431e843e936b4476686a/" },
-            { n: "Vex 7", c: "Aventura", i: "https://img.gamedistribution.com/39a674d8253147329528d2d92144371b-512x512.jpg", u: "https://html5.gamedistribution.com/39a674d8253147329528d2d92144371b/" },
-            { n: "Bubble Master", c: "Puzzle", i: "https://img.gamedistribution.com/649e378c33a94848bc95376043216893-512x512.jpg", u: "https://html5.gamedistribution.com/649e378c33a94848bc95376043216893/" }
-        ];
-
-        let saldoZ = parseFloat(localStorage.getItem('zy_saldo')) || 0.00;
-        let modoVisitante = false;
-
-        window.onload = function() {
-            if(localStorage.getItem('zy_session') === 'active') { abrirArena(); }
-            updateSaldo();
-        };
-
-        function togglePass(id, el) {
-            const p = document.getElementById(id);
-            p.type = p.type === 'password' ? 'text' : 'password';
-            el.classList.toggle('fa-eye-slash');
-        }
-
-        function trocarAuth(tipo) {
-            document.getElementById('box-login').classList.toggle('hidden', tipo !== 'login');
-            document.getElementById('box-cadastro').classList.toggle('hidden', tipo !== 'cadastro');
-        }
-
-        function entrarVisitante() {
-            modoVisitante = true;
-            abrirArena();
-            document.getElementById('zcoin-pill').classList.add('visitor-badge');
-            document.getElementById('ganho-status').innerText = "MODO VISITANTE (SEM GANHOS)";
-            document.getElementById('ganho-status').classList.replace('text-yellow-500', 'text-zinc-500');
-        }
-
-        function finalizarCadastro() {
-            const user = document.getElementById('c-user').value;
-            const pass = document.getElementById('c-pass').value;
-            if(!user || !pass) return alert("Preencha os dados!");
-            
-            localStorage.setItem('zy_user_db', JSON.stringify({user, pass}));
-            alert("Cadastro realizado! Faça login agora.");
-            trocarAuth('login');
-        }
-
-        function fazerLogin() {
-            const user = document.getElementById('l-user').value;
-            const pass = document.getElementById('l-pass').value;
-            const erro = document.getElementById('login-erro');
-            const db = JSON.parse(localStorage.getItem('zy_user_db'));
-
-            if(db && user === db.user && pass === db.pass || (user === "admin" && pass === "123")) {
-                localStorage.setItem('zy_session', 'active');
-                modoVisitante = false;
-                abrirArena();
-            } else {
-                erro.innerText = "Usuário não encontrado ou senha incorreta.";
-                erro.classList.remove('hidden');
-            }
-        }
-
-        function abrirArena() {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('arena-content').classList.remove('hidden');
-            const grid = document.getElementById('jogos-grid');
-            grid.innerHTML = "";
-            
-            // Loop para exibir muitos jogos (3x a lista)
-            for(let i=0; i<3; i++) {
-                db_jogos.forEach(j => {
-                    grid.innerHTML += `
-                        <div class="game-tile cursor-pointer" onclick="jogar('${j.u}', '${j.n}')">
-                            <img src="${j.i}" class="w-full aspect-square object-cover">
-                            <div class="p-3">
-                                <h4 class="text-[9px] zy-font truncate uppercase">${j.n}</h4>
-                                <p class="text-[7px] text-zinc-500 font-bold mt-1">${j.c}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        function jogar(url, nome) {
-            document.getElementById('game-title').innerText = nome;
-            document.getElementById('game-frame').src = url;
-            document.getElementById('game-screen').style.display = 'flex';
-        }
-
-        function fecharJogo() {
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('game-frame').src = "";
-            
-            if(!modoVisitante) {
-                saldoZ += 0.50;
-                localStorage.setItem('zy_saldo', saldoZ);
-                updateSaldo();
-            }
-        }
-
-        function updateSaldo() {
-            document.getElementById('saldo-txt').innerText = `${saldoZ.toFixed(2)} ZC`;
-        }
-
-        function logout() { 
-            localStorage.removeItem('zy_session'); 
-            location.reload(); 
-        }
-    </script>
 </body>
 </html>
