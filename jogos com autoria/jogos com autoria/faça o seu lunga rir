@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Lunga Miner - Zycoins</title>
+    <style>
+        body { 
+            background: #1a1a1a; 
+            color: white; 
+            font-family: 'Courier New', Courier, monospace; 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+        .score-box { font-size: 2.5rem; color: #ffd700; margin-bottom: 10px; }
+        #status-text { color: #ff4444; font-weight: bold; margin-bottom: 20px; height: 24px; }
+        
+        #lunga-img { 
+            width: 250px; 
+            border: 6px solid #444; 
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            filter: grayscale(100%);
+        }
+        #lunga-img:active { transform: scale(0.95); }
+        
+        .hint { color: #666; margin-top: 20px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="score-box">Zycoins: <span id="balance">0.00</span></div>
+    <div id="status-text">O SEU LUNGA TÁ ZANGADO!</div>
+
+    <img src="lunga.png" id="lunga-img" onclick="agradarLunga()">
+
+    <p class="hint">Clique para fazer o homem sorrir e minerar!</p>
+
+    <script>
+        let clicks = 0;
+        let balance = 0;
+        const img = document.getElementById('lunga-img');
+        const statusText = document.getElementById('status-text');
+        const balanceDisplay = document.getElementById('balance');
+
+        function agradarLunga() {
+            clicks++;
+            
+            if (clicks < 15) {
+                statusText.innerText = "NÃO ME RELE!";
+                img.style.filter = "grayscale(100%) brightness(0.7)";
+            } else if (clicks < 40) {
+                statusText.innerText = "TÁ OLHANDO O QUÊ?";
+                img.style.filter = "grayscale(50%)";
+            } else {
+                // O SORRISO (Aqui a mineração ativa)
+                statusText.innerText = "SORRIU! GANHANDO ZYCOINS!";
+                statusText.style.color = "#00ff00";
+                img.style.filter = "grayscale(0%)";
+                img.style.borderColor = "#00ff00";
+                
+                balance += 2.50; // Paga mais porque é mais difícil
+                balanceDisplay.innerText = balance.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
