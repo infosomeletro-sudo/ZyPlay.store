@@ -3,240 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY STORE | OFICIAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>ZyPlay - Jogos Online Grátis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --gold: #ffcc00;
-            --gold-glow: rgba(255, 204, 0, 0.4);
-            --neon-purple: #8a2be2;
-            --bg: #050505;
-            --glass: rgba(255, 255, 255, 0.03);
+            --bg-main: #0b0b0d;
+            --bg-sidebar: #121214;
+            --primary: #7a5df5; /* Cor estilo CrazyGames */
+            --text-muted: #94949e;
+            --card-bg: #1e1e21;
         }
 
         body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-main);
+            color: white;
+            font-family: 'Inter', sans-serif;
             margin: 0;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(255, 204, 0, 0.05) 0%, transparent 20%);
+            display: flex;
+            height: 100vh;
         }
 
-        /* HEADER CIBERNÉTICO */
-        .header {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            padding: 10px 5%;
+        /* MENU LATERAL (SIDEBAR) */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-sidebar);
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #222;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            padding: 0 15px 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #252529;
+            color: white;
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        .sidebar-sep {
+            height: 1px;
+            background: #222;
+            margin: 15px 10px;
+        }
+
+        /* CONTEÚDO PRINCIPAL */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* HEADER / BUSCA */
+        header {
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--gold);
-            box-shadow: 0 0 20px var(--gold-glow);
+            background-color: rgba(11, 11, 13, 0.8);
+            backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 100;
         }
 
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--gold);
-            text-shadow: 0 0 10px var(--gold);
-            letter-spacing: 3px;
-        }
-
-        .wallet-container {
+        .search-bar {
+            background: #1e1e21;
+            border-radius: 25px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
-            background: linear-gradient(90deg, #111, #222);
-            padding: 5px 20px;
-            border-radius: 50px;
-            border: 1px solid var(--gold);
-            box-shadow: inset 0 0 10px #000;
+            width: 400px;
+            border: 1px solid #333;
         }
 
-        .balance-info { text-align: center; padding: 0 15px; }
-        .zy-val { 
-            color: var(--gold); 
-            font-family: 'Orbitron', sans-serif;
-            font-weight: bold; 
-            font-size: 1.2rem; 
-            display: block;
-        }
-        .rs-val { color: #00ff7f; font-size: 0.9rem; font-weight: bold; text-shadow: 0 0 5px rgba(0,255,127,0.3); }
-
-        .btn-withdraw {
-            background: var(--gold);
-            color: #000;
+        .search-bar input {
+            background: transparent;
             border: none;
+            color: white;
+            margin-left: 10px;
+            width: 100%;
+            outline: none;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login {
+            background: var(--primary);
+            color: white;
             padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 900;
-            font-family: 'Orbitron', sans-serif;
+            border-radius: 8px;
+            font-weight: bold;
+            border: none;
             cursor: pointer;
-            text-transform: uppercase;
-            transition: 0.3s;
-            box-shadow: 0 0 15px var(--gold-glow);
         }
 
-        .btn-withdraw:hover {
-            transform: scale(1.05);
-            background: #fff;
-            box-shadow: 0 0 25px #fff;
-        }
-
-        /* GRID DE GAMES ENFEITADA */
-        .container { padding: 40px 5%; }
+        /* GRID DE JOGOS */
+        .game-section { padding: 30px; }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
         }
 
         .game-card {
-            background: var(--glass);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            border-radius: 12px;
             overflow: hidden;
-            position: relative;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.3s;
+            cursor: pointer;
             text-decoration: none;
-        }
-
-        .game-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(180deg, transparent 50%, rgba(255, 204, 0, 0.2) 100%);
-            opacity: 0; transition: 0.3s;
+            color: white;
+            border: 1px solid transparent;
         }
 
         .game-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            border-color: var(--gold);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
+            transform: scale(1.05);
+            border-color: var(--primary);
         }
 
-        .game-card:hover::before { opacity: 1; }
-
-        .thumb {
-            height: 160px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            background: #111;
-            position: relative;
-        }
-
-        /* Detalhe de luz no card */
-        .card-light {
-            position: absolute;
-            top: 10px; right: 10px;
-            width: 8px; height: 8px;
-            background: var(--gold);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--gold);
-        }
-
-        .info { padding: 20px; position: relative; z-index: 2; }
-        .info h3 { 
-            margin: 0; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 1rem; 
-            color: #fff;
-            text-transform: uppercase;
-        }
-        
-        .play-tag {
-            margin-top: 10px;
-            display: inline-block;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            padding: 3px 10px;
-            border-radius: 4px;
-        }
-
-        /* Banner de Ads Enfeitado */
-        .ad-slot {
+        .game-thumb {
             width: 100%;
-            max-width: 900px;
-            margin: 30px auto;
-            height: 100px;
-            border: 1px solid #222;
-            background: repeating-linear-gradient(45deg, #000, #000 10px, #050505 10px, #050505 20px);
+            aspect-ratio: 16/10;
+            background: #2a2a2e;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
-            color: #333;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 5px;
+            font-size: 3rem;
         }
 
+        .game-info { padding: 12px; }
+        .game-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+        .game-stats { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* SCROLLBAR CUSTOMIZADA */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="logo">ZYPLAY</div>
+    <aside class="sidebar">
+        <div class="logo-area">
+            <i class="fas fa-gamepad" style="color:var(--primary)"></i> ZYPLAY
+        </div>
         
-        <div class="wallet-container">
-            <div class="balance-info">
-                <span class="zy-val" id="zy">2.450</span>
-                <span class="rs-val" id="rs">R$ 24,50</span>
+        <a href="#" class="nav-item active"><i class="fas fa-home"></i> Página Inicial</a>
+        <a href="#" class="nav-item"><i class="fas fa-fire"></i> Trending</a>
+        <a href="#" class="nav-item"><i class="fas fa-plus-circle"></i> Novo</a>
+        
+        <div class="sidebar-sep"></div>
+        
+        <div style="padding: 0 15px 10px; font-size: 0.8rem; color: #555; font-weight: bold;">CATEGORIAS</div>
+        <a href="#" class="nav-item"><i class="fas fa-gun"></i> Ação</a>
+        <a href="#" class="nav-item"><i class="fas fa-car"></i> Carro</a>
+        <a href="#" class="nav-item"><i class="fas fa-puzzle-piece"></i> Pensar</a>
+        <a href="#" class="nav-item"><i class="fas fa-users"></i> Multiplayer</a>
+        <a href="#" class="nav-item"><i class="fas fa-futbol"></i> Esportes</a>
+        
+        <div class="sidebar-sep"></div>
+        <a href="#" class="nav-item"><i class="fas fa-cog"></i> Configurações</a>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <div class="search-bar">
+                <i class="fas fa-search" style="color:#555"></i>
+                <input type="text" placeholder="Pesquisar jogos e categorias...">
             </div>
-            <button class="btn-withdraw" onclick="alert('Processando saque via PIX...')">SAQUE</button>
-        </div>
-    </header>
-
-    <div class="ad-slot">Espaço Publicitário</div>
-
-    <main class="container">
-        <div class="game-grid">
             
-            <a href="jogos com autoria/virginia/" class="game-card">
-                <div class="card-light"></div>
-                <div class="thumb">💃</div>
-                <div class="info">
-                    <h3>Virginia Miner</h3>
-                    <div class="play-tag">CLIQUE E GANHE</div>
+            <div class="user-actions">
+                <div style="text-align: right; margin-right: 15px;">
+                    <div style="color:var(--primary); font-weight: bold; font-size: 0.9rem;">2.450 ZY</div>
+                    <div style="color:#00ff88; font-size: 0.7rem;">R$ 24,50</div>
                 </div>
-            </a>
+                <button class="btn-login">Entrar</button>
+            </div>
+        </header>
 
-            <a href="jogos de terceiros/space-game/" class="game-card">
-                <div class="card-light"></div>
-                <div class="thumb">🚀</div>
-                <div class="info">
-                    <h3>Space Game</h3>
-                    <div class="play-tag">SOBREVIVÊNCIA</div>
+        <section class="game-section">
+            <div class="section-title">As melhores opções para você</div>
+            
+            <div class="game-grid">
+                <a href="jogos%20com%20autoria/virginia/" class="game-card">
+                    <div class="game-thumb">💃</div>
+                    <div class="game-info">
+                        <div class="game-name">Virginia Miner</div>
+                        <div class="game-stats"><i class="fas fa-star" style="color:orange"></i> 4.8 • 12k plays</div>
+                    </div>
+                </a>
+
+                <a href="jogos%20de%20terceiros/space-game/" class="game-card">
+                    <div class="game-thumb">🚀</div>
+                    <div class="game-info">
+                        <div class="game-name">Space Game</div>
+                        <div class="game-stats"><i class="fas fa-star" style="color:orange"></i> 4.5 • 8k plays</div>
+                    </div>
+                </a>
+
+                <div class="game-card">
+                    <div class="game-thumb" style="background: url('https://img.gamedistribution.com/84931234.jpg') center/cover;"></div>
+                    <div class="game-info">
+                        <div class="game-name">Bloxd.io</div>
+                        <div class="game-stats">Hot 🔥</div>
+                    </div>
                 </div>
-            </a>
 
-            <a href="jogos com autoria/seu-lunga/" class="game-card">
-                <div class="card-light"></div>
-                <div class="thumb">👴</div>
-                <div class="info">
-                    <h3>Seu Lunga</h3>
-                    <div class="play-tag">HARDCORE</div>
                 </div>
-            </a>
-
-        </div>
+        </section>
     </main>
-
-    <div class="ad-slot" style="margin-top: 50px; opacity: 0.5;">Fim da Biblioteca</div>
-
-    <footer style="text-align: center; padding: 40px; color: #444; font-size: 0.7rem; letter-spacing: 2px;">
-        ZYPLAY STORE &bull; SISTEMA DE ENTRETENIMENTO MONETIZADO
-    </footer>
 
 </body>
 </html>
