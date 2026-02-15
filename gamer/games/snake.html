@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snake Neon</title>
+<style>
+  body{margin:0;background:#060615;color:#fff;font-family:Arial;display:grid;place-items:center;height:100vh}
+  canvas{border:2px solid #00d4ff;border-radius:10px;background:rgba(0,0,0,.35)}
+</style></head><body>
+<canvas id="c" width="420" height="420"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'); const grid=20, n=c.width/grid;
+let dir={x:1,y:0}, snake=[{x:10,y:10}], food={x:5,y:5}, score=0, tick=0;
+function rnd(){return Math.floor(Math.random()*n)}
+function placeFood(){food={x:rnd(),y:rnd()}}
+addEventListener('keydown',e=>{
+  const k=e.key;
+  if(k==='ArrowUp' && dir.y!==1) dir={x:0,y:-1};
+  if(k==='ArrowDown'&& dir.y!==-1) dir={x:0,y:1};
+  if(k==='ArrowLeft'&& dir.x!==1) dir={x:-1,y:0};
+  if(k==='ArrowRight'&& dir.x!==-1) dir={x:1,y:0};
+});
+function loop(){
+  requestAnimationFrame(loop);
+  if(++tick%8!==0) return;
+  const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(head.x<0||head.y<0||head.x>=n||head.y>=n||snake.some(s=>s.x===head.x&&s.y===head.y)){
+    alert('Game Over! Score: '+score); snake=[{x:10,y:10}]; dir={x:1,y:0}; score=0; placeFood(); return;
+  }
+  snake.unshift(head);
+  if(head.x===food.x&&head.y===food.y){score+=10; placeFood();} else snake.pop();
+  x.clearRect(0,0,c.width,c.height);
+  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(0,0,c.width,c.height);
+  x.fillStyle='#ffcc00'; x.fillRect(food.x*grid,food.y*grid,grid,grid);
+  x.fillStyle='#00d4ff';
+  snake.forEach((s,i)=>{x.globalAlpha=i?0.9:1; x.fillRect(s.x*grid,s.y*grid,grid,grid);});
+  x.globalAlpha=1;
+  x.fillStyle='rgba(255,255,255,.7)'; x.fillText('Score: '+score, 10, 16);
+}
+placeFood(); loop();
+</script></body></html>
