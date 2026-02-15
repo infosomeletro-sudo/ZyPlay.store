@@ -2,9 +2,26 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
+
+    <!-- =========================
+         EZOIC (CMP + ADS HEADER)
+         Coloque no <head> (topo)
+    ========================== -->
+    <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
+    <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js"></script>
+
+    <script async src="https://www.ezojs.com/ezoic/sa.min.js"></script>
+    <script>
+        window.ezstandalone = window.ezstandalone || {};
+        ezstandalone.cmd = ezstandalone.cmd || [];
+    </script>
+    <!-- ========================= -->
+
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         :root {
             --pink-neon: #ff007a;
@@ -15,8 +32,7 @@
 
         body {
             background: var(--deep-bg);
-            /* GRADE DE FUNDO MAIS FORTE */
-            background-image: 
+            background-image:
                 linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
             background-size: 50px 50px;
@@ -29,7 +45,6 @@
             overflow: hidden;
         }
 
-        /* --- HEADER --- */
         header {
             background: #12122b;
             height: 90px;
@@ -46,7 +61,6 @@
         .logo-container i { font-size: 3rem; color: var(--blue-neon); filter: drop-shadow(0 0 10px var(--blue-neon)); }
         .logo-text { font-family: 'Press Start 2P'; font-size: 1.8rem; color: var(--gold-neon); text-shadow: 3px 3px #000; }
 
-        /* --- BOTÃO GOOGLE ORIGINAL (BRANDING OFICIAL) --- */
         .g-sign-in-button {
             display: inline-flex;
             align-items: center;
@@ -54,38 +68,21 @@
             color: #757575;
             border: 1px solid #dcdcdc;
             border-radius: 2px;
-            padding: 1px; /* Espaço para o ícone */
+            padding: 1px;
             cursor: pointer;
             font-family: 'Roboto', arial, sans-serif;
             font-weight: 500;
             transition: box-shadow 0.2s;
             text-decoration: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+            user-select: none;
         }
 
-        .g-sign-in-button:hover {
-            box-shadow: 0 0 3px 3px rgba(66,133,244,0.3);
-        }
-
-        .g-icon-wrapper {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
+        .g-sign-in-button:hover { box-shadow: 0 0 3px 3px rgba(66,133,244,0.3); }
+        .g-icon-wrapper { background-color: #fff; padding: 10px; border-radius: 2px; display: flex; justify-content: center; align-items: center; }
         .g-icon { width: 18px; height: 18px; }
+        .g-button-text { padding: 0 12px; font-size: 14px; letter-spacing: 0.2px; color: #3c4043; }
 
-        .g-button-text {
-            padding: 0 12px;
-            font-size: 14px;
-            letter-spacing: 0.2px;
-            color: #3c4043;
-        }
-
-        /* --- BANNER --- */
         .zycoin-bar {
             background: var(--pink-neon);
             text-align: center;
@@ -96,18 +93,11 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* --- PERSONAGENS --- */
-        .hero-char {
-            position: absolute;
-            z-index: 1;
-            pointer-events: none;
-            filter: drop-shadow(0 0 30px var(--blue-neon));
-        }
+        .hero-char { position: absolute; z-index: 1; pointer-events: none; filter: drop-shadow(0 0 30px var(--blue-neon)); }
         .left-char { bottom: -10px; left: 10px; width: 300px; }
         .right-char { top: 120px; right: 20px; width: 320px; opacity: 0.9; }
 
-        /* --- ESTRUTURA --- */
-        .main-layout { display: flex; flex: 1; z-index: 10; }
+        .main-layout { display: flex; flex: 1; z-index: 10; min-height: 0; }
 
         .sidebar {
             width: 320px;
@@ -115,6 +105,7 @@
             backdrop-filter: blur(15px);
             padding: 40px 25px;
             border-right: 4px solid var(--pink-neon);
+            overflow: auto;
         }
 
         .menu-item {
@@ -139,7 +130,92 @@
             transform: translate(4px, -4px);
         }
 
-        /* COOKIE BANNER */
+        .menu-item.active {
+            border-color: var(--pink-neon);
+            background: rgba(255, 0, 122, 0.18);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            padding: 30px;
+            overflow: auto;
+            min-height: 0;
+        }
+
+        .panel {
+            width: min(980px, 100%);
+            background: rgba(18,18,43,0.55);
+            border: 2px solid rgba(0,212,255,0.35);
+            border-radius: 10px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.65);
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-family: 'Press Start 2P';
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: var(--gold-neon);
+            margin: 0 0 16px 0;
+            text-shadow: 2px 2px #000;
+        }
+
+        .hint {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin: 0 0 14px 0;
+        }
+
+        /* Jogo */
+        .game-wrap {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .game-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .badge {
+            font-family: 'Press Start 2P';
+            font-size: 0.7rem;
+            padding: 10px 12px;
+            border: 2px solid var(--gold-neon);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.25);
+        }
+
+        .btn {
+            background: var(--blue-neon);
+            border: none;
+            padding: 10px 14px;
+            font-weight: 900;
+            cursor: pointer;
+            border-radius: 6px;
+            font-family: 'Rajdhani';
+            font-size: 1rem;
+        }
+
+        .btn:hover { filter: brightness(1.08); }
+
+        canvas {
+            background: rgba(0,0,0,0.35);
+            border: 2px solid rgba(255, 204, 0, 0.6);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 760px;
+            height: auto;
+        }
+
         .cookie-popup {
             position: fixed;
             bottom: 30px;
@@ -155,13 +231,12 @@
             z-index: 1000;
             box-shadow: 0 0 50px #000;
         }
-
     </style>
 </head>
-<body>
 
-    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char">
-    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char">
+<body>
+    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char" alt="">
+    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char" alt="">
 
     <header>
         <div class="logo-container">
@@ -169,7 +244,7 @@
             <div class="logo-text">ZYPLAY</div>
         </div>
 
-        <div class="g-sign-in-button">
+        <div class="g-sign-in-button" title="(demo) Em breve login real">
             <div class="g-icon-wrapper">
                 <img class="g-icon" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" alt="Google Logo">
             </div>
@@ -177,22 +252,63 @@
         </div>
     </header>
 
-    <div class="zycoin-bar">
-        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN
-    </div>
+    <div class="zycoin-bar">NOVA MOEDA DIGITAL EM BREVE: ZYCOIN</div>
 
     <div class="main-layout">
         <aside class="sidebar">
             <div style="color: #666; margin-bottom: 20px; font-size: 0.8rem;">NAVEGAÇÃO</div>
-            <a href="#" class="menu-item">INÍCIO</a>
-            <a href="#" class="menu-item">CATEGORIAS</a>
-            <a href="#" class="menu-item" style="border-color: var(--pink-neon);">RANKING</a>
-            <a href="#" class="menu-item" style="border-color: var(--pink-neon);">PRIVACIDADE</a>
+            <a href="#" class="menu-item active" data-view="home">INÍCIO</a>
+            <a href="#" class="menu-item" data-view="games">JOGOS</a>
+            <a href="#" class="menu-item" data-view="ranking" style="border-color: var(--pink-neon);">RANKING</a>
+            <a href="#" class="menu-item" data-view="privacy" style="border-color: var(--pink-neon);">PRIVACIDADE</a>
         </aside>
 
-        <main style="flex: 1; display: flex; align-items: center; justify-content: center;">
-            <div style="font-family: 'Press Start 2P'; font-size: 2rem; color: rgba(255,255,255,0.05); text-align: center;">
-                AGUARDANDO SERVIDOR...
+        <main>
+            <div class="panel" id="view-home">
+                <h2 class="panel-title">BEM-VINDO AO ZYPLAY</h2>
+                <p class="hint">Aqui você vai ter jogos simples rodando direto no navegador. Nada de servidor por enquanto — tudo nativo em HTML/CSS/JS.</p>
+                <p class="hint">Clique em <b>JOGOS</b> para jogar o primeiro: <b>ZyBlock Dodge</b>.</p>
+                <div style="font-family:'Press Start 2P'; font-size: 1.6rem; color: rgba(255,255,255,0.06); text-align:center; padding: 20px 0;">
+                    READY PLAYER ONE
+                </div>
+            </div>
+
+            <div class="panel" id="view-games" style="display:none;">
+                <h2 class="panel-title">JOGOS</h2>
+                <p class="hint">🎮 <b>ZyBlock Dodge</b>: desvie dos blocos. Use <b>←</b> <b>→</b>. (Funciona no PC e no celular com botões.)</p>
+
+                <div class="game-wrap">
+                    <div class="game-bar">
+                        <div class="badge">PONTOS: <span id="score">0</span></div>
+                        <div class="badge">RECORDE: <span id="best">0</span></div>
+
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn" id="btnStart">Iniciar</button>
+                            <button class="btn" id="btnPause">Pausar</button>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn" id="btnLeft">←</button>
+                            <button class="btn" id="btnRight">→</button>
+                        </div>
+                    </div>
+
+                    <canvas id="game" width="760" height="420"></canvas>
+
+                    <p class="hint" id="status" style="margin-top: 6px; opacity: 0.9;"></p>
+                </div>
+            </div>
+
+            <div class="panel" id="view-ranking" style="display:none;">
+                <h2 class="panel-title">RANKING</h2>
+                <p class="hint">Por enquanto o ranking é local (salva no seu navegador). Depois a gente liga em banco de dados.</p>
+                <p class="hint">Seu recorde atual: <b><span id="best2">0</span></b></p>
+            </div>
+
+            <div class="panel" id="view-privacy" style="display:none;">
+                <h2 class="panel-title">PRIVACIDADE</h2>
+                <p class="hint">Este site usa cookies/armazenamento local para salvar seu recorde e preferências.</p>
+                <p class="hint">Se você quiser, eu crio uma página de política de privacidade completa (LGPD) depois.</p>
             </div>
         </main>
     </div>
@@ -202,5 +318,211 @@
         <button onclick="document.getElementById('cp').remove()" style="background:var(--blue-neon); border:none; padding:8px 20px; font-weight:bold; cursor:pointer;">OK</button>
     </div>
 
+    <script>
+        // ======================
+        // Navegação SPA simples
+        // ======================
+        const menuItems = document.querySelectorAll('.menu-item');
+        const views = {
+            home: document.getElementById('view-home'),
+            games: document.getElementById('view-games'),
+            ranking: document.getElementById('view-ranking'),
+            privacy: document.getElementById('view-privacy'),
+        };
+
+        function showView(name) {
+            Object.keys(views).forEach(k => views[k].style.display = (k === name ? 'block' : 'none'));
+            menuItems.forEach(a => a.classList.toggle('active', a.dataset.view === name));
+            if (name === 'ranking') {
+                document.getElementById('best2').textContent = getBest();
+            }
+        }
+
+        menuItems.forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(a.dataset.view);
+            });
+        });
+
+        // ======================
+        // Jogo ZyBlock Dodge
+        // ======================
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+
+        const scoreEl = document.getElementById('score');
+        const bestEl = document.getElementById('best');
+        const best2El = document.getElementById('best2');
+        const statusEl = document.getElementById('status');
+
+        const btnStart = document.getElementById('btnStart');
+        const btnPause = document.getElementById('btnPause');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+
+        let running = false;
+        let paused = false;
+        let score = 0;
+
+        const player = { x: 0, y: 0, w: 40, h: 18, speed: 10 };
+        let blocks = [];
+        let lastSpawn = 0;
+
+        function fitGame() {
+            // mantém a lógica no tamanho fixo do canvas, mas centraliza player
+            player.x = (canvas.width - player.w) / 2;
+            player.y = canvas.height - 55;
+        }
+
+        function getBest() {
+            return Number(localStorage.getItem('zyplay_best') || 0);
+        }
+
+        function setBest(v) {
+            localStorage.setItem('zyplay_best', String(v));
+            bestEl.textContent = v;
+            if (best2El) best2El.textContent = v;
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreEl.textContent = '0';
+            blocks = [];
+            lastSpawn = 0;
+            fitGame();
+            statusEl.textContent = 'Use ← → (ou botões) para desviar. Boa sorte!';
+        }
+
+        function spawnBlock() {
+            const size = 22 + Math.floor(Math.random() * 24);
+            blocks.push({
+                x: Math.random() * (canvas.width - size),
+                y: -size,
+                w: size,
+                h: size,
+                v: 3.2 + Math.random() * 2.6
+            });
+        }
+
+        function collides(a, b) {
+            return (
+                a.x < b.x + b.w &&
+                a.x + a.w > b.x &&
+                a.y < b.y + b.h &&
+                a.y + a.h > b.y
+            );
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // fundo leve
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // player
+            ctx.fillStyle = '#00d4ff';
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+
+            // blocks
+            ctx.fillStyle = '#ff007a';
+            for (const b of blocks) {
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+            }
+
+            // linha do "chão"
+            ctx.fillStyle = 'rgba(255,204,0,0.25)';
+            ctx.fillRect(0, canvas.height - 20, canvas.width, 2);
+        }
+
+        function gameOver() {
+            running = false;
+            paused = false;
+
+            const best = getBest();
+            if (score > best) setBest(score);
+
+            statusEl.textContent = `Game Over! Pontos: ${score}. Clique em "Iniciar" para jogar de novo.`;
+        }
+
+        function tick(ts) {
+            if (!running) return;
+
+            if (paused) {
+                draw();
+                requestAnimationFrame(tick);
+                return;
+            }
+
+            // spawn
+            if (ts - lastSpawn > 520) { // ~2 por segundo
+                spawnBlock();
+                lastSpawn = ts;
+            }
+
+            // update
+            for (const b of blocks) b.y += b.v;
+            blocks = blocks.filter(b => b.y < canvas.height + 50);
+
+            // score
+            score += 1;
+            scoreEl.textContent = score;
+
+            // collision
+            for (const b of blocks) {
+                if (collides(player, b)) {
+                    draw();
+                    gameOver();
+                    return;
+                }
+            }
+
+            draw();
+            requestAnimationFrame(tick);
+        }
+
+        function moveLeft() {
+            player.x = Math.max(0, player.x - player.speed);
+        }
+
+        function moveRight() {
+            player.x = Math.min(canvas.width - player.w, player.x + player.speed);
+        }
+
+        // teclado
+        window.addEventListener('keydown', (e) => {
+            if (!running) return;
+            if (e.key === 'ArrowLeft') moveLeft();
+            if (e.key === 'ArrowRight') moveRight();
+            if (e.key.toLowerCase() === 'p') paused = !paused;
+        });
+
+        // botões mobile
+        btnLeft.addEventListener('mousedown', moveLeft);
+        btnRight.addEventListener('mousedown', moveRight);
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); }, { passive:false });
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); }, { passive:false });
+
+        btnStart.addEventListener('click', () => {
+            showView('games');
+            resetGame();
+            running = true;
+            paused = false;
+            requestAnimationFrame(tick);
+        });
+
+        btnPause.addEventListener('click', () => {
+            if (!running) return;
+            paused = !paused;
+            statusEl.textContent = paused ? 'Pausado. Clique em "Pausar" para voltar.' : 'Voltando...';
+        });
+
+        // init
+        bestEl.textContent = getBest();
+        if (best2El) best2El.textContent = getBest();
+        fitGame();
+        draw();
+    </script>
 </body>
 </html>
