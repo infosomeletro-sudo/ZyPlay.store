@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Click Frenzy</title>
+<style>
+body{background:#111;color:white;text-align:center;font-family:sans-serif}
+button{padding:20px;font-size:20px;margin-top:40px}
+</style>
+</head>
+<body>
+<h2>Click Frenzy</h2>
+<p>Você tem 10 segundos!</p>
+<h1 id="score">0</h1>
+<button onclick="clickMe()">CLIQUE!</button>
+
+<script>
+let score=0;
+let time=10;
+
+function clickMe(){
+if(time>0) score++;
+document.getElementById("score").innerText=score;
+}
+
+setInterval(()=>{
+time--;
+if(time<=0){
+alert("Fim! Pontuação: "+score);
+location.reload();
+}
+},1000);
+</script>
+</body>
+</html>
