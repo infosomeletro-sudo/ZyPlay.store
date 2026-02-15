@@ -1,34 +1,57 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Desafio Matemático</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Desafio Matemático</title>
 <style>
-body{background:#111;color:white;text-align:center;font-family:sans-serif}
-input{padding:10px;font-size:18px}
-button{padding:10px;font-size:18px}
-</style>
-</head>
-<body>
-<h2>Desafio Matemático</h2>
-<h1 id="question"></h1>
-<input id="answer">
-<button onclick="check()">Responder</button>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  .box{max-width:520px;margin:18px auto;padding:18px;border-radius:16px;background:rgba(0,0,0,.25);border:1px solid rgba(0,212,255,.35)}
+  input{padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;font-size:16px}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div class="box">
+  <h2>Desafio Matemático</h2>
+  <div id="q" style="font-size:26px;font-weight:900;margin:10px 0;"></div>
+  <input id="a" placeholder="Resposta" inputmode="numeric">
+  <button class="btn" id="ok">Responder</button>
+  <div style="margin-top:10px;">Acertos: <b id="s">0</b></div>
+</div>
 
 <script>
-let a=Math.floor(Math.random()*10);
-let b=Math.floor(Math.random()*10);
-document.getElementById("question").innerText=a+" + "+b+" = ?";
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){ if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d);
+}
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
 
-function check(){
-let ans=document.getElementById("answer").value;
-if(ans==a+b){
-alert("Correto!");
-}else{
-alert("Errado!");
+let A,B,score=0;
+const q=document.getElementById('q'), a=document.getElementById('a'), s=document.getElementById('s');
+
+function next(){
+  A=Math.floor(Math.random()*20);
+  B=Math.floor(Math.random()*20);
+  q.textContent = `${A} + ${B} = ?`;
+  a.value=""; a.focus();
 }
-location.reload();
-}
+document.getElementById('ok').onclick=()=>{
+  const v=Number(a.value);
+  if(v===A+B){
+    score++; s.textContent=score;
+    beep(980,0.06); setTimeout(()=>beep(1180,0.06),70);
+    next();
+  }else{
+    beep(180,0.12,"sawtooth",0.08);
+    alert("Errado! Resposta: "+(A+B));
+    next();
+  }
+};
+next();
 </script>
-</body>
-</html>
+</body></html>
