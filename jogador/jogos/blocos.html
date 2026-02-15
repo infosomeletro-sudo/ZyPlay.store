@@ -1,136 +1,112 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ZYPLAY - Blocos</title>
-  <style>
-    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
-    .box{max-width:900px;width:92vw}
-    h1{margin:0 0 10px}
-    canvas{background:#0f0f25;border:2px solid #00d4ff;border-radius:12px;display:block;width:100%;max-width:720px;height:auto}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
-    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
-    button:hover{background:#ff007a}
-    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
-    a{color:#00d4ff}
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>🧱 Blocos (Breakout)</h1>
-    <div class="row">
-      <span class="pill">Pontos: <span id="score">0</span></span>
-      <button id="restart">Reiniciar</button>
-      <a href="/">← Voltar</a>
-    </div>
-    <canvas id="cv" width="720" height="420"></canvas>
-    <p>Dica: mouse move a barra. Quebre todos os blocos.</p>
-  </div>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Quebra-blocos</title>
+<style>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  canvas{display:block;margin:14px auto;background:#0b0b18;border:2px solid rgba(0,212,255,.5);border-radius:12px}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div>Mouse move a barra • Pontos: <b id="s">0</b></div>
+<canvas id="c" width="520" height="420"></canvas>
 
 <script>
-const cv = document.getElementById('cv');
-const ctx = cv.getContext('2d');
-const scoreEl = document.getElementById('score');
-const restartBtn = document.getElementById('restart');
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){
+  if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+d);
+}
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
 
-let paddle, ball, bricks, score, over;
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let score=0; const scoreEl=document.getElementById('s');
+const paddle={x:220,y:390,w:120,h:12};
+const ball={x:260,y:260,r:7,vx:3.2,vy:3.2};
+let bricks=[];
 
 function reset(){
-  paddle = {w:120,h:12,x:(cv.width-120)/2,y:cv.height-30};
-  ball = {x:cv.width/2,y:cv.height-60,vx:4,vy:-4,r:8};
-  score = 0; over = false;
-  scoreEl.textContent = score;
-
-  const rows=5, cols=10, bw=62, bh=18, pad=8, offX=20, offY=40;
+  score=0; scoreEl.textContent=score;
+  paddle.x=220; ball.x=260; ball.y=260; ball.vx=3.2; ball.vy=3.2;
   bricks=[];
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      bricks.push({x:offX+c*(bw+pad), y:offY+r*(bh+pad), w:bw, h:bh, alive:true});
+  for(let r=0;r<4;r++){
+    for(let c=0;c<9;c++){
+      bricks.push({x:30+c*54,y:40+r*26,w:50,h:18,alive:true});
     }
   }
 }
-reset();
-
-function draw(){
-  ctx.clearRect(0,0,cv.width,cv.height);
-
-  // bricks
-  bricks.forEach((b,i)=>{
-    if(!b.alive) return;
-    ctx.fillStyle = i%2 ? '#ff007a' : '#ffcc00';
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-  });
-
-  // paddle
-  ctx.fillStyle = '#00d4ff';
-  ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
-
-  // ball
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
-
-  if(over){
-    ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle='#fff'; ctx.font='bold 28px Arial';
-    ctx.fillText('GAME OVER', cv.width/2-90, cv.height/2);
-    ctx.font='16px Arial';
-    ctx.fillText('Clique em Reiniciar', cv.width/2-75, cv.height/2+30);
-  }
-
-  if(bricks.every(b=>!b.alive)){
-    ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle='#fff'; ctx.font='bold 28px Arial';
-    ctx.fillText('VOCÊ VENCEU!', cv.width/2-95, cv.height/2);
-  }
-}
-
-function update(){
-  if(over) return;
-
-  ball.x += ball.vx;
-  ball.y += ball.vy;
-
-  // walls
-  if(ball.x<ball.r || ball.x>cv.width-ball.r) ball.vx *= -1;
-  if(ball.y<ball.r) ball.vy *= -1;
-  if(ball.y>cv.height-ball.r) over = true;
-
-  // paddle collision
-  if(ball.y+ball.r>=paddle.y && ball.y+ball.r<=paddle.y+paddle.h &&
-     ball.x>=paddle.x && ball.x<=paddle.x+paddle.w){
-    ball.vy = -Math.abs(ball.vy);
-    const hit = (ball.x-(paddle.x+paddle.w/2))/(paddle.w/2);
-    ball.vx = 6*hit;
-  }
-
-  // bricks collision
-  bricks.forEach(b=>{
-    if(!b.alive) return;
-    const inX = ball.x> b.x && ball.x< b.x+b.w;
-    const inY = ball.y> b.y && ball.y< b.y+b.h;
-    if(inX && inY){
-      b.alive=false;
-      score+=10;
-      scoreEl.textContent=score;
-      ball.vy *= -1;
-    }
-  });
-}
-
-function loop(){
-  update(); draw();
-  requestAnimationFrame(loop);
-}
-loop();
-
-cv.addEventListener('mousemove', (e)=>{
-  const rect = cv.getBoundingClientRect();
-  const x = (e.clientX-rect.left) * (cv.width/rect.width);
-  paddle.x = Math.max(0, Math.min(cv.width-paddle.w, x-paddle.w/2));
+canvas.addEventListener('mousemove',(e)=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left;
+  paddle.x=Math.max(0, Math.min(canvas.width-paddle.w, mx-paddle.w/2));
 });
 
-restartBtn.onclick = reset;
+function step(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // move ball
+  ball.x+=ball.vx; ball.y+=ball.vy;
+
+  // walls
+  if(ball.x-ball.r<0 || ball.x+ball.r>canvas.width){ ball.vx*=-1; beep(650,0.04); }
+  if(ball.y-ball.r<0){ ball.vy*=-1; beep(650,0.04); }
+
+  // paddle
+  if(ball.y+ball.r>=paddle.y && ball.x>=paddle.x && ball.x<=paddle.x+paddle.w && ball.vy>0){
+    ball.vy*=-1;
+    const hit=(ball.x-(paddle.x+paddle.w/2)) / (paddle.w/2);
+    ball.vx = 4.2*hit;
+    beep(900,0.04);
+  }
+
+  // bricks
+  for(const b of bricks){
+    if(!b.alive) continue;
+    if(ball.x> b.x && ball.x< b.x+b.w && ball.y> b.y && ball.y< b.y+b.h){
+      b.alive=false;
+      ball.vy*=-1;
+      score++; scoreEl.textContent=score;
+      beep(1100,0.05);
+    }
+  }
+
+  // lose
+  if(ball.y-ball.r>canvas.height){
+    beep(180,0.12,"sawtooth",0.08); setTimeout(()=>beep(120,0.18,"sawtooth",0.08),80);
+    alert("Você perdeu! Pontos: "+score);
+    reset();
+  }
+
+  // win
+  if(bricks.every(b=>!b.alive)){
+    beep(980,0.06); setTimeout(()=>beep(1180,0.06),70); setTimeout(()=>beep(1400,0.08),140);
+    alert("Você venceu!");
+    reset();
+  }
+
+  // draw
+  ctx.fillStyle="#00d4ff"; ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+  ctx.beginPath(); ctx.fillStyle="#ffcc00"; ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+
+  for(const b of bricks){
+    if(!b.alive) continue;
+    ctx.fillStyle="#ff007a";
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+  }
+
+  requestAnimationFrame(step);
+}
+
+reset(); step();
 </script>
-</body>
-</html>
+</body></html>
