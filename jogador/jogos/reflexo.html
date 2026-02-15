@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Reflexo</title>
+<style>
+body{text-align:center;background:#111;color:white;font-family:sans-serif}
+#box{width:200px;height:200px;background:red;margin:50px auto;cursor:pointer}
+</style>
+</head>
+<body>
+<h2>Teste de Reflexo</h2>
+<p>Clique quando ficar verde!</p>
+<div id="box"></div>
+
+<script>
+let start;
+let box=document.getElementById("box");
+
+setTimeout(()=>{
+box.style.background="green";
+start=Date.now();
+},3000);
+
+box.onclick=()=>{
+if(box.style.background==="green"){
+let reaction=Date.now()-start;
+alert("Seu tempo: "+reaction+"ms");
+location.reload();
+}
+}
+</script>
+</body>
+</html>
