@@ -1,72 +1,124 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Cobrinha</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Cobrinha</title>
 <style>
-canvas{background:#000;display:block;margin:auto}
-body{text-align:center;color:#fff;background:#111}
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  canvas{display:block;margin:14px auto;background:#0b0b18;border:2px solid rgba(0,212,255,.5);border-radius:12px}
+  #hud{padding:6px}
 </style>
-</head>
-<body>
-<h2>Snake</h2>
-<canvas id="c" width="400" height="400"></canvas>
+</head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div id="hud">Pontos: <b id="score">0</b> • Use as setas</div>
+<canvas id="c" width="420" height="420"></canvas>
 
 <script>
-const c=document.getElementById("c");
-const ctx=c.getContext("2d");
-let x=200,y=200,dx=20,dy=0;
-let comidaX=100,comidaY=100;
-let pontos=0;
+/* ===== ÁUDIO ===== */
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){
+  if(!soundOn) return;
+  initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+d);
+}
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent = soundOn ? "🔊 Som: ON" : "🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
 
-document.addEventListener("keydown",e=>{
-  if(e.key==="ArrowUp"){dx=0;dy=-20}
-  if(e.key==="ArrowDown"){dx=0;dy=20}
-  if(e.key==="ArrowLeft"){dx=-20;dy=0}
-  if(e.key==="ArrowRight"){dx=20;dy=0}
+/* ===== JOGO ===== */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const size=20;
+const cols=canvas.width/size;
+const rows=canvas.height/size;
+
+let snake, dir, food, score, loop;
+
+function reset(){
+  snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir={x:1,y:0};
+  food=spawnFood();
+  score=0;
+  document.getElementById('score').textContent=score;
+  clearInterval(loop);
+  loop=setInterval(step, 120);
+}
+
+function spawnFood(){
+  while(true){
+    const f={x:Math.floor(Math.random()*cols), y:Math.floor(Math.random()*rows)};
+    if(!snake.some(s=>s.x===f.x && s.y===f.y)) return f;
+  }
+}
+
+function step(){
+  // move
+  const head={x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+
+  // parede
+  if(head.x<0||head.y<0||head.x>=cols||head.y>=rows){
+    gameOver();
+    return;
+  }
+  // corpo
+  if(snake.some((s,i)=>i>0 && s.x===head.x && s.y===head.y)){
+    gameOver();
+    return;
+  }
+
+  snake.unshift(head);
+
+  // comeu
+  if(head.x===food.x && head.y===food.y){
+    score++;
+    document.getElementById('score').textContent=score;
+    beep(880,0.06,"square",0.07);
+    beep(1180,0.05,"square",0.05);
+    food=spawnFood(); // cresce (não remove cauda)
+  } else {
+    snake.pop(); // tamanho normal
+  }
+
+  draw();
+}
+
+function gameOver(){
+  beep(180,0.12,"sawtooth",0.08);
+  setTimeout(()=>beep(120,0.18,"sawtooth",0.08),90);
+  alert("Game Over! Pontos: "+score);
+  reset();
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // food
+  ctx.fillStyle="#ff007a";
+  ctx.fillRect(food.x*size, food.y*size, size, size);
+
+  // snake
+  for(let i=0;i<snake.length;i++){
+    ctx.fillStyle = i===0 ? "#00d4ff" : "#7CFF9A";
+    ctx.fillRect(snake[i].x*size, snake[i].y*size, size-1, size-1);
+  }
+}
+
+document.addEventListener('keydown',(e)=>{
+  const k=e.key;
+  if(k==="ArrowUp" && dir.y!==1){dir={x:0,y:-1}; beep(520,0.03);}
+  if(k==="ArrowDown" && dir.y!==-1){dir={x:0,y:1}; beep(520,0.03);}
+  if(k==="ArrowLeft" && dir.x!==1){dir={x:-1,y:0}; beep(520,0.03);}
+  if(k==="ArrowRight" && dir.x!==-1){dir={x:1,y:0}; beep(520,0.03);}
 });
 
-function beep(freq,dur){
-  const o=new AudioContext().createOscillator();
-  const g=new AudioContext().createGain();
-}
-
-let audioCtx;
-function som(freq){
-  if(!audioCtx) audioCtx=new AudioContext();
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+0.1);
-}
-
-function game(){
-  ctx.clearRect(0,0,400,400);
-  x+=dx;y+=dy;
-
-  if(x===comidaX && y===comidaY){
-    pontos++;
-    som(800);
-    comidaX=Math.floor(Math.random()*20)*20;
-    comidaY=Math.floor(Math.random()*20)*20;
-  }
-
-  if(x<0||x>=400||y<0||y>=400){
-    som(200);
-    alert("Game Over");
-    x=200;y=200;
-  }
-
-  ctx.fillStyle="lime";
-  ctx.fillRect(x,y,20,20);
-
-  ctx.fillStyle="red";
-  ctx.fillRect(comidaX,comidaY,20,20);
-}
-setInterval(game,150);
+reset();
 </script>
-</body>
-</html>
+</body></html>
