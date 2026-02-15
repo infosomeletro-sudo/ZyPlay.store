@@ -3,191 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
-
-    <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
-    <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js"></script>
-    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
-    <script>
-        window.ezstandalone = window.ezstandalone || {};
-        ezstandalone.cmd = ezstandalone.cmd || [];
-    </script>
-
+    <title>ZYPLAY | ARENA</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    
     <style>
-        :root {
-            --pink-neon: #ff007a;
-            --blue-neon: #00d4ff;
-            --gold-neon: #ffcc00;
-            --deep-bg: #050510;
+        :root { --pink: #ff007a; --blue: #00d4ff; --gold: #ffcc00; --bg: #050510; }
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow-x: hidden; }
+
+        /* TELA DE LOGIN (OVERLAY) */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 16, 0.95);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
         }
-
-        body {
-            background: var(--deep-bg);
-            background-image:
-                linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
-            background-size: 50px 50px;
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+        .login-card {
+            background: #12122b; padding: 40px; border: 3px solid var(--pink);
+            border-radius: 15px; text-align: center; box-shadow: 0 0 50px var(--pink);
+            max-width: 400px; width: 90%;
         }
-
-        header {
-            background: #12122b;
-            min-height: 90px;
-            padding: 0 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 5px solid var(--pink-neon);
-            box-shadow: 0 0 30px var(--pink-neon);
-            z-index: 100;
+        .login-card h2 { font-family: 'Press Start 2P'; font-size: 1rem; color: var(--gold); margin-bottom: 30px; }
+        
+        .social-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px;
+            border: none; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; font-size: 1.1rem;
+            transition: 0.3s;
         }
+        .btn-google { background: white; color: #757575; border: 1px solid #ddd; }
+        .btn-facebook { background: #1877f2; color: white; }
+        .btn-visitante { background: transparent; color: var(--blue); border: 2px solid var(--blue); }
+        .social-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
 
-        .logo-container { display: flex; align-items: center; gap: 15px; }
-        .logo-text { font-family: 'Press Start 2P'; font-size: 1.3rem; color: var(--gold-neon); text-shadow: 3px 3px #000; }
+        /* HEADER E SITE */
+        header { background: #12122b; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--pink); }
+        .logo { font-family: 'Press Start 2P'; color: var(--gold); font-size: 1.2rem; }
+        .zycoin-display { background: rgba(0,0,0,0.5); border: 2px solid var(--blue); padding: 10px 20px; border-radius: 50px; color: var(--blue); font-weight: bold; }
 
-        .btn {
-            border: 2px solid var(--gold-neon);
-            background: rgba(0,0,0,0.35);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 900;
-            text-decoration:none;
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            transition: .2s;
+        /* JOGOS */
+        .content { padding: 40px 20px; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        .game-card { 
+            background: #12122b; border: 2px solid var(--gold); border-radius: 10px; 
+            overflow: hidden; cursor: pointer; transition: 0.3s; position: relative;
         }
-        .btn:hover {
-            background: var(--pink-neon);
-            box-shadow: -6px 6px 0px var(--blue-neon);
-            transform: translate(3px, -3px);
-        }
-        .btn.blue { border-color: var(--blue-neon); }
+        .game-card:hover { border-color: var(--pink); transform: translateY(-5px); }
+        .game-card img { width: 100%; height: 140px; object-fit: cover; filter: grayscale(50%); transition: 0.5s; }
+        .game-card:hover img { filter: grayscale(0%); }
+        .game-info { padding: 15px; text-align: center; }
+        .game-info h3 { margin: 0; font-family: 'Press Start 2P'; font-size: 0.7rem; color: var(--blue); }
 
-        .zycoin-bar {
-            background: var(--pink-neon);
-            text-align: center;
-            padding: 10px;
-            font-family: 'Press Start 2P';
-            font-size: 0.7rem;
-            border-bottom: 3px solid var(--gold-neon);
-        }
+        /* IFRAME JOGO */
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 3100; background: var(--pink); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; font-family: 'Press Start 2P'; font-size: 0.6rem; }
 
-        .main-layout { display: flex; flex: 1; }
-
-        .sidebar {
-            width: 280px;
-            background: rgba(18, 18, 43, 0.9);
-            padding: 24px 18px;
-            border-right: 4px solid var(--pink-neon);
-        }
-
-        .menu-item {
-            text-decoration: none;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            padding: 14px;
-            border: 2px solid var(--gold-neon);
-            margin-bottom: 10px;
-            background: rgba(0,0,0,0.3);
-            transition: 0.2s;
-        }
-        .menu-item:hover { background: var(--pink-neon); transform: translateX(5px); }
-
-        .content { flex: 1; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
-
-        .card {
-            background: rgba(18, 18, 43, 0.85);
-            border: 2px solid rgba(0,212,255,0.35);
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .card h2 { font-family: 'Press Start 2P'; font-size: 1rem; color: var(--gold-neon); margin-bottom: 20px; }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .game-tile {
-            display: block;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid var(--gold-neon);
-            background: rgba(0,0,0,0.5);
-            text-decoration: none;
-            color: #fff;
-            transition: .2s;
-        }
-        .game-tile:hover {
-            border-color: var(--pink-neon);
-            box-shadow: 0 0 20px var(--blue-neon);
-            transform: scale(1.02);
-        }
-
-        .game-title { font-weight: bold; font-size: 1.2rem; margin-bottom: 8px; display: block; }
-        .game-desc { opacity: 0.8; font-size: 0.9rem; }
-
-        @media (max-width: 900px){
-            .sidebar { display:none; }
-        }
+        footer { text-align: center; padding: 40px; color: #555; border-top: 1px solid #1a1a3a; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container">
-            <i class="fas fa-gamepad" style="font-size: 2rem; color: var(--blue-neon);"></i>
-            <div class="logo-text">ZYPLAY</div>
-        </div>
-        <div>
-            <span class="btn">Saldo: 0 ZYCOIN</span>
-        </div>
-    </header>
-
-    <div class="zycoin-bar">JOGUE E GANHE ZYCOINS EM BREVE</div>
-
-    <div class="main-layout">
-        <aside class="sidebar">
-            <a href="/" class="menu-item"><span>INÍCIO</span><span>→</span></a>
-            <a href="#jogos" class="menu-item"><span>JOGOS</span><span>→</span></a>
-            <a href="/termos.html" class="menu-item"><span>TERMOS</span><span>→</span></a>
-            <a href="/privacidade.html" class="menu-item"><span>PRIVACIDADE</span><span>→</span></a>
-        </aside>
-
-        <main class="content">
-            <div class="card" id="jogos">
-                <h2>JOGOS DISPONÍVEIS</h2>
-                <div class="games-grid">
-                    
-                    <a class="game-tile" href="jogos/cobrinha.html">
-                        <span class="game-title">🐍 Jogo da Cobrinha</span>
-                        <span class="game-desc">Clássico arcade com visual neon. Coma e cresça!</span>
-                    </a>
-
-                    <a class="game-tile" href="jogos/tiro.html">
-                        <span class="game-title">🎯 Tiro ao Alvo</span>
-                        <span class="game-desc">Teste seus reflexos e acerte o centro do alvo.</span>
-                    </a>
-
-                </div>
-            </div>
-        </main>
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>ENTRAR NA ARENA</h2>
+        
+        <button class="social-btn btn-google" onclick="fazerLogin('Google')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" width="20"> Entrar com Google
+        </button>
+        
+        <button class="social-btn btn-facebook" onclick="fazerLogin('Facebook')">
+            <i class="fab fa-facebook-f"></i> Entrar com Facebook
+        </button>
+        
+        <div style="margin: 20px 0; color: #555;">——— OU ———</div>
+        
+        <button class="social-btn btn-visitante" onclick="fazerLogin('Visitante')">
+            🎮 Jogar como Visitante
+        </button>
+        
+        <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">
+            Ao entrar você aceita nossos termos. Suporte: gerencia@zyplay.store
+        </p>
     </div>
+</div>
+
+<header>
+    <div class="logo">ZYPLAY</div>
+    <div id="user-info" style="display:none; align-items:center; gap:15px;">
+        <span id="username" style="color:var(--pink)"></span>
+        <div class="zycoin-display">💰 <span id="balance">0</span></div>
+    </div>
+</header>
+
+<div class="content">
+    <div class="games-grid">
+        <div class="game-card" onclick="openGame('jogos/cobrinha.html')">
+            <img src="https://img.freepik.com/vetores-gratis/fundo-de-estilo-pixel-do-jogo-da-cobra_23-2148524453.jpg" alt="Cobra">
+            <div class="game-info"><h3>COBRINHA NEON</h3></div>
+        </div>
+
+        <div class="game-card" onclick="openGame('jogos/tiro.html')">
+            <img src="https://img.freepik.com/vetores-premium/alvo-de-dardos-com-setas-estilo-pixel-art_640317-190.jpg" alt="Tiro">
+            <div class="game-info"><h3>TIRO AO ALVO</h3></div>
+        </div>
+        
+        </div>
+</div>
+
+<div id="game-view">
+    <button class="back-btn" onclick="closeGame()">← SAIR DO JOGO</button>
+    <iframe id="game-frame" src=""></iframe>
+</div>
+
+<footer>
+    ZYPLAY Arena © 2026 | Suporte: gerencia@zyplay.store
+</footer>
+
+<script>
+    let coins = parseInt(localStorage.getItem('zycoins')) || 0;
+    let user = localStorage.getItem('zyuser');
+
+    // Verificar se já está logado
+    if(user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        ativarSite(user);
+    }
+
+    function fazerLogin(tipo) {
+        let nome = tipo === 'Visitante' ? 'Jogador_' + Math.floor(Math.random()*999) : tipo + '_User';
+        localStorage.setItem('zyuser', nome);
+        document.getElementById('login-overlay').style.fadeOut = 'slow';
+        setTimeout(() => {
+            document.getElementById('login-overlay').style.display = 'none';
+            ativarSite(nome);
+        }, 500);
+    }
+
+    function ativarSite(nome) {
+        document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('username').innerText = nome;
+        document.getElementById('balance').innerText = coins;
+    }
+
+    function openGame(url) {
+        document.getElementById('game-view').style.display = 'block';
+        document.getElementById('game-frame').src = url;
+        // Ganha 10 coins só por jogar
+        coins += 10;
+        localStorage.setItem('zycoins', coins);
+        document.getElementById('balance').innerText = coins;
+    }
+
+    function closeGame() {
+        document.getElementById('game-view').style.display = 'none';
+        document.getElementById('game-frame').src = '';
+    }
+</script>
 
 </body>
 </html>
