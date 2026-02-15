@@ -3,162 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | ARENA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
+    <!-- EZOIC (Head Script) -->
+    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
+    <script>
+        window.ezstandalone = window.ezstandalone || {};
+        ezstandalone.cmd = ezstandalone.cmd || [];
+    </script>
+
     <style>
-        :root { --pink: #ff007a; --blue: #00d4ff; --gold: #ffcc00; --bg: #050510; }
-        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow-x: hidden; }
-
-        /* TELA DE LOGIN (OVERLAY) */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 5, 16, 0.95);
-            display: flex; justify-content: center; align-items: center; z-index: 2000;
+        :root {
+            --pink-neon: #ff007a;
+            --blue-neon: #00d4ff;
+            --gold-neon: #ffcc00;
+            --deep-bg: #050510;
         }
-        .login-card {
-            background: #12122b; padding: 40px; border: 3px solid var(--pink);
-            border-radius: 15px; text-align: center; box-shadow: 0 0 50px var(--pink);
-            max-width: 400px; width: 90%;
+
+        body {
+            background: var(--deep-bg);
+            background-image:
+                linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
-        .login-card h2 { font-family: 'Press Start 2P'; font-size: 1rem; color: var(--gold); margin-bottom: 30px; }
-        
-        .social-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px;
-            border: none; cursor: pointer; font-weight: bold; font-family: 'Rajdhani'; font-size: 1.1rem;
-            transition: 0.3s;
+
+        header {
+            background: #12122b;
+            min-height: 90px;
+            padding: 0 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--pink-neon);
+            box-shadow: 0 0 30px var(--pink-neon);
+            z-index: 100;
+            gap: 14px;
         }
-        .btn-google { background: white; color: #757575; border: 1px solid #ddd; }
-        .btn-facebook { background: #1877f2; color: white; }
-        .btn-visitante { background: transparent; color: var(--blue); border: 2px solid var(--blue); }
-        .social-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
 
-        /* HEADER E SITE */
-        header { background: #12122b; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--pink); }
-        .logo { font-family: 'Press Start 2P'; color: var(--gold); font-size: 1.2rem; }
-        .zycoin-display { background: rgba(0,0,0,0.5); border: 2px solid var(--blue); padding: 10px 20px; border-radius: 50px; color: var(--blue); font-weight: bold; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-container i { font-size: 2.4rem; color: var(--blue-neon); filter: drop-shadow(0 0 10px var(--blue-neon)); }
+        .logo-text { font-family: 'Press Start 2P'; font-size: 1.3rem; color: var(--gold-neon); text-shadow: 3px 3px #000; }
 
-        /* JOGOS */
-        .content { padding: 40px 20px; }
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
-        .game-card { 
-            background: #12122b; border: 2px solid var(--gold); border-radius: 10px; 
-            overflow: hidden; cursor: pointer; transition: 0.3s; position: relative;
+        .header-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+
+        .btn {
+            border: 2px solid var(--gold-neon);
+            background: rgba(0,0,0,0.35);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 900;
+            letter-spacing: .3px;
+            transition: .2s;
+            text-decoration:none;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            user-select:none;
         }
-        .game-card:hover { border-color: var(--pink); transform: translateY(-5px); }
-        .game-card img { width: 100%; height: 140px; object-fit: cover; filter: grayscale(50%); transition: 0.5s; }
-        .game-card:hover img { filter: grayscale(0%); }
-        .game-info { padding: 15px; text-align: center; }
-        .game-info h3 { margin: 0; font-family: 'Press Start 2P'; font-size: 0.7rem; color: var(--blue); }
+        .btn:hover {
+            background: var(--pink-neon);
+            box-shadow: -6px 6px 0px var(--blue-neon);
+            transform: translate(3px, -3px);
+        }
+        .btn.blue {
+            border-color: var(--blue-neon);
+        }
 
-        /* IFRAME JOGO */
-        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 3100; background: var(--pink); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; font-family: 'Press Start 2P'; font-size: 0.6rem; }
+        /* Google style button (visual only) */
+        .g-sign-in-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: #ffffff;
+            color: #757575;
+            border: 1px solid #dcdcdc;
+            border-radius: 2px;
+            padding: 1px;
+            cursor: pointer;
+            font-family: 'Roboto', arial, sans-serif;
+            font-weight: 500;
+            transition: box-shadow 0.2s;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        }
+        .g-sign-in-button:hover { box-shadow: 0 0 3px 3px rgba(66,133,244,0.3); }
+        .g-icon-wrapper {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .g-icon { width: 18px; height: 18px; }
+        .g-button-text {
+            padding: 0 12px;
+            font-size: 14px;
+            letter-spacing: 0.2px;
+            color: #3c4043;
+        }
 
-        footer { text-align: center; padding: 40px; color: #555; border-top: 1px solid #1a1a3a; margin-top: 50px; }
+        .zycoin-bar {
+            background: var(--pink-neon);
+            text-align: center;
+            padding: 10px 12px;
+            font-family: 'Press Start 2P';
+            font-size: 0.7rem;
+            border-bottom: 3px solid var(--gold-neon);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .hero-char {
+            position: fixed;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 30px var(--blue-neon));
+            opacity: .9;
+        }
+        .left-char { bottom: -10px; left: 10px; width: 230px; }
+        .right-char { top: 120px; right: 20px; width: 260px; opacity: 0.8; }
+
+        .main-layout { display: flex; flex: 1; z-index: 10; }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(18, 18, 43, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 24px 18px;
+            border-right: 4px solid var(--pink-neon);
+            min-height: calc(100vh - 90px);
+        }
+
+        .menu-item {
+            text-decoration: none;
+            color: white;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px;
+            border: 3px solid var(--gold-neon);
+            border-radius: 6px;
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            font-size: 1.05rem;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: var(--pink-neon);
+            box-shadow: -8px 8px 0px var(--blue-neon);
+            transform: translate(4px, -4px);
+        }
+
+        .content {
+            flex: 1;
+            padding: 26px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: rgba(18, 18, 43, 0.85);
+            border: 2px solid rgba(0,212,255,0.35);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.45);
+        }
+
+        .card h2 {
+            margin: 0 0 12px 0;
+            font-family: 'Press Start 2P';
+            font-size: 1rem;
+            color: var(--gold-neon);
+            text-shadow: 2px 2px #000;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .game-tile {
+            display: block;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,204,0,0.55);
+            background: rgba(0,0,0,0.25);
+            text-decoration: none;
+            color: #fff;
+            transition: .2s;
+        }
+        .game-tile:hover {
+            transform: translate(2px, -2px);
+            border-color: var(--pink-neon);
+            box-shadow: 0 0 18px rgba(0,212,255,0.35);
+        }
+        .game-title {
+            font-weight: 900;
+            font-size: 1.05rem;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .game-desc {
+            opacity: .85;
+            font-size: .95rem;
+            margin-top: 8px;
+            line-height: 1.25rem;
+        }
+
+        .row {
+            display:flex;
+            gap: 12px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        .pill {
+            border: 2px solid rgba(0,212,255,0.55);
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+            font-weight: 900;
+        }
+        .pill strong { color: var(--blue-neon); }
+
+        /* COOKIE BANNER */
+        .cookie-popup {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            border: 2px solid var(--blue-neon);
+            padding: 14px 18px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 1000;
+            box-shadow: 0 0 50px #000;
+            max-width: 92vw;
+        }
+
+        @media (max-width: 900px){
+            .sidebar { display:none; }
+            .left-char, .right-char { display:none; }
+            header { padding: 10px 14px; min-height: auto; }
+            .logo-text { font-size: 1.05rem; }
+        }
     </style>
 </head>
+
 <body>
 
-<div id="login-overlay">
-    <div class="login-card">
-        <h2>ENTRAR NA ARENA</h2>
-        
-        <button class="social-btn btn-google" onclick="fazerLogin('Google')">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" width="20"> Entrar com Google
-        </button>
-        
-        <button class="social-btn btn-facebook" onclick="fazerLogin('Facebook')">
-            <i class="fab fa-facebook-f"></i> Entrar com Facebook
-        </button>
-        
-        <div style="margin: 20px 0; color: #555;">——— OU ———</div>
-        
-        <button class="social-btn btn-visitante" onclick="fazerLogin('Visitante')">
-            🎮 Jogar como Visitante
-        </button>
-        
-        <p style="font-size: 0.8rem; margin-top: 20px; color: #888;">
-            Ao entrar você aceita nossos termos. Suporte: gerencia@zyplay.store
-        </p>
+    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char" alt="">
+    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char" alt="">
+
+    <header>
+        <div class="logo-container">
+            <i class="fas fa-gamepad"></i>
+            <div class="logo-text">ZYPLAY</div>
+        </div>
+
+        <div class="header-actions">
+            <span class="pill">Saldo: <strong id="zycoin">0</strong> ZYCOIN</span>
+
+            <a class="btn blue" href="/jogador/jogos/tiro.html">
+                ▶️ Jogar agora
+            </a>
+
+            <a class="btn" href="#" onclick="alert('Em breve: Arena ZYPLAY (login/cadastro).'); return false;">
+                🏆 Entrar na Arena
+            </a>
+
+            <a class="g-sign-in-button" href="#" onclick="alert('Login social real (Google/Facebook) precisa de backend. Posso te orientar depois.'); return false;">
+                <div class="g-icon-wrapper">
+                    <img class="g-icon" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" alt="Google Logo">
+                </div>
+                <span class="g-button-text">Fazer login com Google</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="zycoin-bar">
+        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN • JOGUE, GANHE, SUBA NO RANKING
     </div>
-</div>
 
-<header>
-    <div class="logo">ZYPLAY</div>
-    <div id="user-info" style="display:none; align-items:center; gap:15px;">
-        <span id="username" style="color:var(--pink)"></span>
-        <div class="zycoin-display">💰 <span id="balance">0</span></div>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div style="color: #666; margin-bottom: 16px; font-size: 0.8rem;">NAVEGAÇÃO</div>
+
+            <a href="/" class="menu-item">
+                <span>🏠 INÍCIO</span><span>→</span>
+            </a>
+
+            <a href="#jogos" class="menu-item">
+                <span>🎮 JOGOS</span><span>→</span>
+            </a>
+
+            <a href="#ranking" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>🏆 RANKING</span><span>→</span>
+            </a>
+
+            <a href="/termos.html" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>📜 TERMOS</span><span>→</span>
+            </a>
+
+            <a href="/private.html" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>🔒 PRIVACIDADE</span><span>→</span>
+            </a>
+        </aside>
+
+        <main class="content">
+
+            <div class="card">
+                <h2>ENTRAR RÁPIDO</h2>
+                <div class="row">
+                    <a class="btn blue" href="/jogador/jogos/tiro.html">🎯 Jogar Tiro ao Alvo</a>
+                    <a class="btn" href="#" onclick="alert('Em breve: Jogar como visitante com nickname.'); return false;">👤 Jogar como visitante</a>
+                    <a class="btn" href="#" onclick="alert('Em breve: Indique e ganhe.'); return false;">🎁 Indique e ganhe</a>
+                </div>
+                <div style="opacity:.85; margin-top:12px; line-height:1.35rem;">
+                    Dica: cada jogo fica em <strong>/jogador/jogos/</strong>.  
+                    Para adicionar novo jogo, crie o arquivo <strong>.html</strong> e coloque o link na lista abaixo.
+                </div>
+            </div>
+
+            <div class="card" id="jogos">
+                <h2>JOGOS DISPONÍVEIS</h2>
+
+                <div class="games-grid">
+                    <!-- JOGO 1 (já existe no seu repo): -->
+                    <a class="game-tile" href="/jogador/jogos/tiro.html">
+                        <div class="game-title">🎯 Tiro ao Alvo</div>
+                        <div class="game-desc">Clique rápido, faça pontos e tente bater seu recorde.</div>
+                    </a>
+
+                    <!-- EXEMPLOS (adicione quando criar os arquivos): -->
+                    <!--
+                    <a class="game-tile" href="/jogador/jogos/blocos.html">
+                        <div class="game-title">🧱 Blocos</div>
+                        <div class="game-desc">Quebre blocos e colete ZYCOIN.</div>
+                    </a>
+
+                    <a class="game-tile" href="/jogador/jogos/corrida.html">
+                        <div class="game-title">🏁 Corrida</div>
+                        <div class="game-desc">Desvie dos obstáculos e sobreviva o máximo possível.</div>
+                    </a>
+                    -->
+                </div>
+            </div>
+
+            <div class="card" id="ranking">
+                <h2>RANKING (EM BREVE)</h2>
+                <div style="opacity:.85; line-height:1.35rem;">
+                    Quando você quiser, eu te passo um ranking simples usando <strong>LocalStorage</strong> (já funciona sem servidor).
+                    Depois a gente migra pra login real.
+                </div>
+            </div>
+
+        </main>
     </div>
-</header>
 
-<div class="content">
-    <div class="games-grid">
-        <div class="game-card" onclick="openGame('jogos/cobrinha.html')">
-            <img src="https://img.freepik.com/vetores-gratis/fundo-de-estilo-pixel-do-jogo-da-cobra_23-2148524453.jpg" alt="Cobra">
-            <div class="game-info"><h3>COBRINHA NEON</h3></div>
-        </div>
-
-        <div class="game-card" onclick="openGame('jogos/tiro.html')">
-            <img src="https://img.freepik.com/vetores-premium/alvo-de-dardos-com-setas-estilo-pixel-art_640317-190.jpg" alt="Tiro">
-            <div class="game-info"><h3>TIRO AO ALVO</h3></div>
-        </div>
-        
-        </div>
-</div>
-
-<div id="game-view">
-    <button class="back-btn" onclick="closeGame()">← SAIR DO JOGO</button>
-    <iframe id="game-frame" src=""></iframe>
-</div>
-
-<footer>
-    ZYPLAY Arena © 2026 | Suporte: gerencia@zyplay.store
-</footer>
-
-<script>
-    let coins = parseInt(localStorage.getItem('zycoins')) || 0;
-    let user = localStorage.getItem('zyuser');
-
-    // Verificar se já está logado
-    if(user) {
-        document.getElementById('login-overlay').style.display = 'none';
-        ativarSite(user);
-    }
-
-    function fazerLogin(tipo) {
-        let nome = tipo === 'Visitante' ? 'Jogador_' + Math.floor(Math.random()*999) : tipo + '_User';
-        localStorage.setItem('zyuser', nome);
-        document.getElementById('login-overlay').style.fadeOut = 'slow';
-        setTimeout(() => {
-            document.getElementById('login-overlay').style.display = 'none';
-            ativarSite(nome);
-        }, 500);
-    }
-
-    function ativarSite(nome) {
-        document.getElementById('user-info').style.display = 'flex';
-        document.getElementById('username').innerText = nome;
-        document.getElementById('balance').innerText = coins;
-    }
-
-    function openGame(url) {
-        document.getElementById('game-view').style.display = 'block';
-        document.getElementById('game-frame').src = url;
-        // Ganha 10 coins só por jogar
-        coins += 10;
-        localStorage.setItem('zycoins', coins);
-        document.getElementById('balance').innerText = coins;
-    }
-
-    function closeGame() {
-        document.getElementById('game-view').style.display = 'none';
-        document.getElementById('game-frame').src = '';
-    }
-</script>
+    <div class="cookie-popup" id="cp">
+        <span style="font-size: 0.95rem;">Utilizamos cookies para salvar seu progresso.</span>
+        <button onclick="document.getElementById('cp').remove()"
+                style="background:var(--blue-neon); border:none; padding:8px 16px; font-weight:bold; cursor:pointer; border-radius:6px;">
+            OK
+        </button>
+    </div>
 
 </body>
 </html>
