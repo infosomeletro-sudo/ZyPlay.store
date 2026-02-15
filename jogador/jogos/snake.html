@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Snake</title>
+<style>
+canvas{background:black;display:block;margin:auto}
+</style>
+</head>
+<body>
+<canvas id="c" width="400" height="400"></canvas>
+<script>
+const c=document.getElementById("c");
+const ctx=c.getContext("2d");
+let x=200,y=200;
+let dx=20,dy=0;
+
+document.onkeydown=e=>{
+if(e.key=="ArrowUp"){dx=0;dy=-20}
+if(e.key=="ArrowDown"){dx=0;dy=20}
+if(e.key=="ArrowLeft"){dx=-20;dy=0}
+if(e.key=="ArrowRight"){dx=20;dy=0}
+}
+
+function loop(){
+ctx.clearRect(0,0,400,400);
+ctx.fillStyle="lime";
+ctx.fillRect(x,y,20,20);
+x+=dx;
+y+=dy;
+}
+setInterval(loop,150);
+</script>
+</body>
+</html>
