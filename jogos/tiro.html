@@ -1,1 +1,21 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tiro ZyPlay</title>
+    <style>
+        body { background: #050510; color: #fff; text-align: center; font-family: sans-serif; overflow: hidden; }
+        #alvo { width: 60px; height: 60px; background: radial-gradient(circle, red 30%, white 31%, white 60%, red 61%); border-radius: 50%; position: absolute; cursor: crosshair; box-shadow: 0 0 15px red; }
+    </style>
+</head>
+<body>
+    <h1>ACERTE O ALVO! PONTOS: <span id="score">0</span></h1>
+    <div id="alvo" onclick="move()"></div>
+    <script>
+        let s=0; function move(){ s++; document.getElementById("score").innerText=s;
+        let x=Math.random()*(window.innerWidth-100); let y=Math.random()*(window.innerHeight-150)+100;
+        document.getElementById("alvo").style.left=x+"px"; document.getElementById("alvo").style.top=y+"px"; }
+        move();
+    </script>
+</body>
+</html>
