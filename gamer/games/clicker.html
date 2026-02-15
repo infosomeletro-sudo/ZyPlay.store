@@ -1,1 +1,29 @@
-
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZyClicker</title>
+<style>
+body{margin:0;background:#060615;color:#fff;font-family:Arial;display:grid;place-items:center;height:100vh;text-align:center}
+.card{width:min(520px,92vw);padding:18px;border:2px solid rgba(255,204,0,.35);border-radius:14px;background:rgba(0,0,0,.25)}
+.btn{padding:16px 22px;border-radius:14px;border:0;background:#ff007a;color:#fff;font-weight:900;cursor:pointer;font-size:18px}
+.btn:hover{filter:brightness(1.05)}
+small{opacity:.7}
+</style></head><body>
+<div class="card">
+  <h2>⚡ ZyClicker</h2>
+  <p>Clique o máximo em 10 segundos.</p>
+  <button class="btn" id="b">CLICAR</button>
+  <p><b>Pontos:</b> <span id="s">0</span></p>
+  <p><b>Tempo:</b> <span id="t">10</span>s</p>
+  <small>Dica: bom pra missão diária.</small>
+</div>
+<script>
+let score=0, t=10, running=false, timer=null;
+const s=document.getElementById('s'), tt=document.getElementById('t'), b=document.getElementById('b');
+b.onclick=()=>{
+  if(!running){
+    running=true; score=0; t=10; s.textContent=0; tt.textContent=10;
+    timer=setInterval(()=>{ t--; tt.textContent=t; if(t<=0){ clearInterval(timer); running=false; alert('Fim! Pontos: '+score); } },1000);
+  }
+  if(running){ score++; s.textContent=score; }
+};
+</script></body></html>
