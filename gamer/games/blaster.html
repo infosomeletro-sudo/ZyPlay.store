@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pixel Blaster</title>
+<style>
+body{margin:0;background:#060615;color:#fff;font-family:Arial;display:grid;place-items:center;height:100vh}
+canvas{border:2px solid #00d4ff;border-radius:10px;background:rgba(0,0,0,.35)}
+</style></head><body>
+<canvas id="c" width="760" height="420"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+let score=0, t=60, targets=[], tick=0;
+function spawn(){ targets.push({x:Math.random()*(c.width-40)+20,y:Math.random()*(c.height-80)+40,r:16+Math.random()*14,life:120}); }
+addEventListener('click', (e)=>{
+  const r=c.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+  targets.forEach(o=>{ const dx=mx-o.x, dy=my-o.y; if(Math.hypot(dx,dy)<=o.r){ o.life=0; score+=10; } });
+});
+function loop(){
+  requestAnimationFrame(loop);
+  x.clearRect(0,0,c.width,c.height);
+  x.fillStyle='rgba(0,0,0,.25)'; x.fillRect(0,0,c.width,c.height);
+
+  if(++tick%30===0){ t--; if(t<=0){ alert('Fim! Score: '+score); score=0; t=60; targets=[]; } }
+  if(Math.random()<0.04) spawn();
+
+  targets.forEach(o=>o.life--);
+  targets=targets.filter(o=>o.life>0);
+
+  x.fillStyle='#ff007a';
+  targets.forEach(o=>{ x.beginPath(); x.arc(o.x,o.y,o.r,0,Math.PI*2); x.fill(); });
+
+  x.fillStyle='rgba(255,255,255,.75)';
+  x.fillText('Score: '+score+' | Tempo: '+t, 14, 18);
+  x.fillText('Clique nos alvos!', 14, 36);
+}
+loop();
+</script></body></html>
