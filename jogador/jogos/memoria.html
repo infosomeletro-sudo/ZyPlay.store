@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Memória</title>
+<style>
+body{text-align:center;background:#222;color:white}
+button{width:80px;height:80px;font-size:30px;margin:5px}
+</style>
+</head>
+<body>
+<h1>Jogo da Memória</h1>
+<div id="jogo"></div>
+
+<script>
+let emojis=["🍎","🍎","🍌","🍌","🍓","🍓"];
+emojis.sort(()=>Math.random()-0.5);
+let aberto=null;
+
+emojis.forEach(e=>{
+let btn=document.createElement("button");
+btn.innerText="?";
+btn.onclick=()=>{
+btn.innerText=e;
+if(!aberto){aberto=btn;}
+else{
+if(aberto.innerText!=btn.innerText){
+setTimeout(()=>{
+aberto.innerText="?";
+btn.innerText="?";
+},500);
+}
+aberto=null;
+}
+}
+document.getElementById("jogo").appendChild(btn);
+});
+</script>
+</body>
+</html>
