@@ -1,35 +1,55 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Click Frenzy</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Click Frenzy</title>
 <style>
-body{background:#111;color:white;text-align:center;font-family:sans-serif}
-button{padding:20px;font-size:20px;margin-top:40px}
-</style>
-</head>
-<body>
-<h2>Click Frenzy</h2>
-<p>Você tem 10 segundos!</p>
-<h1 id="score">0</h1>
-<button onclick="clickMe()">CLIQUE!</button>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  .box{max-width:520px;margin:16px auto;background:rgba(0,0,0,.25);border:1px solid rgba(0,212,255,.35);border-radius:16px;padding:18px}
+  #btn{padding:18px 22px;font-size:18px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:#ff007a;color:#fff;cursor:pointer;font-weight:900}
+  #btn:hover{filter:brightness(1.08)}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+
+<div class="box">
+  <h2>Click Frenzy</h2>
+  <div>Tempo: <b id="t">10</b>s • Pontos: <b id="s">0</b></div><br>
+  <button id="btn">CLIQUE!</button>
+</div>
 
 <script>
-let score=0;
-let time=10;
-
-function clickMe(){
-if(time>0) score++;
-document.getElementById("score").innerText=score;
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){ if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d);
 }
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
 
-setInterval(()=>{
-time--;
-if(time<=0){
-alert("Fim! Pontuação: "+score);
-location.reload();
-}
+let score=0, time=10;
+const s=document.getElementById('s'), t=document.getElementById('t'), btn=document.getElementById('btn');
+
+btn.onclick=()=>{
+  score++; s.textContent=score;
+  beep(900,0.04); if(score%10===0) beep(1200,0.04);
+};
+
+const timer=setInterval(()=>{
+  time--; t.textContent=time;
+  if(time<=0){
+    clearInterval(timer);
+    beep(180,0.12,"sawtooth",0.08);
+    setTimeout(()=>beep(120,0.18,"sawtooth",0.08),80);
+    alert("Fim! Pontuação: "+score);
+    location.reload();
+  }else{
+    beep(520,0.02,"square",0.03);
+  }
 },1000);
 </script>
-</body>
-</html>
+</body></html>
