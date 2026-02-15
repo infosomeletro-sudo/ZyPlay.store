@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Corrida Infinita</title>
+<style>
+body{margin:0;background:#111;color:white;text-align:center;font-family:sans-serif}
+canvas{background:#000;display:block;margin:20px auto;border:2px solid #fff}
+</style>
+</head>
+<body>
+<h2>Corrida Infinita</h2>
+<p>Pule os obstáculos (ESPAÇO)</p>
+<canvas id="game" width="500" height="200"></canvas>
+
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+
+let player={x:50,y:150,w:20,h:20,vy:0,jump:false};
+let obs=[];
+let score=0;
+
+function spawn(){
+obs.push({x:500,y:160,w:20,h:20});
+}
+
+setInterval(spawn,2000);
+
+function update(){
+ctx.clearRect(0,0,500,200);
+player.vy+=0.5;
+player.y+=player.vy;
+
+if(player.y>150){player.y=150;player.vy=0;player.jump=false;}
+
+ctx.fillStyle="lime";
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+obs.forEach(o=>{
+o.x-=5;
+ctx.fillStyle="red";
+ctx.fillRect(o.x,o.y,o.w,o.h);
+
+if(player.x<o.x+o.w && player.x+player.w>o.x &&
+player.y<o.y+o.h && player.y+player.h>o.y){
+alert("Game Over! Pontos:"+score);
+location.reload();
+}
+});
+
+score++;
+ctx.fillStyle="white";
+ctx.fillText("Score:"+score,10,20);
+
+requestAnimationFrame(update);
+}
+
+document.addEventListener("keydown",e=>{
+if(e.code==="Space"&&!player.jump){
+player.vy=-10;
+player.jump=true;
+}
+});
+
+update();
+</script>
+</body>
+</html>
