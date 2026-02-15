@@ -1,132 +1,72 @@
-<!doctype html>
-<html lang="pt-br">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ZYPLAY - Cobrinha</title>
-  <style>
-    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
-    .box{max-width:900px;width:92vw}
-    h1{margin:0 0 10px}
-    canvas{background:#0f0f25;border:2px solid #00d4ff;border-radius:12px;display:block;width:100%;max-width:720px;height:auto}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
-    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
-    button:hover{background:#ff007a}
-    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
-    a{color:#00d4ff}
-  </style>
+<meta charset="UTF-8">
+<title>Cobrinha</title>
+<style>
+canvas{background:#000;display:block;margin:auto}
+body{text-align:center;color:#fff;background:#111}
+</style>
 </head>
 <body>
-  <div class="box">
-    <h1>🐍 Cobrinha</h1>
-    <div class="row">
-      <span class="pill">Pontos: <span id="score">0</span></span>
-      <button id="restart">Reiniciar</button>
-      <a href="/">← Voltar</a>
-    </div>
-    <canvas id="cv" width="720" height="420"></canvas>
-    <p>Dica: setas do teclado / WASD.</p>
-  </div>
+<h2>Snake</h2>
+<canvas id="c" width="400" height="400"></canvas>
 
 <script>
-const cv = document.getElementById('cv');
-const ctx = cv.getContext('2d');
-const scoreEl = document.getElementById('score');
-const restartBtn = document.getElementById('restart');
+const c=document.getElementById("c");
+const ctx=c.getContext("2d");
+let x=200,y=200,dx=20,dy=0;
+let comidaX=100,comidaY=100;
+let pontos=0;
 
-const grid = 20;
-let snake, dir, food, score, speed, last, over;
-
-function randCell(maxX, maxY){
-  return {x: Math.floor(Math.random()*maxX), y: Math.floor(Math.random()*maxY)};
-}
-
-function reset(){
-  const maxX = Math.floor(cv.width/grid);
-  const maxY = Math.floor(cv.height/grid);
-  snake = [{x: Math.floor(maxX/2), y: Math.floor(maxY/2)}];
-  dir = {x: 1, y: 0};
-  food = randCell(maxX, maxY);
-  score = 0;
-  speed = 120;
-  last = 0;
-  over = false;
-  scoreEl.textContent = score;
-}
-reset();
-
-function draw(){
-  ctx.clearRect(0,0,cv.width,cv.height);
-
-  // food
-  ctx.fillStyle = '#ffcc00';
-  ctx.fillRect(food.x*grid, food.y*grid, grid, grid);
-
-  // snake
-  snake.forEach((p,i)=>{
-    ctx.fillStyle = i===0 ? '#00d4ff' : '#ff007a';
-    ctx.fillRect(p.x*grid, p.y*grid, grid-1, grid-1);
-  });
-
-  if(over){
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px Arial';
-    ctx.fillText('GAME OVER', cv.width/2-90, cv.height/2);
-    ctx.font = '16px Arial';
-    ctx.fillText('Clique em Reiniciar', cv.width/2-75, cv.height/2+30);
-  }
-}
-
-function step(){
-  const maxX = Math.floor(cv.width/grid);
-  const maxY = Math.floor(cv.height/grid);
-
-  const head = {...snake[0]};
-  head.x += dir.x; head.y += dir.y;
-
-  // wall collision
-  if(head.x<0||head.y<0||head.x>=maxX||head.y>=maxY){ over = true; return; }
-
-  // self collision
-  if(snake.some(p=>p.x===head.x&&p.y===head.y)){ over = true; return; }
-
-  snake.unshift(head);
-
-  if(head.x===food.x && head.y===food.y){
-    score += 10;
-    scoreEl.textContent = score;
-    speed = Math.max(60, speed-4);
-    // new food (avoid snake)
-    let f;
-    do { f = randCell(maxX, maxY); } while(snake.some(p=>p.x===f.x&&p.y===f.y));
-    food = f;
-  } else {
-    snake.pop();
-  }
-}
-
-function loop(ts){
-  if(!over && ts-last>speed){
-    last = ts;
-    step();
-  }
-  draw();
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-addEventListener('keydown', (e)=>{
-  const k = e.key.toLowerCase();
-  const left = (dir.x===-1&&dir.y===0), right=(dir.x===1&&dir.y===0), up=(dir.x===0&&dir.y===-1), down=(dir.x===0&&dir.y===1);
-  if((k==='arrowleft'||k==='a') && !right) dir = {x:-1,y:0};
-  if((k==='arrowright'||k==='d') && !left) dir = {x:1,y:0};
-  if((k==='arrowup'||k==='w') && !down) dir = {x:0,y:-1};
-  if((k==='arrowdown'||k==='s') && !up) dir = {x:0,y:1};
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowUp"){dx=0;dy=-20}
+  if(e.key==="ArrowDown"){dx=0;dy=20}
+  if(e.key==="ArrowLeft"){dx=-20;dy=0}
+  if(e.key==="ArrowRight"){dx=20;dy=0}
 });
 
-restartBtn.onclick = ()=>{ reset(); };
+function beep(freq,dur){
+  const o=new AudioContext().createOscillator();
+  const g=new AudioContext().createGain();
+}
+
+let audioCtx;
+function som(freq){
+  if(!audioCtx) audioCtx=new AudioContext();
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.frequency.value=freq;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime+0.1);
+}
+
+function game(){
+  ctx.clearRect(0,0,400,400);
+  x+=dx;y+=dy;
+
+  if(x===comidaX && y===comidaY){
+    pontos++;
+    som(800);
+    comidaX=Math.floor(Math.random()*20)*20;
+    comidaY=Math.floor(Math.random()*20)*20;
+  }
+
+  if(x<0||x>=400||y<0||y>=400){
+    som(200);
+    alert("Game Over");
+    x=200;y=200;
+  }
+
+  ctx.fillStyle="lime";
+  ctx.fillRect(x,y,20,20);
+
+  ctx.fillStyle="red";
+  ctx.fillRect(comidaX,comidaY,20,20);
+}
+setInterval(game,150);
 </script>
 </body>
 </html>
