@@ -1,69 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Corrida Infinita</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Corrida Infinita</title>
 <style>
-body{margin:0;background:#111;color:white;text-align:center;font-family:sans-serif}
-canvas{background:#000;display:block;margin:20px auto;border:2px solid #fff}
-</style>
-</head>
-<body>
-<h2>Corrida Infinita</h2>
-<p>Pule os obstáculos (ESPAÇO)</p>
-<canvas id="game" width="500" height="200"></canvas>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  canvas{display:block;margin:14px auto;background:#0b0b18;border:2px solid rgba(0,212,255,.5);border-radius:12px}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div>Espaço para pular • Pontos: <b id="s">0</b></div>
+<canvas id="c" width="520" height="220"></canvas>
 
 <script>
-const c=document.getElementById("game");
-const ctx=c.getContext("2d");
-
-let player={x:50,y:150,w:20,h:20,vy:0,jump:false};
-let obs=[];
-let score=0;
-
-function spawn(){
-obs.push({x:500,y:160,w:20,h:20});
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){ if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d);
 }
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
 
-setInterval(spawn,2000);
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let player={x:60,y:160,w:22,h:22,vy:0,onGround:true};
+let obs=[], score=0; const s=document.getElementById('s');
 
-function update(){
-ctx.clearRect(0,0,500,200);
-player.vy+=0.5;
-player.y+=player.vy;
+function spawn(){ obs.push({x:520,y:170,w:20,h:20}); }
+setInterval(spawn, 1600);
 
-if(player.y>150){player.y=150;player.vy=0;player.jump=false;}
-
-ctx.fillStyle="lime";
-ctx.fillRect(player.x,player.y,player.w,player.h);
-
-obs.forEach(o=>{
-o.x-=5;
-ctx.fillStyle="red";
-ctx.fillRect(o.x,o.y,o.w,o.h);
-
-if(player.x<o.x+o.w && player.x+player.w>o.x &&
-player.y<o.y+o.h && player.y+player.h>o.y){
-alert("Game Over! Pontos:"+score);
-location.reload();
+function jump(){
+  if(player.onGround){
+    player.vy=-10; player.onGround=false;
+    beep(900,0.05);
+  }
 }
-});
+document.addEventListener('keydown',e=>{ if(e.code==="Space") jump(); });
 
-score++;
-ctx.fillStyle="white";
-ctx.fillText("Score:"+score,10,20);
+function step(){
+  ctx.clearRect(0,0,520,220);
+  // ground
+  ctx.fillStyle="rgba(255,255,255,.12)"; ctx.fillRect(0,192,520,2);
 
-requestAnimationFrame(update);
+  // physics
+  player.vy+=0.55; player.y+=player.vy;
+  if(player.y>=160){ player.y=160; player.vy=0; player.onGround=true; }
+
+  // obstacles
+  for(const o of obs){ o.x-=6; }
+  obs=obs.filter(o=>o.x>-40);
+
+  // draw player
+  ctx.fillStyle="#00d4ff"; ctx.fillRect(player.x,player.y,player.w,player.h);
+
+  // draw obstacles + collision
+  ctx.fillStyle="#ff007a";
+  for(const o of obs){
+    ctx.fillRect(o.x,o.y,o.w,o.h);
+    const hit = player.x<o.x+o.w && player.x+player.w>o.x && player.y<o.y+o.h && player.y+player.h>o.y;
+    if(hit){
+      beep(180,0.12,"sawtooth",0.08); setTimeout(()=>beep(120,0.18,"sawtooth",0.08),80);
+      alert("Game Over! Pontos: "+score);
+      location.reload();
+    }
+  }
+
+  score++; s.textContent=score;
+  if(score%180===0) beep(1200,0.04); // “checkpoint”
+  requestAnimationFrame(step);
 }
-
-document.addEventListener("keydown",e=>{
-if(e.code==="Space"&&!player.jump){
-player.vy=-10;
-player.jump=true;
-}
-});
-
-update();
+step();
 </script>
-</body>
-</html>
+</body></html>
