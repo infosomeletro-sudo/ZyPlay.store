@@ -1,0 +1,15 @@
+#Ads.txt zyplay.store
+#Ads.txt gerenciado por AdsTxtManager.com - a ferramenta gratuita de gerenciamento de ads.txt para editores
+domínio_proprietário=zyplay.store
+contato=directsales@ezoic.com
+domínio_gerenciador=ezoic.ai
+
+ezoic.ai, e0ded60e4b4c69dfc4cdd202eda387d3, DIRETO
+# 35
+themediagrid.com, Q19AKF, DIRETO, 35d5010d7789b49d
+sonobi.com, 192ecdea01, REVENDEDOR, d1a215d9eb5aee9e
+google.com, pub-6644558441501035, DIRETO, f08c47fec0942fa0
+google.com, pub-1175987143200523, REVENDEDOR, f08c47fec0942fa0
+risecodes.com, 608fee2f84a3a300011acd3f, DIRETO
+ssp.cadent.com, 45, DIRETO, 1e1d41537f7cad7f
+yahoo.com, 100028, DIRETO, e1a5b5b6e3255540
