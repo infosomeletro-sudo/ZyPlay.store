@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tiro ao Alvo</title>
+<style>
+body{background:#111;color:#fff;text-align:center;font-family:Arial}
+#alvo{width:80px;height:80px;background:red;border-radius:50%;position:absolute;cursor:pointer}
+</style>
+</head>
+<body>
+<h1>Tiro ao Alvo</h1>
+<p>Pontos: <span id="pontos">0</span></p>
+<div id="alvo"></div>
+
+<script>
+let pontos=0;
+const alvo=document.getElementById("alvo");
+
+function mover(){
+alvo.style.top=Math.random()*80+"vh";
+alvo.style.left=Math.random()*80+"vw";
+}
+alvo.onclick=function(){
+pontos++;
+document.getElementById("pontos").innerText=pontos;
+mover();
+}
+mover();
+</script>
+</body>
+</html>
