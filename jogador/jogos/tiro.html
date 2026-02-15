@@ -1,46 +1,74 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Tiro ao Alvo</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Tiro ao Alvo</title>
 <style>
-body{background:#111;color:#fff;text-align:center;font-family:Arial}
-#alvo{width:80px;height:80px;background:red;border-radius:50%;position:absolute;cursor:pointer}
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  a.btn:hover,button.btn:hover{border-color:rgba(0,212,255,.5)}
+  #hud{padding:10px}
+  #area{position:relative;height:70vh;max-width:900px;margin:0 auto;border-top:3px solid #00d4ff;border-bottom:3px solid #ff007a;background:#0f0f25;overflow:hidden}
+  #alvo{width:80px;height:80px;border-radius:50%;background:#ff2b2b;position:absolute;cursor:pointer;box-shadow:0 0 20px rgba(255,0,0,.5)}
 </style>
-</head>
-<body>
-<h2>Tiro ao Alvo</h2>
-<p>Pontos: <span id="pontos">0</span></p>
-<div id="alvo"></div>
+</head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div id="hud">Pontos: <b id="pontos">0</b> • Tempo: <b id="tempo">30</b>s</div>
+<div id="area"><div id="alvo"></div></div>
 
 <script>
-let pontos=0;
-const alvo=document.getElementById("alvo");
-
-function mover(){
-  alvo.style.top=Math.random()*80+"vh";
-  alvo.style.left=Math.random()*80+"vw";
+/* ===== ÁUDIO (arcade) ===== */
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){
+  if(!soundOn) return;
+  initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+d);
 }
-mover();
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent = soundOn ? "🔊 Som: ON" : "🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
 
-alvo.onclick=()=>{
-  beep(600,0.1);
-  pontos++;
-  document.getElementById("pontos").innerText=pontos;
-  mover();
-};
+/* ===== JOGO ===== */
+let pontos=0, tempo=30, tickMove, tickTime;
+const alvo=document.getElementById('alvo');
+const area=document.getElementById('area');
 
-let audioCtx;
-function beep(freq,dur){
-  if(!audioCtx) audioCtx=new AudioContext();
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.value=freq;
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+dur);
+function moverAlvo(){
+  const maxX=area.clientWidth-80, maxY=area.clientHeight-80;
+  alvo.style.left = (Math.random()*maxX)+"px";
+  alvo.style.top  = (Math.random()*maxY)+"px";
 }
+
+alvo.addEventListener('click', ()=>{
+  pontos++; document.getElementById('pontos').textContent=pontos;
+  beep(820,0.06,"square",0.07); beep(1040,0.04,"square",0.05);
+  moverAlvo();
+});
+
+function iniciar(){
+  pontos=0; tempo=30;
+  document.getElementById('pontos').textContent=pontos;
+  document.getElementById('tempo').textContent=tempo;
+  clearInterval(tickMove); clearInterval(tickTime);
+  moverAlvo();
+  tickMove=setInterval(moverAlvo, 1100);
+  tickTime=setInterval(()=>{
+    tempo--; document.getElementById('tempo').textContent=tempo;
+    if(tempo<=0){
+      clearInterval(tickMove); clearInterval(tickTime);
+      beep(180,0.12,"sawtooth",0.08); setTimeout(()=>beep(120,0.18,"sawtooth",0.08),80);
+      alert("Fim de jogo! Pontuação: "+pontos);
+      iniciar();
+    }
+  },1000);
+}
+iniciar();
 </script>
-</body>
-</html>
+</body></html>
