@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZYPLAY - Memória</title>
+  <style>
+    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .box{max-width:900px;width:92vw}
+    h1{margin:0 0 10px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
+    button:hover{background:#ff007a}
+    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
+    a{color:#00d4ff}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;max-width:520px}
+    .card{height:90px;border-radius:12px;border:2px solid rgba(0,212,255,.45);background:#0f0f25;display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;user-select:none}
+    .card.revealed{background:#12122b;border-color:#ffcc00}
+    .card.matched{opacity:.55;cursor:default}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🧠 Jogo da Memória</h1>
+    <div class="row">
+      <span class="pill">Pares: <span id="pairs">0</span>/8</span>
+      <button id="restart">Reiniciar</button>
+      <a href="/">← Voltar</a>
+    </div>
+    <div class="grid" id="grid"></div>
+    <p>Dica: encontre os pares.</p>
+  </div>
+
+<script>
+const grid = document.getElementById('grid');
+const pairsEl = document.getElementById('pairs');
+const restartBtn = document.getElementById('restart');
+
+const icons = ['🎮','🕹️','⭐','💎','🔥','⚡','👾','🏆'];
+let cards=[], first=null, lock=false, pairs=0;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function reset(){
+  grid.innerHTML='';
+  first=null; lock=false; pairs=0; pairsEl.textContent=pairs;
+
+  const deck = shuffle([...icons, ...icons]).map((v,i)=>({id:i, v, r:false, m:false}));
+  cards = deck;
+
+  deck.forEach(c=>{
+    const el = document.createElement('div');
+    el.className='card';
+    el.textContent='?';
+    el.onclick=()=>flip(c,el);
+    grid.appendChild(el);
+    c.el=el;
+  });
+}
+
+function render(c){
+  c.el.classList.toggle('revealed', c.r);
+  c.el.classList.toggle('matched', c.m);
+  c.el.textContent = (c.r || c.m) ? c.v : '?';
+}
+
+function flip(c){
+  if(lock || c.m || c.r) return;
+  c.r=true; render(c);
+
+  if(!first){ first=c; return; }
+
+  lock=true;
+  if(first.v===c.v){
+    first.m=true; c.m=true;
+    render(first); render(c);
+    first.r=false; c.r=false; // keep matched visible via .m
+    pairs++;
+    pairsEl.textContent=pairs;
+    first=null;
+    lock=false;
+  } else {
+    setTimeout(()=>{
+      c.r=false; first.r=false;
+      render(c); render(first);
+      first=null;
+      lock=false;
+    }, 650);
+  }
+}
+
+restartBtn.onclick = reset;
+reset();
+</script>
+</body>
+</html>
