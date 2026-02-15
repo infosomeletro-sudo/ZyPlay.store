@@ -1,102 +1,79 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ZYPLAY - Memória</title>
-  <style>
-    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
-    .box{max-width:900px;width:92vw}
-    h1{margin:0 0 10px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
-    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
-    button:hover{background:#ff007a}
-    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
-    a{color:#00d4ff}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;max-width:520px}
-    .card{height:90px;border-radius:12px;border:2px solid rgba(0,212,255,.45);background:#0f0f25;display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;user-select:none}
-    .card.revealed{background:#12122b;border-color:#ffcc00}
-    .card.matched{opacity:.55;cursor:default}
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>🧠 Jogo da Memória</h1>
-    <div class="row">
-      <span class="pill">Pares: <span id="pairs">0</span>/8</span>
-      <button id="restart">Reiniciar</button>
-      <a href="/">← Voltar</a>
-    </div>
-    <div class="grid" id="grid"></div>
-    <p>Dica: encontre os pares.</p>
-  </div>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Memória</title>
+<style>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(4,80px);gap:10px;justify-content:center;margin:18px}
+  .card{width:80px;height:80px;background:#1b1b35;border:1px solid rgba(0,212,255,.35);border-radius:12px;display:grid;place-items:center;font-size:26px;font-weight:900;cursor:pointer;user-select:none}
+  .card.open{background:#00d4ff;color:#031018}
+  .card.done{background:#2ecc71;color:#031018}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
+<div>Encontre os pares • Acertos: <b id="hits">0</b></div>
+<div class="grid" id="grid"></div>
 
 <script>
-const grid = document.getElementById('grid');
-const pairsEl = document.getElementById('pairs');
-const restartBtn = document.getElementById('restart');
-
-const icons = ['🎮','🕹️','⭐','💎','🔥','⚡','👾','🏆'];
-let cards=[], first=null, lock=false, pairs=0;
-
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){
+  if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+d);
 }
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
 
-function reset(){
-  grid.innerHTML='';
-  first=null; lock=false; pairs=0; pairsEl.textContent=pairs;
+const grid=document.getElementById('grid');
+let values=["🍒","🍒","⭐","⭐","🎮","🎮","👾","👾"];
+values=values.sort(()=>Math.random()-0.5);
 
-  const deck = shuffle([...icons, ...icons]).map((v,i)=>({id:i, v, r:false, m:false}));
-  cards = deck;
+let open=[], done=0, hits=0;
+document.getElementById('hits').textContent=hits;
 
-  deck.forEach(c=>{
-    const el = document.createElement('div');
-    el.className='card';
-    el.textContent='?';
-    el.onclick=()=>flip(c,el);
-    grid.appendChild(el);
-    c.el=el;
-  });
-}
+values.forEach((v,idx)=>{
+  const el=document.createElement('div');
+  el.className="card";
+  el.dataset.val=v;
+  el.dataset.idx=idx;
+  el.textContent="";
+  el.onclick=()=>{
+    if(el.classList.contains("done")||el.classList.contains("open")) return;
+    if(open.length===2) return;
+    el.classList.add("open"); el.textContent=v; beep(700,0.05);
+    open.push(el);
 
-function render(c){
-  c.el.classList.toggle('revealed', c.r);
-  c.el.classList.toggle('matched', c.m);
-  c.el.textContent = (c.r || c.m) ? c.v : '?';
-}
-
-function flip(c){
-  if(lock || c.m || c.r) return;
-  c.r=true; render(c);
-
-  if(!first){ first=c; return; }
-
-  lock=true;
-  if(first.v===c.v){
-    first.m=true; c.m=true;
-    render(first); render(c);
-    first.r=false; c.r=false; // keep matched visible via .m
-    pairs++;
-    pairsEl.textContent=pairs;
-    first=null;
-    lock=false;
-  } else {
-    setTimeout(()=>{
-      c.r=false; first.r=false;
-      render(c); render(first);
-      first=null;
-      lock=false;
-    }, 650);
-  }
-}
-
-restartBtn.onclick = reset;
-reset();
+    if(open.length===2){
+      const [a,b]=open;
+      if(a.dataset.val===b.dataset.val){
+        a.classList.add("done"); b.classList.add("done");
+        a.classList.remove("open"); b.classList.remove("open");
+        hits++; done+=2;
+        document.getElementById('hits').textContent=hits;
+        beep(980,0.06); setTimeout(()=>beep(1180,0.06),70);
+        open=[];
+        if(done===values.length){
+          setTimeout(()=>{ beep(1300,0.07); alert("Você venceu!"); location.reload(); },120);
+        }
+      }else{
+        beep(180,0.10,"sawtooth",0.06);
+        setTimeout(()=>{
+          a.classList.remove("open"); b.classList.remove("open");
+          a.textContent=""; b.textContent="";
+          open=[];
+        },550);
+      }
+    }
+  };
+  grid.appendChild(el);
+});
 </script>
-</body>
-</html>
+</body></html>
