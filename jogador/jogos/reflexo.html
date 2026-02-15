@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Reflexo</title>
+<style>
+body{text-align:center;background:#000;color:white}
+#btn{padding:30px;font-size:20px;display:none}
+</style>
+</head>
+<body>
+<h1>Teste de Reflexo</h1>
+<button id="btn">CLIQUE!</button>
+<p id="res"></p>
+
+<script>
+let tempo;
+setTimeout(()=>{
+document.getElementById("btn").style.display="inline";
+tempo=Date.now();
+},Math.random()*5000);
+
+document.getElementById("btn").onclick=function(){
+let r=Date.now()-tempo;
+document.getElementById("res").innerText="Seu tempo: "+r+" ms";
+}
+</script>
+</body>
+</html>
