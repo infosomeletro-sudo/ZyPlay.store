@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZYPLAY - Flappy</title>
+  <style>
+    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .box{max-width:900px;width:92vw}
+    h1{margin:0 0 10px}
+    canvas{background:linear-gradient(#0f0f25,#050510);border:2px solid #00d4ff;border-radius:12px;display:block;width:100%;max-width:720px;height:auto}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
+    button:hover{background:#ff007a}
+    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
+    a{color:#00d4ff}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🕊️ Flappy</h1>
+    <div class="row">
+      <span class="pill">Pontos: <span id="score">0</span></span>
+      <button id="restart">Reiniciar</button>
+      <a href="/">← Voltar</a>
+    </div>
+    <canvas id="cv" width="720" height="420"></canvas>
+    <p>Dica: espaço / clique para subir.</p>
+  </div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const scoreEl = document.getElementById('score');
+const restartBtn = document.getElementById('restart');
+
+let bird, pipes, score, over, lastSpawn;
+
+function reset(){
+  bird = {x:150, y:210, vy:0, r:14};
+  pipes = [];
+  score = 0;
+  over = false;
+  lastSpawn = 0;
+  scoreEl.textContent = score;
+}
+reset();
+
+function spawnPipe(){
+  const gap = 140;
+  const top = 60 + Math.random()*(cv.height-120-gap);
+  const x = cv.width + 20;
+  pipes.push({x, w:60, top, gap, passed:false});
+}
+
+function jump(){ if(!over){ bird.vy = -6.8; } }
+
+function update(dt){
+  bird.vy += 0.018*dt;
+  bird.y += bird.vy*(dt/16);
+
+  if(bird.y<bird.r){ bird.y=bird.r; bird.vy=0; }
+  if(bird.y>cv.height-bird.r){ over=true; }
+
+  // pipes
+  pipes.forEach(p=>p.x -= 0.18*dt);
+  pipes = pipes.filter(p=>p.x+p.w>-20);
+
+  // collisions + score
+  pipes.forEach(p=>{
+    const inX = bird.x+bird.r>p.x && bird.x-bird.r<p.x+p.w;
+    const hitTop = bird.y-bird.r < p.top;
+    const hitBot = bird.y+bird.r > p.top+p.gap;
+    if(inX && (hitTop || hitBot)) over=true;
+
+    if(!p.passed && p.x+p.w < bird.x){
+      p.passed = true;
+      score += 1;
+      scoreEl.textContent = score;
+    }
+  });
+
+  lastSpawn += dt;
+  if(lastSpawn>1200){
+    lastSpawn = 0;
+    spawnPipe();
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // bird
+  ctx.fillStyle = '#ffcc00';
+  ctx.beginPath();
+  ctx.arc(bird.x, bird.y, bird.r, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#00d4ff';
+  ctx.fillRect(bird.x+8, bird.y-3, 10, 6);
+
+  // pipes
+  pipes.forEach(p=>{
+    ctx.fillStyle = '#ff007a';
+    ctx.fillRect(p.x, 0, p.w, p.top);
+    ctx.fillRect(p.x, p.top+p.gap, p.w, cv.height-(p.top+p.gap));
+  });
+
+  if(over){
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 28px Arial';
+    ctx.fillText('GAME OVER', cv.width/2-90, cv.height/2);
+    ctx.font = '16px Arial';
+    ctx.fillText('Clique em Reiniciar', cv.width/2-75, cv.height/2+30);
+  }
+}
+
+let last=performance.now();
+function loop(now){
+  const dt = now-last; last=now;
+  if(!over) update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+cv.addEventListener('mousedown', jump);
+addEventListener('keydown', (e)=>{ if(e.code==='Space') jump(); });
+restartBtn.onclick = reset;
+</script>
+</body>
+</html>
