@@ -1,795 +1,394 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZYPLAY — Arena Retro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
 
-  <!-- EZOIC (CMP + ADS HEADER) -->
-  <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
-  <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js"></script>
-  <script async src="https://www.ezojs.com/ezoic/sa.min.js"></script>
-  <script>
-    window.ezstandalone = window.ezstandalone || {};
-    ezstandalone.cmd = ezstandalone.cmd || [];
-  </script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- EZOIC (Head Script) -->
+    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
+    <script>
+        window.ezstandalone = window.ezstandalone || {};
+        ezstandalone.cmd = ezstandalone.cmd || [];
+    </script>
 
-  <style>
-    :root{
-      --bg:#050510;
-      --panel:rgba(18,18,43,0.72);
-      --panel2:rgba(10,10,25,0.65);
-      --pink:#ff007a;
-      --blue:#00d4ff;
-      --gold:#ffcc00;
-      --muted:rgba(255,255,255,0.7);
-      --border:rgba(0,212,255,0.35);
-      --shadow:0 0 40px rgba(0,0,0,0.65);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:var(--bg);
-      background-image:
-        linear-gradient(rgba(255, 0, 122, 0.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 0, 122, 0.12) 1px, transparent 1px);
-      background-size:48px 48px;
-      color:white;
-      font-family:'Rajdhani',sans-serif;
-      height:100vh;
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-    }
-    header{
-      height:92px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 26px;
-      background:rgba(18,18,43,0.95);
-      border-bottom:5px solid var(--pink);
-      box-shadow:0 0 30px var(--pink);
-      z-index:50;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      user-select:none;
-    }
-    .brand-badge{
-      width:46px;height:46px;border-radius:10px;
-      border:2px solid var(--gold);
-      background:linear-gradient(135deg, rgba(255,204,0,0.22), rgba(0,212,255,0.12));
-      box-shadow:0 0 18px rgba(0,212,255,0.25);
-      display:grid;place-items:center;
-      font-family:'Press Start 2P';
-      font-size:12px;
-      color:var(--gold);
-      text-shadow:2px 2px #000;
-    }
-    .brand h1{
-      margin:0;
-      font-family:'Press Start 2P';
-      font-size:1.25rem;
-      color:var(--gold);
-      text-shadow:3px 3px #000;
-    }
-    .brand .sub{
-      font-size:0.95rem;
-      color:var(--muted);
-      margin-top:6px;
-      letter-spacing:0.6px;
-    }
+    <style>
+        :root {
+            --pink-neon: #ff007a;
+            --blue-neon: #00d4ff;
+            --gold-neon: #ffcc00;
+            --deep-bg: #050510;
+        }
 
-    .top-actions{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+        body {
+            background: var(--deep-bg);
+            background-image:
+                linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
 
-    .pill{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border:2px solid rgba(255,204,0,0.55);
-      border-radius:10px;
-      background:rgba(0,0,0,0.25);
-      font-weight:900;
-    }
-    .pill small{opacity:0.85;font-weight:700}
-    .zycoin{
-      font-family:'Press Start 2P';
-      font-size:0.7rem;
-      color:var(--gold);
-      text-shadow:2px 2px #000;
-    }
-    .btn{
-      cursor:pointer;
-      border:none;
-      padding:10px 12px;
-      border-radius:10px;
-      font-weight:900;
-      font-size:0.98rem;
-      font-family:'Rajdhani',sans-serif;
-      display:inline-flex;
-      gap:10px;
-      align-items:center;
-      user-select:none;
-      transition:0.15s;
-    }
-    .btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
-    .btn-primary{background:var(--blue);color:#001018}
-    .btn-danger{background:var(--pink);color:white}
-    .btn-ghost{
-      background:rgba(0,0,0,0.25);
-      border:2px solid rgba(0,212,255,0.35);
-      color:white;
-    }
+        header {
+            background: #12122b;
+            min-height: 90px;
+            padding: 0 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--pink-neon);
+            box-shadow: 0 0 30px var(--pink-neon);
+            z-index: 100;
+            gap: 14px;
+        }
 
-    .banner{
-      padding:10px 16px;
-      background:var(--pink);
-      text-align:center;
-      border-bottom:3px solid var(--gold);
-      font-family:'Press Start 2P';
-      font-size:0.7rem;
-      box-shadow:0 5px 15px rgba(0,0,0,0.45);
-    }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-container i { font-size: 2.4rem; color: var(--blue-neon); filter: drop-shadow(0 0 10px var(--blue-neon)); }
+        .logo-text { font-family: 'Press Start 2P'; font-size: 1.3rem; color: var(--gold-neon); text-shadow: 3px 3px #000; }
 
-    .layout{
-      flex:1;
-      display:flex;
-      min-height:0;
-      z-index:10;
-    }
-    aside{
-      width:320px;
-      padding:22px;
-      background:rgba(18,18,43,0.88);
-      backdrop-filter: blur(14px);
-      border-right:4px solid var(--pink);
-      overflow:auto;
-    }
+        .header-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
-    .nav-title{
-      font-size:0.8rem;
-      opacity:0.65;
-      margin-bottom:12px;
-    }
+        .btn {
+            border: 2px solid var(--gold-neon);
+            background: rgba(0,0,0,0.35);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 900;
+            letter-spacing: .3px;
+            transition: .2s;
+            text-decoration:none;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            user-select:none;
+        }
+        .btn:hover {
+            background: var(--pink-neon);
+            box-shadow: -6px 6px 0px var(--blue-neon);
+            transform: translate(3px, -3px);
+        }
+        .btn.blue {
+            border-color: var(--blue-neon);
+        }
 
-    .nav a{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      padding:14px;
-      margin-bottom:12px;
-      text-decoration:none;
-      color:white;
-      font-weight:900;
-      border:3px solid var(--gold);
-      background:rgba(0,0,0,0.25);
-      border-radius:10px;
-      transition:0.2s;
-    }
-    .nav a:hover{
-      background:rgba(255,0,122,0.22);
-      box-shadow:-8px 8px 0px rgba(0,212,255,0.55);
-      transform:translate(4px,-4px);
-    }
-    .nav a.active{
-      border-color:var(--pink);
-      background:rgba(255,0,122,0.22);
-    }
-    .nav i{opacity:0.9}
-    main{
-      flex:1;
-      padding:22px;
-      overflow:auto;
-      min-height:0;
-      display:flex;
-      justify-content:center;
-    }
-    .panel{
-      width:min(1050px, 100%);
-      background:var(--panel);
-      border:2px solid var(--border);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      padding:20px;
-      backdrop-filter: blur(10px);
-    }
-    .panel h2{
-      margin:0 0 14px 0;
-      font-family:'Press Start 2P';
-      font-size:1rem;
-      color:var(--gold);
-      text-shadow:2px 2px #000;
-      letter-spacing:0.8px;
-    }
-    .muted{color:var(--muted)}
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:14px;
-    }
-    @media(max-width:1050px){ .grid{grid-template-columns: repeat(2, minmax(0, 1fr));} }
-    @media(max-width:760px){
-      aside{display:none}
-      .grid{grid-template-columns:1fr}
-      header{padding:0 12px}
-      .brand h1{font-size:1.05rem}
-    }
-    .card{
-      background:var(--panel2);
-      border:2px solid rgba(255,204,0,0.25);
-      border-radius:14px;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .thumb{
-      height:120px;
-      border-radius:12px;
-      border:2px solid rgba(0,212,255,0.25);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(0,212,255,0.25), transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(255,0,122,0.18), transparent 55%),
-        linear-gradient(135deg, rgba(255,204,0,0.12), rgba(0,0,0,0.15));
-      display:flex;
-      align-items:flex-end;
-      padding:10px;
-      overflow:hidden;
-      position:relative;
-    }
-    .thumb .tag{
-      font-family:'Press Start 2P';
-      font-size:0.6rem;
-      background:rgba(0,0,0,0.35);
-      border:1px solid rgba(255,255,255,0.15);
-      padding:6px 8px;
-      border-radius:10px;
-    }
-    .card-title{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
-    }
-    .card-title b{font-size:1.05rem}
-    .chip{
-      font-family:'Press Start 2P';
-      font-size:0.58rem;
-      padding:6px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,204,0,0.35);
-      background:rgba(0,0,0,0.25);
-      color:var(--gold);
-      text-shadow:1px 1px #000;
-      white-space:nowrap;
-    }
-    .row{
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
-    }
-    .input{
-      width:100%;
-      padding:12px 12px;
-      border-radius:10px;
-      border:2px solid rgba(0,212,255,0.25);
-      background:rgba(0,0,0,0.25);
-      color:white;
-      outline:none;
-      font-family:'Rajdhani',sans-serif;
-      font-size:1rem;
-    }
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,0.6);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:2000;
-      padding:18px;
-    }
-    .modal{
-      width:min(520px, 100%);
-      background:rgba(18,18,43,0.95);
-      border:2px solid rgba(0,212,255,0.35);
-      border-radius:16px;
-      box-shadow:0 0 50px rgba(0,0,0,0.8);
-      padding:16px;
-    }
-    .modal h3{
-      margin:0 0 10px 0;
-      font-family:'Press Start 2P';
-      font-size:0.95rem;
-      color:var(--gold);
-      text-shadow:2px 2px #000;
-    }
-    .modal p{margin:8px 0;color:var(--muted)}
-    .modal .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
-    iframe{
-      width:100%;
-      height:520px;
-      border:2px solid rgba(255,204,0,0.35);
-      border-radius:14px;
-      background:rgba(0,0,0,0.25);
-    }
+        /* Google style button (visual only) */
+        .g-sign-in-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: #ffffff;
+            color: #757575;
+            border: 1px solid #dcdcdc;
+            border-radius: 2px;
+            padding: 1px;
+            cursor: pointer;
+            font-family: 'Roboto', arial, sans-serif;
+            font-weight: 500;
+            transition: box-shadow 0.2s;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        }
+        .g-sign-in-button:hover { box-shadow: 0 0 3px 3px rgba(66,133,244,0.3); }
+        .g-icon-wrapper {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .g-icon { width: 18px; height: 18px; }
+        .g-button-text {
+            padding: 0 12px;
+            font-size: 14px;
+            letter-spacing: 0.2px;
+            color: #3c4043;
+        }
 
-    .toast{
-      position:fixed;
-      right:16px;
-      bottom:16px;
-      background:rgba(18,18,43,0.95);
-      border:2px solid rgba(0,212,255,0.35);
-      border-radius:14px;
-      padding:12px 14px;
-      max-width:340px;
-      box-shadow:0 0 40px rgba(0,0,0,0.8);
-      display:none;
-      z-index:2500;
-    }
-    .toast b{color:var(--gold)}
-    .toast small{display:block;color:var(--muted);margin-top:4px}
-  </style>
+        .zycoin-bar {
+            background: var(--pink-neon);
+            text-align: center;
+            padding: 10px 12px;
+            font-family: 'Press Start 2P';
+            font-size: 0.7rem;
+            border-bottom: 3px solid var(--gold-neon);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .hero-char {
+            position: fixed;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 0 30px var(--blue-neon));
+            opacity: .9;
+        }
+        .left-char { bottom: -10px; left: 10px; width: 230px; }
+        .right-char { top: 120px; right: 20px; width: 260px; opacity: 0.8; }
+
+        .main-layout { display: flex; flex: 1; z-index: 10; }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(18, 18, 43, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 24px 18px;
+            border-right: 4px solid var(--pink-neon);
+            min-height: calc(100vh - 90px);
+        }
+
+        .menu-item {
+            text-decoration: none;
+            color: white;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px;
+            border: 3px solid var(--gold-neon);
+            border-radius: 6px;
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            font-size: 1.05rem;
+            transition: 0.2s;
+        }
+        .menu-item:hover {
+            background: var(--pink-neon);
+            box-shadow: -8px 8px 0px var(--blue-neon);
+            transform: translate(4px, -4px);
+        }
+
+        .content {
+            flex: 1;
+            padding: 26px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: rgba(18, 18, 43, 0.85);
+            border: 2px solid rgba(0,212,255,0.35);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.45);
+        }
+
+        .card h2 {
+            margin: 0 0 12px 0;
+            font-family: 'Press Start 2P';
+            font-size: 1rem;
+            color: var(--gold-neon);
+            text-shadow: 2px 2px #000;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .game-tile {
+            display: block;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,204,0,0.55);
+            background: rgba(0,0,0,0.25);
+            text-decoration: none;
+            color: #fff;
+            transition: .2s;
+        }
+        .game-tile:hover {
+            transform: translate(2px, -2px);
+            border-color: var(--pink-neon);
+            box-shadow: 0 0 18px rgba(0,212,255,0.35);
+        }
+        .game-title {
+            font-weight: 900;
+            font-size: 1.05rem;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .game-desc {
+            opacity: .85;
+            font-size: .95rem;
+            margin-top: 8px;
+            line-height: 1.25rem;
+        }
+
+        .row {
+            display:flex;
+            gap: 12px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        .pill {
+            border: 2px solid rgba(0,212,255,0.55);
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+            font-weight: 900;
+        }
+        .pill strong { color: var(--blue-neon); }
+
+        /* COOKIE BANNER */
+        .cookie-popup {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            border: 2px solid var(--blue-neon);
+            padding: 14px 18px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 1000;
+            box-shadow: 0 0 50px #000;
+            max-width: 92vw;
+        }
+
+        @media (max-width: 900px){
+            .sidebar { display:none; }
+            .left-char, .right-char { display:none; }
+            header { padding: 10px 14px; min-height: auto; }
+            .logo-text { font-size: 1.05rem; }
+        }
+    </style>
 </head>
 
 <body>
-  <header>
-    <div class="brand">
-      <div class="brand-badge">ZP</div>
-      <div>
-        <h1>ZYPLAY</h1>
-        <div class="sub">Arena Retro • Missões • Zycoin</div>
-      </div>
+
+    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char" alt="">
+    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char" alt="">
+
+    <header>
+        <div class="logo-container">
+            <i class="fas fa-gamepad"></i>
+            <div class="logo-text">ZYPLAY</div>
+        </div>
+
+        <div class="header-actions">
+            <span class="pill">Saldo: <strong id="zycoin">0</strong> ZYCOIN</span>
+
+            <a class="btn blue" href="/jogador/jogos/tiro.html">
+                ▶️ Jogar agora
+            </a>
+
+            <a class="btn" href="#" onclick="alert('Em breve: Arena ZYPLAY (login/cadastro).'); return false;">
+                🏆 Entrar na Arena
+            </a>
+
+            <a class="g-sign-in-button" href="#" onclick="alert('Login social real (Google/Facebook) precisa de backend. Posso te orientar depois.'); return false;">
+                <div class="g-icon-wrapper">
+                    <img class="g-icon" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" alt="Google Logo">
+                </div>
+                <span class="g-button-text">Fazer login com Google</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="zycoin-bar">
+        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN • JOGUE, GANHE, SUBA NO RANKING
     </div>
 
-    <div class="top-actions">
-      <div class="pill">
-        <div class="zycoin">Zycoin:</div>
-        <div><span id="balance">0</span> <small>ZYC</small></div>
-      </div>
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div style="color: #666; margin-bottom: 16px; font-size: 0.8rem;">NAVEGAÇÃO</div>
 
-      <button class="btn btn-ghost" id="btnVisitor">Jogar como visitante</button>
-      <button class="btn btn-primary" id="btnArena">Entrar na Arena ZyPlay</button>
-      <button class="btn btn-danger" id="btnReferral">Indique & Ganhe</button>
-    </div>
-  </header>
+            <a href="/" class="menu-item">
+                <span>🏠 INÍCIO</span><span>→</span>
+            </a>
 
-  <div class="banner">MISSÃO DO DIA: jogue 3 partidas e ganhe +30 ZYC • EM BREVE: ZYCOIN REAL</div>
+            <a href="#jogos" class="menu-item">
+                <span>🎮 JOGOS</span><span>→</span>
+            </a>
 
-  <div class="layout">
-    <aside>
-      <div class="nav-title">NAVEGAÇÃO</div>
-      <div class="nav">
-        <a href="#home" class="active" data-view="home"><i>🏠</i> Início</a>
-        <a href="#games" data-view="games"><i>🎮</i> Jogos</a>
-        <a href="#missions" data-view="missions"><i>🎯</i> Missões</a>
-        <a href="#ranking" data-view="ranking"><i>🏆</i> Ranking</a>
-        <a href="#privacy" data-view="privacy"><i>🔒</i> Privacidade</a>
-      </div>
-    </aside>
+            <a href="#ranking" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>🏆 RANKING</span><span>→</span>
+            </a>
 
-    <main>
-      <div class="panel" id="view-home">
-        <h2>ENTRE NA ARENA</h2>
-        <p class="muted">
-          Esse site já está pronto pra escalar pra <b>50+ jogos</b>.
-          Agora você vai adicionando jogos simples e o ZyPlay dá Zycoin por missão/recorde.
-        </p>
+            <a href="/termos.html" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>📜 TERMOS</span><span>→</span>
+            </a>
 
-        <div class="grid" style="margin-top:14px">
-          <div class="card">
-            <div class="thumb"><div class="tag">RETRO SYSTEM</div></div>
-            <div class="card-title">
-              <b>Modo Visitante</b>
-              <span class="chip">SEM CADASTRO</span>
+            <a href="/private.html" class="menu-item" style="border-color: var(--pink-neon);">
+                <span>🔒 PRIVACIDADE</span><span>→</span>
+            </a>
+        </aside>
+
+        <main class="content">
+
+            <div class="card">
+                <h2>ENTRAR RÁPIDO</h2>
+                <div class="row">
+                    <a class="btn blue" href="/jogador/jogos/tiro.html">🎯 Jogar Tiro ao Alvo</a>
+                    <a class="btn" href="#" onclick="alert('Em breve: Jogar como visitante com nickname.'); return false;">👤 Jogar como visitante</a>
+                    <a class="btn" href="#" onclick="alert('Em breve: Indique e ganhe.'); return false;">🎁 Indique e ganhe</a>
+                </div>
+                <div style="opacity:.85; margin-top:12px; line-height:1.35rem;">
+                    Dica: cada jogo fica em <strong>/jogador/jogos/</strong>.  
+                    Para adicionar novo jogo, crie o arquivo <strong>.html</strong> e coloque o link na lista abaixo.
+                </div>
             </div>
-            <div class="muted">Jogue agora e já acumule Zycoin (salvo no navegador).</div>
-            <button class="btn btn-primary" onclick="go('games')">Ver Jogos</button>
-          </div>
 
-          <div class="card">
-            <div class="thumb"><div class="tag">LOGIN (EM BREVE)</div></div>
-            <div class="card-title">
-              <b>Login real</b>
-              <span class="chip">GOOGLE/FACE</span>
+            <div class="card" id="jogos">
+                <h2>JOGOS DISPONÍVEIS</h2>
+
+                <div class="games-grid">
+                    <!-- JOGO 1 (já existe no seu repo): -->
+                    <a class="game-tile" href="/jogador/jogos/tiro.html">
+                        <div class="game-title">🎯 Tiro ao Alvo</div>
+                        <div class="game-desc">Clique rápido, faça pontos e tente bater seu recorde.</div>
+                    </a>
+
+                    <!-- EXEMPLOS (adicione quando criar os arquivos): -->
+                    <!--
+                    <a class="game-tile" href="/jogador/jogos/blocos.html">
+                        <div class="game-title">🧱 Blocos</div>
+                        <div class="game-desc">Quebre blocos e colete ZYCOIN.</div>
+                    </a>
+
+                    <a class="game-tile" href="/jogador/jogos/corrida.html">
+                        <div class="game-title">🏁 Corrida</div>
+                        <div class="game-desc">Desvie dos obstáculos e sobreviva o máximo possível.</div>
+                    </a>
+                    -->
+                </div>
             </div>
-            <div class="muted">A interface está pronta. Depois ligamos com Firebase/Supabase.</div>
-            <button class="btn btn-ghost" onclick="openLogin()">Abrir Login</button>
-          </div>
 
-          <div class="card">
-            <div class="thumb"><div class="tag">REFERRAL</div></div>
-            <div class="card-title">
-              <b>Indique & Ganhe</b>
-              <span class="chip">EM BREVE</span>
+            <div class="card" id="ranking">
+                <h2>RANKING (EM BREVE)</h2>
+                <div style="opacity:.85; line-height:1.35rem;">
+                    Quando você quiser, eu te passo um ranking simples usando <strong>LocalStorage</strong> (já funciona sem servidor).
+                    Depois a gente migra pra login real.
+                </div>
             </div>
-            <div class="muted">Hoje funciona local. Depois vira real com código + tracking.</div>
-            <button class="btn btn-danger" onclick="openReferral()">Gerar Código</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="panel" id="view-games" style="display:none;">
-        <h2>JOGOS</h2>
-        <p class="muted">Clique para jogar. Cada partida pode render Zycoin por tempo/recorde/missão.</p>
-
-        <div class="row" style="margin:12px 0;">
-          <input class="input" id="search" placeholder="Buscar jogo (ex: snake, dodge, clicker)..." />
-          <span class="chip">Catálogo pronto pra 50+</span>
-        </div>
-
-        <div class="grid" id="gamesGrid"></div>
-
-        <div style="margin-top:14px" class="muted">
-          Dica: cada jogo está em <code>/games/</code>. É só criar um novo arquivo e adicionar na lista.
-        </div>
-      </div>
-
-      <div class="panel" id="view-missions" style="display:none;">
-        <h2>MISSÕES</h2>
-        <div class="grid">
-          <div class="card">
-            <div class="thumb"><div class="tag">DIÁRIA</div></div>
-            <div class="card-title"><b>Jogue 3 partidas</b><span class="chip">+30 ZYC</span></div>
-            <div class="muted">Conta partidas automaticamente (local).</div>
-            <button class="btn btn-primary" onclick="claimDaily()">Resgatar</button>
-          </div>
-          <div class="card">
-            <div class="thumb"><div class="tag">TREINO</div></div>
-            <div class="card-title"><b>Faça 500 pontos</b><span class="chip">+25 ZYC</span></div>
-            <div class="muted">Bateu 500 em qualquer jogo? Marca como feito.</div>
-            <button class="btn btn-ghost" onclick="mark500()">Marcar como concluída</button>
-          </div>
-          <div class="card">
-            <div class="thumb"><div class="tag">BÔNUS</div></div>
-            <div class="card-title"><b>Volte amanhã</b><span class="chip">+10 ZYC</span></div>
-            <div class="muted">Sistema de streak (local) já preparado.</div>
-            <button class="btn btn-ghost" onclick="dailyStreak()">Resgatar bônus</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" id="view-ranking" style="display:none;">
-        <h2>RANKING</h2>
-        <p class="muted">Por enquanto é local (salvo no navegador). Depois conectamos em banco real.</p>
-        <div class="card">
-          <div class="row">
-            <b>Seu melhor total</b>
-            <span class="chip" id="bestTotal">0</span>
-          </div>
-          <div class="muted" style="margin-top:10px" id="bestList"></div>
-        </div>
-      </div>
-
-      <div class="panel" id="view-privacy" style="display:none;">
-        <h2>PRIVACIDADE</h2>
-        <p class="muted">
-          Este site usa armazenamento local (localStorage) para salvar Zycoin, recordes e progresso.
-          Depois podemos criar uma política LGPD completa.
-        </p>
-      </div>
-    </main>
-  </div>
-
-  <!-- Modal: Login (placeholder pronto para Firebase/Supabase) -->
-  <div class="modal-backdrop" id="loginModal">
-    <div class="modal">
-      <h3>Entrar na Arena</h3>
-      <p>Login real precisa de backend (Firebase/Supabase). Por enquanto, isso é “visual pronto”.</p>
-
-      <div class="grid" style="grid-template-columns:1fr; gap:10px;">
-        <button class="btn btn-primary" onclick="fakeLogin('google')">Entrar com Google</button>
-        <button class="btn btn-primary" onclick="fakeLogin('facebook')">Entrar com Facebook</button>
-        <input class="input" id="email" placeholder="Ou cadastrar com e-mail (demo)" />
-        <button class="btn btn-ghost" onclick="fakeSignup()">Criar cadastro (demo)</button>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-ghost" onclick="closeLogin()">Fechar</button>
-      </div>
+        </main>
     </div>
-  </div>
 
-  <!-- Modal: Referral (placeholder local) -->
-  <div class="modal-backdrop" id="refModal">
-    <div class="modal">
-      <h3>Indique & Ganhe</h3>
-      <p>Agora: gera um código local (demo). Depois: vira real com tracking + banco.</p>
-
-      <div class="card">
-        <div class="row">
-          <b>Seu código</b>
-          <span class="chip" id="refCode">—</span>
-        </div>
-        <p class="muted">Recompensa (demo): +15 ZYC ao “usar código”.</p>
-        <div class="row">
-          <input class="input" id="useCode" placeholder="Cole um código aqui (demo)" />
-          <button class="btn btn-primary" onclick="useReferral()">Usar</button>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-ghost" onclick="closeReferral()">Fechar</button>
-      </div>
+    <div class="cookie-popup" id="cp">
+        <span style="font-size: 0.95rem;">Utilizamos cookies para salvar seu progresso.</span>
+        <button onclick="document.getElementById('cp').remove()"
+                style="background:var(--blue-neon); border:none; padding:8px 16px; font-weight:bold; cursor:pointer; border-radius:6px;">
+            OK
+        </button>
     </div>
-  </div>
 
-  <!-- Modal: Jogar -->
-  <div class="modal-backdrop" id="playModal">
-    <div class="modal" style="width:min(980px,100%)">
-      <h3 id="playTitle">Jogo</h3>
-      <p class="muted" id="playDesc"></p>
-      <iframe id="playFrame" src=""></iframe>
-      <div class="actions">
-        <button class="btn btn-primary" onclick="rewardPlay()">Finalizar & Ganhar Zycoin</button>
-        <button class="btn btn-ghost" onclick="closePlay()">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-  <script>
-    // =============================
-    // Estado (localStorage)
-    // =============================
-    const LS = {
-      balance: 'zyplay_balance',
-      plays: 'zyplay_plays',
-      best: 'zyplay_best_map',
-      daily: 'zyplay_daily_claim',
-      streak: 'zyplay_streak_claim',
-      ref: 'zyplay_ref_code'
-    };
-
-    const getNum = (k, d=0) => Number(localStorage.getItem(k) ?? d);
-    const setNum = (k, v) => localStorage.setItem(k, String(v));
-    const getJSON = (k, d) => {
-      try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(d)); }
-      catch { return d; }
-    };
-    const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-
-    const balanceEl = document.getElementById('balance');
-    const toastEl = document.getElementById('toast');
-
-    function toast(title, msg){
-      toastEl.innerHTML = `<b>${title}</b><small>${msg}</small>`;
-      toastEl.style.display = 'block';
-      setTimeout(()=> toastEl.style.display='none', 2600);
-    }
-
-    function updateBalance(){
-      balanceEl.textContent = getNum(LS.balance, 0);
-    }
-
-    function addZyc(amount, reason){
-      const b = getNum(LS.balance, 0) + amount;
-      setNum(LS.balance, b);
-      updateBalance();
-      toast(`+${amount} ZYC`, reason);
-    }
-
-    // =============================
-    // Navegação
-    // =============================
-    const navLinks = document.querySelectorAll('.nav a');
-    const views = ['home','games','missions','ranking','privacy'];
-    function go(name){
-      for(const v of views){
-        document.getElementById(`view-${v}`).style.display = (v===name ? 'block' : 'none');
-      }
-      navLinks.forEach(a => a.classList.toggle('active', a.dataset.view===name));
-      if(name==='ranking') renderRanking();
-      if(name==='games') renderGames();
-      window.location.hash = name;
-    }
-    navLinks.forEach(a=>{
-      a.addEventListener('click', (e)=>{ e.preventDefault(); go(a.dataset.view); });
-    });
-    const initial = (location.hash || '#home').replace('#','');
-    go(views.includes(initial) ? initial : 'home');
-
-    // =============================
-    // Catálogo de Jogos (adicione até 50 aqui)
-    // =============================
-    const GAMES = [
-      { id:'dodge',   name:'ZyBlock Dodge',  tag:'+10 ZYC',  desc:'Desvie dos blocos. Simples e viciante.', file:'/games/dodge.html' },
-      { id:'snake',   name:'Snake Neon',     tag:'+8 ZYC',   desc:'Clássico Snake retro com neon.', file:'/games/snake.html' },
-      { id:'clicker', name:'ZyClicker',      tag:'+6 ZYC',   desc:'Clicker rápido. Ideal pra missão diária.', file:'/games/clicker.html' },
-      { id:'breakout',name:'Breakout Retro', tag:'+9 ZYC',   desc:'Quebre blocos. Um clássico.', file:'/games/breakout.html' },
-      { id:'blaster', name:'Pixel Blaster',  tag:'+7 ZYC',   desc:'Atire em alvos e faça pontos.', file:'/games/blaster.html' },
-    ];
-
-    const gridEl = document.getElementById('gamesGrid');
-    const searchEl = document.getElementById('search');
-
-    function renderGames(){
-      const q = (searchEl.value || '').toLowerCase().trim();
-      const list = GAMES.filter(g => !q || g.name.toLowerCase().includes(q) || g.id.includes(q));
-      gridEl.innerHTML = list.map(g => `
-        <div class="card">
-          <div class="thumb"><div class="tag">${g.id.toUpperCase()}</div></div>
-          <div class="card-title">
-            <b>${g.name}</b>
-            <span class="chip">${g.tag}</span>
-          </div>
-          <div class="muted">${g.desc}</div>
-          <div class="row">
-            <button class="btn btn-primary" onclick="play('${g.id}')">Jogar</button>
-            <button class="btn btn-ghost" onclick="saveBest('${g.id}', 0)">Zerar recorde</button>
-          </div>
-        </div>
-      `).join('');
-    }
-    searchEl?.addEventListener('input', renderGames);
-
-    // =============================
-    // Jogar em modal (iframe)
-    // =============================
-    const playModal = document.getElementById('playModal');
-    const playFrame = document.getElementById('playFrame');
-    const playTitle = document.getElementById('playTitle');
-    const playDesc  = document.getElementById('playDesc');
-
-    let currentGame = null;
-
-    function play(id){
-      const g = GAMES.find(x=>x.id===id);
-      if(!g) return;
-      currentGame = g;
-      playTitle.textContent = g.name;
-      playDesc.textContent = g.desc + ' — Feche ou clique “Finalizar & Ganhar Zycoin”.';
-      playFrame.src = g.file;
-      playModal.style.display = 'flex';
-
-      // conta uma “partida”
-      const plays = getNum(LS.plays, 0) + 1;
-      setNum(LS.plays, plays);
-    }
-
-    function closePlay(){
-      playFrame.src = '';
-      playModal.style.display = 'none';
-      currentGame = null;
-    }
-
-    // recompensa simples por partida (você ajusta depois)
-    function rewardPlay(){
-      if(!currentGame) return;
-      addZyc(5, `Partida concluída: ${currentGame.name}`);
-      closePlay();
-    }
-
-    // =============================
-    // Recordes (local)
-    // =============================
-    function getBestMap(){
-      return getJSON(LS.best, {});
-    }
-    function saveBest(gameId, score){
-      const m = getBestMap();
-      if(score === 0){
-        delete m[gameId];
-      } else {
-        m[gameId] = Math.max(m[gameId] || 0, score);
-      }
-      setJSON(LS.best, m);
-      toast('Ranking', 'Recordes atualizados (local).');
-      renderRanking();
-    }
-
-    function renderRanking(){
-      const m = getBestMap();
-      const entries = Object.entries(m).sort((a,b)=>b[1]-a[1]);
-      const total = entries.reduce((acc, [,v])=>acc+v, 0);
-      document.getElementById('bestTotal').textContent = total || 0;
-
-      const list = entries.length
-        ? entries.map(([id,score])=>{
-            const g = GAMES.find(x=>x.id===id);
-            return `• <b>${g?g.name:id}</b> — ${score} pts`;
-          }).join('<br>')
-        : 'Sem recordes ainda. Jogue e marque seus melhores!';
-      document.getElementById('bestList').innerHTML = list;
-    }
-
-    // =============================
-    // Missões
-    // =============================
-    function claimDaily(){
-      const today = new Date().toISOString().slice(0,10);
-      const last = localStorage.getItem(LS.daily);
-      const plays = getNum(LS.plays, 0);
-
-      if(last === today){
-        toast('Missão diária', 'Você já resgatou hoje.');
-        return;
-      }
-      if(plays < 3){
-        toast('Missão diária', `Faltam partidas: ${3-plays}. Jogue mais!`);
-        return;
-      }
-      localStorage.setItem(LS.daily, today);
-      addZyc(30, 'Missão diária concluída: 3 partidas');
-    }
-
-    function mark500(){
-      // demo: marca e dá moeda (na prática: o jogo enviaria pontuação)
-      addZyc(25, 'Missão concluída (demo): 500 pontos');
-    }
-
-    function dailyStreak(){
-      const today = new Date().toISOString().slice(0,10);
-      const last = localStorage.getItem(LS.streak);
-      if(last === today){
-        toast('Bônus', 'Você já resgatou hoje.');
-        return;
-      }
-      localStorage.setItem(LS.streak, today);
-      addZyc(10, 'Bônus diário resgatado');
-    }
-
-    // =============================
-    // Login / Referral (placeholders)
-    // =============================
-    const loginModal = document.getElementById('loginModal');
-    const refModal = document.getElementById('refModal');
-    const refCodeEl = document.getElementById('refCode');
-
-    function openLogin(){ loginModal.style.display='flex'; }
-    function closeLogin(){ loginModal.style.display='none'; }
-
-    function fakeLogin(provider){
-      // demo: só dá uma recompensa simbólica
-      addZyc(12, `Login (demo) via ${provider} — bônus de boas-vindas`);
-      closeLogin();
-    }
-    function fakeSignup(){
-      const email = (document.getElementById('email').value || '').trim();
-      if(!email){
-        toast('Cadastro', 'Digite um e-mail (demo).');
-        return;
-      }
-      addZyc(12, `Cadastro (demo) — bônus para ${email}`);
-      closeLogin();
-    }
-
-    function openReferral(){
-      let code = localStorage.getItem(LS.ref);
-      if(!code){
-        code = 'ZP-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-        localStorage.setItem(LS.ref, code);
-      }
-      refCodeEl.textContent = code;
-      refModal.style.display='flex';
-    }
-    function closeReferral(){ refModal.style.display='none'; }
-
-    function useReferral(){
-      const v = (document.getElementById('useCode').value || '').trim().toUpperCase();
-      if(!v || !v.startsWith('ZP-')){
-        toast('Indique & Ganhe', 'Código inválido (demo).');
-        return;
-      }
-      addZyc(15, `Código aplicado (demo): ${v}`);
-      document.getElementById('useCode').value = '';
-    }
-
-    // botões do topo
-    document.getElementById('btnVisitor').addEventListener('click', ()=>{ addZyc(3,'Entrou como visitante'); go('games'); });
-    document.getElementById('btnArena').addEventListener('click', openLogin);
-    document.getElementById('btnReferral').addEventListener('click', openReferral);
-
-    // init
-    updateBalance();
-    renderRanking();
-  </script>
 </body>
 </html>
