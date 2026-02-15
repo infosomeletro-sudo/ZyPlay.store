@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZYPLAY - Blocos</title>
+  <style>
+    body{margin:0;background:#050510;color:#fff;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .box{max-width:900px;width:92vw}
+    h1{margin:0 0 10px}
+    canvas{background:#0f0f25;border:2px solid #00d4ff;border-radius:12px;display:block;width:100%;max-width:720px;height:auto}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+    button{cursor:pointer;border:2px solid #ffcc00;background:rgba(0,0,0,.4);color:#fff;padding:10px 14px;border-radius:10px;font-weight:700}
+    button:hover{background:#ff007a}
+    .pill{border:2px solid rgba(0,212,255,.6);padding:10px 14px;border-radius:999px;background:rgba(0,0,0,.25);font-weight:800}
+    a{color:#00d4ff}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🧱 Blocos (Breakout)</h1>
+    <div class="row">
+      <span class="pill">Pontos: <span id="score">0</span></span>
+      <button id="restart">Reiniciar</button>
+      <a href="/">← Voltar</a>
+    </div>
+    <canvas id="cv" width="720" height="420"></canvas>
+    <p>Dica: mouse move a barra. Quebre todos os blocos.</p>
+  </div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const scoreEl = document.getElementById('score');
+const restartBtn = document.getElementById('restart');
+
+let paddle, ball, bricks, score, over;
+
+function reset(){
+  paddle = {w:120,h:12,x:(cv.width-120)/2,y:cv.height-30};
+  ball = {x:cv.width/2,y:cv.height-60,vx:4,vy:-4,r:8};
+  score = 0; over = false;
+  scoreEl.textContent = score;
+
+  const rows=5, cols=10, bw=62, bh=18, pad=8, offX=20, offY=40;
+  bricks=[];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      bricks.push({x:offX+c*(bw+pad), y:offY+r*(bh+pad), w:bw, h:bh, alive:true});
+    }
+  }
+}
+reset();
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // bricks
+  bricks.forEach((b,i)=>{
+    if(!b.alive) return;
+    ctx.fillStyle = i%2 ? '#ff007a' : '#ffcc00';
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+  });
+
+  // paddle
+  ctx.fillStyle = '#00d4ff';
+  ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+
+  // ball
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+
+  if(over){
+    ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle='#fff'; ctx.font='bold 28px Arial';
+    ctx.fillText('GAME OVER', cv.width/2-90, cv.height/2);
+    ctx.font='16px Arial';
+    ctx.fillText('Clique em Reiniciar', cv.width/2-75, cv.height/2+30);
+  }
+
+  if(bricks.every(b=>!b.alive)){
+    ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle='#fff'; ctx.font='bold 28px Arial';
+    ctx.fillText('VOCÊ VENCEU!', cv.width/2-95, cv.height/2);
+  }
+}
+
+function update(){
+  if(over) return;
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // walls
+  if(ball.x<ball.r || ball.x>cv.width-ball.r) ball.vx *= -1;
+  if(ball.y<ball.r) ball.vy *= -1;
+  if(ball.y>cv.height-ball.r) over = true;
+
+  // paddle collision
+  if(ball.y+ball.r>=paddle.y && ball.y+ball.r<=paddle.y+paddle.h &&
+     ball.x>=paddle.x && ball.x<=paddle.x+paddle.w){
+    ball.vy = -Math.abs(ball.vy);
+    const hit = (ball.x-(paddle.x+paddle.w/2))/(paddle.w/2);
+    ball.vx = 6*hit;
+  }
+
+  // bricks collision
+  bricks.forEach(b=>{
+    if(!b.alive) return;
+    const inX = ball.x> b.x && ball.x< b.x+b.w;
+    const inY = ball.y> b.y && ball.y< b.y+b.h;
+    if(inX && inY){
+      b.alive=false;
+      score+=10;
+      scoreEl.textContent=score;
+      ball.vy *= -1;
+    }
+  });
+}
+
+function loop(){
+  update(); draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+cv.addEventListener('mousemove', (e)=>{
+  const rect = cv.getBoundingClientRect();
+  const x = (e.clientX-rect.left) * (cv.width/rect.width);
+  paddle.x = Math.max(0, Math.min(cv.width-paddle.w, x-paddle.w/2));
+});
+
+restartBtn.onclick = reset;
+</script>
+</body>
+</html>
