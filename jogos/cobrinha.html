@@ -1,1 +1,23 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Snake ZyPlay</title>
+    <style>
+        body { background: #050510; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: #00d4ff; font-family: sans-serif; }
+        canvas { border: 4px solid #ff007a; box-shadow: 0 0 20px #ff007a; background: #000; }
+    </style>
+</head>
+<body>
+    <div style="font-size:25px; margin-bottom:10px;">PONTOS: <span id="p">0</span></div>
+    <canvas id="s" width="400" height="400"></canvas>
+    <script>
+        const c=document.getElementById("s"),x=c.getContext("2d"),b=20;let s=[{x:9*b,y:10*b}],f={x:Math.floor(Math.random()*19+1)*b,y:Math.floor(Math.random()*19+1)*b},d,p=0;
+        document.addEventListener("keydown",e=>{if(e.keyCode==37&&d!="R")d="L";if(e.keyCode==38&&d!="DN")d="UP";if(e.keyCode==39&&d!="L")d="R";if(e.keyCode==40&&d!="UP")d="DN"});
+        function draw(){x.fillStyle="#000";x.fillRect(0,0,c.width,c.height);for(let i=0;i<s.length;i++){x.fillStyle=(i==0)?"#00d4ff":"#ff007a";x.fillRect(s[i].x,s[i].y,b,b)}
+        x.fillStyle="#ffcc00";x.fillRect(f.x,f.y,b,b);let hX=s[0].x,hY=s[0].y;if(d=="L")hX-=b;if(d=="UP")hY-=b;if(d=="R")hX+=b;if(d=="DN")hY+=b;
+        if(hX==f.x&&hY==f.y){p++;document.getElementById("p").innerHTML=p;f={x:Math.floor(Math.random()*19+1)*b,y:Math.floor(Math.random()*19+1)*b}}else{s.pop()}
+        let n={x:hX,y:hY};if(hX<0||hY<0||hX>=c.width||hY>=c.height||s.some(t=>t.x==n.x&&t.y==n.y)){alert("FIM DE JOGO! ZYCOINS: "+p);location.reload()}s.unshift(n)}setInterval(draw,100);
+    </script>
+</body>
+</html>
