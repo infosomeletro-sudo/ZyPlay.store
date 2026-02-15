@@ -1,394 +1,651 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ZYPLAY | Arena Retro</title>
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700;900&display=swap" rel="stylesheet">
 
-    <!-- EZOIC (Head Script) -->
-    <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
-    <script>
-        window.ezstandalone = window.ezstandalone || {};
-        ezstandalone.cmd = ezstandalone.cmd || [];
-    </script>
+  <style>
+    :root{
+      --bg:#050510;
+      --panel: rgba(18,18,43,.90);
+      --panel2: rgba(10,10,25,.85);
+      --pink:#ff007a;
+      --blue:#00d4ff;
+      --gold:#ffcc00;
+      --text:#ffffff;
+      --muted: rgba(255,255,255,.65);
+      --border: rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: "Rajdhani", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background: var(--bg);
+      background-image:
+        linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
+      background-size: 50px 50px;
+      overflow-x:hidden;
+    }
 
-    <style>
-        :root {
-            --pink-neon: #ff007a;
-            --blue-neon: #00d4ff;
-            --gold-neon: #ffcc00;
-            --deep-bg: #050510;
-        }
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px 24px;
+      background: #12122b;
+      border-bottom: 4px solid var(--pink);
+      box-shadow: 0 0 30px rgba(255,0,122,.35);
+      gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:14px;
+      min-width: 240px;
+    }
+    .brand-badge{
+      width:44px; height:44px;
+      border:2px solid var(--blue);
+      box-shadow: 0 0 18px rgba(0,212,255,.35);
+      border-radius:10px;
+      display:grid; place-items:center;
+      background: rgba(0,0,0,.25);
+      font-family:"Press Start 2P";
+      color:var(--gold);
+      font-size:14px;
+    }
+    .brand-title{
+      display:flex; flex-direction:column;
+      line-height:1.1;
+    }
+    .brand-title strong{
+      font-family:"Press Start 2P";
+      font-size:18px;
+      color:var(--gold);
+      text-shadow: 2px 2px #000;
+    }
+    .brand-title span{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
 
-        body {
-            background: var(--deep-bg);
-            background-image:
-                linear-gradient(rgba(255, 0, 122, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 0, 122, 0.15) 1px, transparent 1px);
-            background-size: 50px 50px;
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+    .top-actions{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
 
-        header {
-            background: #12122b;
-            min-height: 90px;
-            padding: 0 22px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 5px solid var(--pink-neon);
-            box-shadow: 0 0 30px var(--pink-neon);
-            z-index: 100;
-            gap: 14px;
-        }
+    /* Google / Facebook "originais" (visual) */
+    .btn-auth{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,.15);
+      cursor:pointer;
+      user-select:none;
+      text-decoration:none;
+      font-weight:700;
+      transition: transform .12s, box-shadow .12s;
+      box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      white-space:nowrap;
+    }
+    .btn-auth:active{ transform: translateY(1px); }
+    .btn-google{
+      background:#fff;
+      color:#3c4043;
+    }
+    .btn-google:hover{
+      box-shadow: 0 0 0 4px rgba(66,133,244,.25), 0 10px 22px rgba(0,0,0,.25);
+    }
+    .btn-facebook{
+      background:#1877F2;
+      color:#fff;
+      border-color: rgba(255,255,255,.08);
+    }
+    .btn-facebook:hover{
+      box-shadow: 0 0 0 4px rgba(24,119,242,.25), 0 10px 22px rgba(0,0,0,.25);
+    }
+    .auth-icon{
+      width:20px; height:20px;
+      display:block;
+    }
 
-        .logo-container { display: flex; align-items: center; gap: 15px; }
-        .logo-container i { font-size: 2.4rem; color: var(--blue-neon); filter: drop-shadow(0 0 10px var(--blue-neon)); }
-        .logo-text { font-family: 'Press Start 2P'; font-size: 1.3rem; color: var(--gold-neon); text-shadow: 3px 3px #000; }
+    .btn-ghost{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.25);
+      color:#fff;
+      cursor:pointer;
+      text-decoration:none;
+      font-weight:800;
+      transition:.15s;
+      white-space:nowrap;
+    }
+    .btn-ghost:hover{
+      border-color: rgba(0,212,255,.45);
+      box-shadow: 0 0 0 4px rgba(0,212,255,.12);
+    }
 
-        .header-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    /* Layout */
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px 18px 80px;
+    }
 
-        .btn {
-            border: 2px solid var(--gold-neon);
-            background: rgba(0,0,0,0.35);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 900;
-            letter-spacing: .3px;
-            transition: .2s;
-            text-decoration:none;
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            user-select:none;
-        }
-        .btn:hover {
-            background: var(--pink-neon);
-            box-shadow: -6px 6px 0px var(--blue-neon);
-            transform: translate(3px, -3px);
-        }
-        .btn.blue {
-            border-color: var(--blue-neon);
-        }
+    .banner{
+      background: linear-gradient(90deg, rgba(255,0,122,.9), rgba(0,212,255,.55));
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:16px;
+      padding:16px 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.35);
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .banner .left{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .banner h1{
+      margin:0;
+      font-family:"Press Start 2P";
+      font-size:16px;
+      letter-spacing:.4px;
+      text-shadow: 2px 2px rgba(0,0,0,.7);
+    }
+    .banner p{
+      margin:0;
+      color: rgba(255,255,255,.92);
+      font-weight:700;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.18);
+      font-weight:800;
+    }
+    .pill b{
+      color: var(--gold);
+      font-family:"Press Start 2P";
+      font-size:12px;
+    }
 
-        /* Google style button (visual only) */
-        .g-sign-in-button {
-            display: inline-flex;
-            align-items: center;
-            background-color: #ffffff;
-            color: #757575;
-            border: 1px solid #dcdcdc;
-            border-radius: 2px;
-            padding: 1px;
-            cursor: pointer;
-            font-family: 'Roboto', arial, sans-serif;
-            font-weight: 500;
-            transition: box-shadow 0.2s;
-            text-decoration: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-        }
-        .g-sign-in-button:hover { box-shadow: 0 0 3px 3px rgba(66,133,244,0.3); }
-        .g-icon-wrapper {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .g-icon { width: 18px; height: 18px; }
-        .g-button-text {
-            padding: 0 12px;
-            font-size: 14px;
-            letter-spacing: 0.2px;
-            color: #3c4043;
-        }
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 380px 1fr; }
+    }
 
-        .zycoin-bar {
-            background: var(--pink-neon);
-            text-align: center;
-            padding: 10px 12px;
-            font-family: 'Press Start 2P';
-            font-size: 0.7rem;
-            border-bottom: 3px solid var(--gold-neon);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
+    .card{
+      background: var(--panel);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.38);
+      overflow:hidden;
+    }
+    .card-head{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-head h2{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .card-head small{
+      color:var(--muted);
+      font-weight:700;
+    }
+    .card-body{ padding:16px; }
 
-        .hero-char {
-            position: fixed;
-            z-index: 1;
-            pointer-events: none;
-            filter: drop-shadow(0 0 30px var(--blue-neon));
-            opacity: .9;
-        }
-        .left-char { bottom: -10px; left: 10px; width: 230px; }
-        .right-char { top: 120px; right: 20px; width: 260px; opacity: 0.8; }
+    .zycoin{
+      display:flex; gap:12px; align-items:center;
+      padding:14px;
+      border-radius:14px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .zycoin .coin{
+      width:44px; height:44px;
+      border-radius:12px;
+      border:1px solid rgba(255,204,0,.4);
+      background: radial-gradient(circle at 30% 30%, rgba(255,204,0,.95), rgba(255,0,122,.35));
+      box-shadow: 0 0 22px rgba(255,204,0,.20);
+      display:grid; place-items:center;
+      font-family:"Press Start 2P";
+      color:#111;
+      font-size:12px;
+    }
+    .zycoin .info{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .zycoin .info strong{
+      font-size:14px; font-weight:900;
+    }
+    .zycoin .info span{
+      color: var(--muted);
+      font-weight:700;
+      font-size:13px;
+    }
 
-        .main-layout { display: flex; flex: 1; z-index: 10; }
+    /* Lista de jogos */
+    .games{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 700px){
+      .games{ grid-template-columns: repeat(2, 1fr); }
+    }
+    .game{
+      background: var(--panel2);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      position:relative;
+      overflow:hidden;
+    }
+    .game::before{
+      content:"";
+      position:absolute;
+      inset:-80px -120px auto auto;
+      width:220px; height:220px;
+      background: radial-gradient(circle, rgba(0,212,255,.22), transparent 65%);
+      transform: rotate(18deg);
+    }
+    .game .meta{
+      display:flex; gap:12px; align-items:center;
+      z-index:1;
+    }
+    .thumb{
+      width:54px; height:54px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      font-family:"Press Start 2P";
+      color:var(--gold);
+      box-shadow: 0 0 16px rgba(255,0,122,.15);
+      flex: 0 0 auto;
+      font-size:12px;
+    }
+    .game h3{
+      margin:0;
+      font-weight:900;
+      font-size:15px;
+    }
+    .game p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      line-height:1.25;
+      max-width: 340px;
+    }
+    .game .actions{
+      z-index:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      min-width: 130px;
+    }
+    .btn-play{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,0,122,.18);
+      color:#fff;
+      transition:.15s;
+      width: 100%;
+      text-align:center;
+    }
+    .btn-play:hover{
+      border-color: rgba(255,0,122,.55);
+      box-shadow: 0 0 0 4px rgba(255,0,122,.12);
+      transform: translateY(-1px);
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-weight:900;
+      font-size:12px;
+      color: rgba(255,255,255,.92);
+      background: rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 10px;
+      border-radius:999px;
+    }
 
-        .sidebar {
-            width: 320px;
-            background: rgba(18, 18, 43, 0.9);
-            backdrop-filter: blur(15px);
-            padding: 24px 18px;
-            border-right: 4px solid var(--pink-neon);
-            min-height: calc(100vh - 90px);
-        }
+    footer{
+      margin-top:16px;
+      text-align:center;
+      color: rgba(255,255,255,.55);
+      font-weight:700;
+      font-size:13px;
+    }
+    footer a{ color: rgba(0,212,255,.9); text-decoration:none; font-weight:900; }
+    footer a:hover{ text-decoration:underline; }
 
-        .menu-item {
-            text-decoration: none;
-            color: white;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            padding: 14px;
-            border: 3px solid var(--gold-neon);
-            border-radius: 6px;
-            margin-bottom: 14px;
-            background: rgba(0,0,0,0.3);
-            font-size: 1.05rem;
-            transition: 0.2s;
-        }
-        .menu-item:hover {
-            background: var(--pink-neon);
-            box-shadow: -8px 8px 0px var(--blue-neon);
-            transform: translate(4px, -4px);
-        }
-
-        .content {
-            flex: 1;
-            padding: 26px 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .card {
-            background: rgba(18, 18, 43, 0.85);
-            border: 2px solid rgba(0,212,255,0.35);
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.45);
-        }
-
-        .card h2 {
-            margin: 0 0 12px 0;
-            font-family: 'Press Start 2P';
-            font-size: 1rem;
-            color: var(--gold-neon);
-            text-shadow: 2px 2px #000;
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 14px;
-        }
-
-        .game-tile {
-            display: block;
-            padding: 14px;
-            border-radius: 10px;
-            border: 2px solid rgba(255,204,0,0.55);
-            background: rgba(0,0,0,0.25);
-            text-decoration: none;
-            color: #fff;
-            transition: .2s;
-        }
-        .game-tile:hover {
-            transform: translate(2px, -2px);
-            border-color: var(--pink-neon);
-            box-shadow: 0 0 18px rgba(0,212,255,0.35);
-        }
-        .game-title {
-            font-weight: 900;
-            font-size: 1.05rem;
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-        .game-desc {
-            opacity: .85;
-            font-size: .95rem;
-            margin-top: 8px;
-            line-height: 1.25rem;
-        }
-
-        .row {
-            display:flex;
-            gap: 12px;
-            flex-wrap:wrap;
-            align-items:center;
-        }
-
-        .pill {
-            border: 2px solid rgba(0,212,255,0.55);
-            padding: 10px 14px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.25);
-            font-weight: 900;
-        }
-        .pill strong { color: var(--blue-neon); }
-
-        /* COOKIE BANNER */
-        .cookie-popup {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a2e;
-            border: 2px solid var(--blue-neon);
-            padding: 14px 18px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            z-index: 1000;
-            box-shadow: 0 0 50px #000;
-            max-width: 92vw;
-        }
-
-        @media (max-width: 900px){
-            .sidebar { display:none; }
-            .left-char, .right-char { display:none; }
-            header { padding: 10px 14px; min-height: auto; }
-            .logo-text { font-size: 1.05rem; }
-        }
-    </style>
+    /* Pop-up simples de aviso de login */
+    .modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:100;
+    }
+    .modal .box{
+      max-width: 620px;
+      width:100%;
+      background: #0e0e22;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.6);
+      padding:16px;
+    }
+    .modal .box h4{
+      margin:0 0 8px;
+      font-size:16px;
+      font-weight:900;
+    }
+    .modal .box p{
+      margin:0 0 12px;
+      color: rgba(255,255,255,.75);
+      font-weight:700;
+      line-height:1.35;
+    }
+    .modal .row{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge">ZY</div>
+      <div class="brand-title">
+        <strong>ZYPLAY</strong>
+        <span>Arena Retro • jogos rápidos + ZyCoin</span>
+      </div>
+    </div>
 
-    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char" alt="">
-    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char" alt="">
+    <div class="top-actions">
+      <!-- Botão Google (visual) -->
+      <a class="btn-auth btn-google" href="#" id="btnGoogle" aria-label="Entrar com Google">
+        <img class="auth-icon" alt="Google" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg">
+        <span>Entrar com Google</span>
+      </a>
 
-    <header>
-        <div class="logo-container">
-            <i class="fas fa-gamepad"></i>
-            <div class="logo-text">ZYPLAY</div>
+      <!-- Botão Facebook (visual) -->
+      <a class="btn-auth btn-facebook" href="#" id="btnFacebook" aria-label="Entrar com Facebook">
+        <img class="auth-icon" alt="Facebook" src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg">
+        <span>Entrar com Facebook</span>
+      </a>
+
+      <a class="btn-ghost" href="/termos.html">Termos</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="banner">
+      <div class="left">
+        <h1>ENTRE NA ARENA</h1>
+        <p>Escolha um jogo, bata recordes e acumule ZyCoin.</p>
+      </div>
+      <div class="pill" title="Saldo demonstrativo (UI pronta)">
+        <span>Saldo:</span>
+        <b id="zycoinBalance">0</b>
+        <span>ZyCoin</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <aside class="card">
+        <div class="card-head">
+          <div>
+            <h2>Perfil & ZyCoin</h2>
+            <small>UI pronta (login real depois)</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="zycoin">
+            <div class="coin">ZC</div>
+            <div class="info">
+              <strong>Ganhe ZyCoin jogando</strong>
+              <span>Seu saldo aumenta quando você termina partidas.</span>
+            </div>
+          </div>
+
+          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-ghost" id="playGuest">Jogar como visitante</button>
+            <button class="btn-ghost" id="openArena">Entrar na arena</button>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; border-radius:14px; background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.10);">
+            <div style="font-weight:900;">Indique e ganhe</div>
+            <div style="color:var(--muted); font-weight:700; margin-top:6px;">
+              Copie seu link e ganhe bônus (UI pronta).
+            </div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <input id="refLink" readonly value="https://zyplay.store/?ref=SEU-CODIGO" style="flex:1; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.25); color:#fff; font-weight:800;">
+              <button class="btn-ghost" id="copyRef">Copiar</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="card">
+        <div class="card-head">
+          <div>
+            <h2>Jogos disponíveis</h2>
+            <small>Dica: cada jogo está em <code>/jogador/jogos/</code></small>
+          </div>
         </div>
 
-        <div class="header-actions">
-            <span class="pill">Saldo: <strong id="zycoin">0</strong> ZYCOIN</span>
-
-            <a class="btn blue" href="/jogador/jogos/tiro.html">
-                ▶️ Jogar agora
-            </a>
-
-            <a class="btn" href="#" onclick="alert('Em breve: Arena ZYPLAY (login/cadastro).'); return false;">
-                🏆 Entrar na Arena
-            </a>
-
-            <a class="g-sign-in-button" href="#" onclick="alert('Login social real (Google/Facebook) precisa de backend. Posso te orientar depois.'); return false;">
-                <div class="g-icon-wrapper">
-                    <img class="g-icon" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" alt="Google Logo">
+        <div class="card-body">
+          <div class="games">
+            <!-- TIRO -->
+            <div class="game">
+              <div class="meta">
+                <div class="thumb">TIR</div>
+                <div>
+                  <h3>Tiro ao Alvo</h3>
+                  <p>Acerte o máximo de alvos possível e suba no ranking.</p>
                 </div>
-                <span class="g-button-text">Fazer login com Google</span>
-            </a>
+              </div>
+              <div class="actions">
+                <span class="tag">+10 ZyCoin</span>
+                <a class="btn-play" href="/jogador/jogos/tiro.html">Jogar</a>
+              </div>
+            </div>
+
+            <!-- COBRINHA -->
+            <div class="game">
+              <div class="meta">
+                <div class="thumb">COB</div>
+                <div>
+                  <h3>Cobrinha</h3>
+                  <p>Clássico retrô: coma, cresça e não bata nas paredes.</p>
+                </div>
+              </div>
+              <div class="actions">
+                <span class="tag">+8 ZyCoin</span>
+                <a class="btn-play" href="/jogador/jogos/cobrinha.html">Jogar</a>
+              </div>
+            </div>
+
+            <!-- FLAPPY -->
+            <div class="game">
+              <div class="meta">
+                <div class="thumb">FLA</div>
+                <div>
+                  <h3>Flappy</h3>
+                  <p>Um toque, um desvio: quanto mais longe, melhor.</p>
+                </div>
+              </div>
+              <div class="actions">
+                <span class="tag">+8 ZyCoin</span>
+                <a class="btn-play" href="/jogador/jogos/flappy.html">Jogar</a>
+              </div>
+            </div>
+
+            <!-- MEMÓRIA -->
+            <div class="game">
+              <div class="meta">
+                <div class="thumb">MEM</div>
+                <div>
+                  <h3>Memória</h3>
+                  <p>Vire as cartas e encontre os pares no menor tempo.</p>
+                </div>
+              </div>
+              <div class="actions">
+                <span class="tag">+6 ZyCoin</span>
+                <a class="btn-play" href="/jogador/jogos/memoria.html">Jogar</a>
+              </div>
+            </div>
+
+            <!-- BLOCOS -->
+            <div class="game">
+              <div class="meta">
+                <div class="thumb">BLO</div>
+                <div>
+                  <h3>Quebra-blocos</h3>
+                  <p>Destrua os blocos com a bolinha e não deixe cair!</p>
+                </div>
+              </div>
+              <div class="actions">
+                <span class="tag">+7 ZyCoin</span>
+                <a class="btn-play" href="/jogador/jogos/blocos.html">Jogar</a>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:14px; color:var(--muted); font-weight:700;">
+            Se algum jogo abrir direto pelo link, mas não pelo menu, é 99% link relativo no index.
+            Aqui está tudo com <b>/jogador/jogos/…</b>.
+          </div>
         </div>
-    </header>
-
-    <div class="zycoin-bar">
-        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN • JOGUE, GANHE, SUBA NO RANKING
+      </main>
     </div>
 
-    <div class="main-layout">
-        <aside class="sidebar">
-            <div style="color: #666; margin-bottom: 16px; font-size: 0.8rem;">NAVEGAÇÃO</div>
+    <footer>
+      © <span id="year"></span> ZYPLAY •
+      <a href="/ads.txt">ads.txt</a> •
+      <a href="/termos.html">termos</a>
+    </footer>
+  </div>
 
-            <a href="/" class="menu-item">
-                <span>🏠 INÍCIO</span><span>→</span>
-            </a>
-
-            <a href="#jogos" class="menu-item">
-                <span>🎮 JOGOS</span><span>→</span>
-            </a>
-
-            <a href="#ranking" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>🏆 RANKING</span><span>→</span>
-            </a>
-
-            <a href="/termos.html" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>📜 TERMOS</span><span>→</span>
-            </a>
-
-            <a href="/private.html" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>🔒 PRIVACIDADE</span><span>→</span>
-            </a>
-        </aside>
-
-        <main class="content">
-
-            <div class="card">
-                <h2>ENTRAR RÁPIDO</h2>
-                <div class="row">
-                    <a class="btn blue" href="/jogador/jogos/tiro.html">🎯 Jogar Tiro ao Alvo</a>
-                    <a class="btn" href="#" onclick="alert('Em breve: Jogar como visitante com nickname.'); return false;">👤 Jogar como visitante</a>
-                    <a class="btn" href="#" onclick="alert('Em breve: Indique e ganhe.'); return false;">🎁 Indique e ganhe</a>
-                </div>
-                <div style="opacity:.85; margin-top:12px; line-height:1.35rem;">
-                    Dica: cada jogo fica em <strong>/jogador/jogos/</strong>.  
-                    Para adicionar novo jogo, crie o arquivo <strong>.html</strong> e coloque o link na lista abaixo.
-                </div>
-            </div>
-
-            <div class="card" id="jogos">
-                <h2>JOGOS DISPONÍVEIS</h2>
-
-                <div class="games-grid">
-                    <!-- JOGO 1 (já existe no seu repo): -->
-                    <a class="game-tile" href="/jogador/jogos/tiro.html">
-                        <div class="game-title">🎯 Tiro ao Alvo</div>
-                        <div class="game-desc">Clique rápido, faça pontos e tente bater seu recorde.</div>
-                    </a>
-
-                    <!-- EXEMPLOS (adicione quando criar os arquivos): -->
-                    <!--
-                    <a class="game-tile" href="/jogador/jogos/blocos.html">
-                        <div class="game-title">🧱 Blocos</div>
-                        <div class="game-desc">Quebre blocos e colete ZYCOIN.</div>
-                    </a>
-
-                    <a class="game-tile" href="/jogador/jogos/corrida.html">
-                        <div class="game-title">🏁 Corrida</div>
-                        <div class="game-desc">Desvie dos obstáculos e sobreviva o máximo possível.</div>
-                    </a>
-                    -->
-                </div>
-            </div>
-
-            <div class="card" id="ranking">
-                <h2>RANKING (EM BREVE)</h2>
-                <div style="opacity:.85; line-height:1.35rem;">
-                    Quando você quiser, eu te passo um ranking simples usando <strong>LocalStorage</strong> (já funciona sem servidor).
-                    Depois a gente migra pra login real.
-                </div>
-            </div>
-
-        </main>
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="box">
+      <h4>Login “real” (OAuth) ainda não ativado</h4>
+      <p>
+        Os botões do Google/Facebook aqui estão com aparência profissional, mas o login real precisa de OAuth.
+        Quando você quiser, eu te passo o passo-a-passo certinho (sem burocracia) e deixo funcionando.
+      </p>
+      <div class="row">
+        <button class="btn-ghost" id="closeModal">Fechar</button>
+      </div>
     </div>
+  </div>
 
-    <div class="cookie-popup" id="cp">
-        <span style="font-size: 0.95rem;">Utilizamos cookies para salvar seu progresso.</span>
-        <button onclick="document.getElementById('cp').remove()"
-                style="background:var(--blue-neon); border:none; padding:8px 16px; font-weight:bold; cursor:pointer; border-radius:6px;">
-            OK
-        </button>
-    </div>
+  <script>
+    // utilidades
+    const $ = (id) => document.getElementById(id);
 
+    // ano
+    $("year").textContent = new Date().getFullYear();
+
+    // ZyCoin (demo)
+    const storageKey = "zyplay_zycoin_balance";
+    const balanceEl = $("zycoinBalance");
+    const getBalance = () => Number(localStorage.getItem(storageKey) || "0");
+    const setBalance = (v) => { localStorage.setItem(storageKey, String(v)); balanceEl.textContent = v; };
+    setBalance(getBalance());
+
+    // Referral (demo)
+    $("copyRef").addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText($("refLink").value);
+        $("copyRef").textContent = "Copiado!";
+        setTimeout(()=> $("copyRef").textContent="Copiar", 1200);
+      }catch(e){
+        alert("Não consegui copiar. Copie manualmente o link.");
+      }
+    });
+
+    // Modal avisando que login real ainda não está ativo
+    const openModal = () => $("modal").style.display = "flex";
+    const closeModal = () => $("modal").style.display = "none";
+    $("closeModal").addEventListener("click", closeModal);
+
+    $("btnGoogle").addEventListener("click", (e)=>{ e.preventDefault(); openModal(); });
+    $("btnFacebook").addEventListener("click", (e)=>{ e.preventDefault(); openModal(); });
+
+    $("playGuest").addEventListener("click", ()=> {
+      // só pra dar sensação de funcional
+      const b = getBalance();
+      setBalance(b + 1);
+      alert("Modo visitante ativo ✅ (ganhou +1 ZyCoin de bônus)");
+    });
+
+    $("openArena").addEventListener("click", ()=> {
+      alert("Arena em construção ✅ (UI pronta). Próximo passo: ranking + perfil.");
+    });
+  </script>
 </body>
 </html>
