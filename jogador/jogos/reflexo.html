@@ -1,34 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Reflexo</title>
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Reflexo</title>
 <style>
-body{text-align:center;background:#111;color:white;font-family:sans-serif}
-#box{width:200px;height:200px;background:red;margin:50px auto;cursor:pointer}
-</style>
-</head>
-<body>
+  body{margin:0;background:#050510;color:#fff;font-family:Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:#12122b;border-bottom:3px solid #ff007a}
+  a.btn,button.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff;cursor:pointer;text-decoration:none;font-weight:700}
+  #box{width:220px;height:220px;margin:30px auto;border-radius:18px;background:#ff2b2b;box-shadow:0 0 22px rgba(255,0,0,.25);cursor:pointer}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+</header>
 <h2>Teste de Reflexo</h2>
-<p>Clique quando ficar verde!</p>
+<p>Clique quando ficar VERDE (se clicar antes, perde)</p>
 <div id="box"></div>
 
 <script>
-let start;
-let box=document.getElementById("box");
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function beep(f=440,d=0.08,t="square",v=0.06){ if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type=t; o.frequency.value=f; g.gain.value=v;
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d);
+}
+soundBtn.onclick=()=>{ soundOn=!soundOn; beep(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
 
-setTimeout(()=>{
-box.style.background="green";
-start=Date.now();
-},3000);
+const box=document.getElementById('box');
+let ready=false, start=0;
 
+function begin(){
+  ready=false; box.style.background="#ff2b2b";
+  beep(520,0.03,"square",0.03);
+  const wait=900+Math.random()*2200;
+  setTimeout(()=>{
+    ready=true; box.style.background="#2ecc71";
+    beep(1200,0.05,"square",0.06);
+    start=performance.now();
+  }, wait);
+}
 box.onclick=()=>{
-if(box.style.background==="green"){
-let reaction=Date.now()-start;
-alert("Seu tempo: "+reaction+"ms");
-location.reload();
-}
-}
+  if(!ready){
+    beep(180,0.12,"sawtooth",0.08);
+    alert("Clicou antes! Tente de novo.");
+    begin();
+  }else{
+    const ms=Math.round(performance.now()-start);
+    beep(980,0.05); setTimeout(()=>beep(1180,0.05),60);
+    alert("Seu tempo: "+ms+" ms");
+    begin();
+  }
+};
+begin();
 </script>
-</body>
-</html>
+</body></html>
