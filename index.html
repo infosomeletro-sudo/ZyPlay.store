@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYPLAY | THE ULTIMATE EXPERIENCE</title>
 
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- EZOIC (Head Script) -->
+    <script data-cfasync="false" src="https://cmp.gatekeeperconsent.com/min.js"></script>
+    <script data-cfasync="false" src="https://the.gatekeeperconsent.com/cmp.min.js"></script>
     <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
     <script>
         window.ezstandalone = window.ezstandalone || {};
         ezstandalone.cmd = ezstandalone.cmd || [];
     </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@500&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root {
@@ -79,42 +79,16 @@
             box-shadow: -6px 6px 0px var(--blue-neon);
             transform: translate(3px, -3px);
         }
-        .btn.blue {
-            border-color: var(--blue-neon);
-        }
+        .btn.blue { border-color: var(--blue-neon); }
 
-        /* Google style button (visual only) */
-        .g-sign-in-button {
-            display: inline-flex;
-            align-items: center;
-            background-color: #ffffff;
-            color: #757575;
-            border: 1px solid #dcdcdc;
-            border-radius: 2px;
-            padding: 1px;
-            cursor: pointer;
-            font-family: 'Roboto', arial, sans-serif;
-            font-weight: 500;
-            transition: box-shadow 0.2s;
-            text-decoration: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        .pill {
+            border: 2px solid rgba(0,212,255,0.55);
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+            font-weight: 900;
         }
-        .g-sign-in-button:hover { box-shadow: 0 0 3px 3px rgba(66,133,244,0.3); }
-        .g-icon-wrapper {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .g-icon { width: 18px; height: 18px; }
-        .g-button-text {
-            padding: 0 12px;
-            font-size: 14px;
-            letter-spacing: 0.2px;
-            color: #3c4043;
-        }
+        .pill strong { color: var(--blue-neon); }
 
         .zycoin-bar {
             background: var(--pink-neon);
@@ -125,16 +99,6 @@
             border-bottom: 3px solid var(--gold-neon);
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-
-        .hero-char {
-            position: fixed;
-            z-index: 1;
-            pointer-events: none;
-            filter: drop-shadow(0 0 30px var(--blue-neon));
-            opacity: .9;
-        }
-        .left-char { bottom: -10px; left: 10px; width: 230px; }
-        .right-char { top: 120px; right: 20px; width: 260px; opacity: 0.8; }
 
         .main-layout { display: flex; flex: 1; z-index: 10; }
 
@@ -169,29 +133,16 @@
             transform: translate(4px, -4px);
         }
 
-        .content {
-            flex: 1;
-            padding: 26px 22px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+        .content { flex: 1; padding: 26px 22px; display: flex; flex-direction: column; gap: 16px; }
 
         .card {
             background: rgba(18, 18, 43, 0.85);
             border: 2px solid rgba(0,212,255,0.35);
             border-radius: 10px;
             padding: 18px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.45);
         }
 
-        .card h2 {
-            margin: 0 0 12px 0;
-            font-family: 'Press Start 2P';
-            font-size: 1rem;
-            color: var(--gold-neon);
-            text-shadow: 2px 2px #000;
-        }
+        .card h2 { font-family: 'Press Start 2P'; font-size: 1rem; color: var(--gold-neon); }
 
         .games-grid {
             display: grid;
@@ -210,184 +161,48 @@
             transition: .2s;
         }
         .game-tile:hover {
-            transform: translate(2px, -2px);
             border-color: var(--pink-neon);
             box-shadow: 0 0 18px rgba(0,212,255,0.35);
-        }
-        .game-title {
-            font-weight: 900;
-            font-size: 1.05rem;
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-        .game-desc {
-            opacity: .85;
-            font-size: .95rem;
-            margin-top: 8px;
-            line-height: 1.25rem;
-        }
-
-        .row {
-            display:flex;
-            gap: 12px;
-            flex-wrap:wrap;
-            align-items:center;
-        }
-
-        .pill {
-            border: 2px solid rgba(0,212,255,0.55);
-            padding: 10px 14px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.25);
-            font-weight: 900;
-        }
-        .pill strong { color: var(--blue-neon); }
-
-        /* COOKIE BANNER */
-        .cookie-popup {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a2e;
-            border: 2px solid var(--blue-neon);
-            padding: 14px 18px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            z-index: 1000;
-            box-shadow: 0 0 50px #000;
-            max-width: 92vw;
         }
 
         @media (max-width: 900px){
             .sidebar { display:none; }
-            .left-char, .right-char { display:none; }
-            header { padding: 10px 14px; min-height: auto; }
-            .logo-text { font-size: 1.05rem; }
         }
     </style>
 </head>
-
 <body>
-
-    <img src="https://cdna.artstation.com/p/assets/images/images/035/381/470/original/vladimir-vilimaitis-link-pixel-art.gif" class="hero-char left-char" alt="">
-    <img src="https://www.pngplay.com/wp-content/uploads/12/Mario-Pixel-Art-Transparent-Background.png" class="hero-char right-char" alt="">
 
     <header>
         <div class="logo-container">
             <i class="fas fa-gamepad"></i>
             <div class="logo-text">ZYPLAY</div>
         </div>
-
         <div class="header-actions">
             <span class="pill">Saldo: <strong id="zycoin">0</strong> ZYCOIN</span>
-
-            <a class="btn blue" href="/jogador/jogos/tiro.html">
-                ▶️ Jogar agora
-            </a>
-
-            <a class="btn" href="#" onclick="alert('Em breve: Arena ZYPLAY (login/cadastro).'); return false;">
-                🏆 Entrar na Arena
-            </a>
-
-            <a class="g-sign-in-button" href="#" onclick="alert('Login social real (Google/Facebook) precisa de backend. Posso te orientar depois.'); return false;">
-                <div class="g-icon-wrapper">
-                    <img class="g-icon" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" alt="Google Logo">
-                </div>
-                <span class="g-button-text">Fazer login com Google</span>
-            </a>
+            <a class="btn blue" href="jogador/jogos/tiro.html">▶️ Jogar</a>
         </div>
     </header>
 
-    <div class="zycoin-bar">
-        NOVA MOEDA DIGITAL EM BREVE: ZYCOIN • JOGUE, GANHE, SUBA NO RANKING
-    </div>
+    <div class="zycoin-bar">NOVA MOEDA DIGITAL EM BREVE: ZYCOIN</div>
 
     <div class="main-layout">
         <aside class="sidebar">
-            <div style="color: #666; margin-bottom: 16px; font-size: 0.8rem;">NAVEGAÇÃO</div>
-
-            <a href="/" class="menu-item">
-                <span>🏠 INÍCIO</span><span>→</span>
-            </a>
-
-            <a href="#jogos" class="menu-item">
-                <span>🎮 JOGOS</span><span>→</span>
-            </a>
-
-            <a href="#ranking" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>🏆 RANKING</span><span>→</span>
-            </a>
-
-            <a href="/termos.html" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>📜 TERMOS</span><span>→</span>
-            </a>
-
-            <a href="/private.html" class="menu-item" style="border-color: var(--pink-neon);">
-                <span>🔒 PRIVACIDADE</span><span>→</span>
-            </a>
+            <a href="/" class="menu-item"><span>🏠 INÍCIO</span><span>→</span></a>
+            <a href="#jogos" class="menu-item"><span>🎮 JOGOS</span><span>→</span></a>
+            <a href="/termos.html" class="menu-item"><span>📜 TERMOS</span><span>→</span></a>
         </aside>
 
         <main class="content">
-
-            <div class="card">
-                <h2>ENTRAR RÁPIDO</h2>
-                <div class="row">
-                    <a class="btn blue" href="/jogador/jogos/tiro.html">🎯 Jogar Tiro ao Alvo</a>
-                    <a class="btn" href="#" onclick="alert('Em breve: Jogar como visitante com nickname.'); return false;">👤 Jogar como visitante</a>
-                    <a class="btn" href="#" onclick="alert('Em breve: Indique e ganhe.'); return false;">🎁 Indique e ganhe</a>
-                </div>
-                <div style="opacity:.85; margin-top:12px; line-height:1.35rem;">
-                    Dica: cada jogo fica em <strong>/jogador/jogos/</strong>.  
-                    Para adicionar novo jogo, crie o arquivo <strong>.html</strong> e coloque o link na lista abaixo.
-                </div>
-            </div>
-
             <div class="card" id="jogos">
                 <h2>JOGOS DISPONÍVEIS</h2>
-
                 <div class="games-grid">
-                    <!-- JOGO 1 (já existe no seu repo): -->
-                    <a class="game-tile" href="/jogador/jogos/tiro.html">
+                    <a class="game-tile" href="jogador/jogos/tiro.html">
                         <div class="game-title">🎯 Tiro ao Alvo</div>
-                        <div class="game-desc">Clique rápido, faça pontos e tente bater seu recorde.</div>
+                        <div class="game-desc">Clique rápido e ganhe ZYCOINS.</div>
                     </a>
-
-                    <!-- EXEMPLOS (adicione quando criar os arquivos): -->
-                    <!--
-                    <a class="game-tile" href="/jogador/jogos/blocos.html">
-                        <div class="game-title">🧱 Blocos</div>
-                        <div class="game-desc">Quebre blocos e colete ZYCOIN.</div>
-                    </a>
-
-                    <a class="game-tile" href="/jogador/jogos/corrida.html">
-                        <div class="game-title">🏁 Corrida</div>
-                        <div class="game-desc">Desvie dos obstáculos e sobreviva o máximo possível.</div>
-                    </a>
-                    -->
                 </div>
             </div>
-
-            <div class="card" id="ranking">
-                <h2>RANKING (EM BREVE)</h2>
-                <div style="opacity:.85; line-height:1.35rem;">
-                    Quando você quiser, eu te passo um ranking simples usando <strong>LocalStorage</strong> (já funciona sem servidor).
-                    Depois a gente migra pra login real.
-                </div>
-            </div>
-
         </main>
-    </div>
-
-    <div class="cookie-popup" id="cp">
-        <span style="font-size: 0.95rem;">Utilizamos cookies para salvar seu progresso.</span>
-        <button onclick="document.getElementById('cp').remove()"
-                style="background:var(--blue-neon); border:none; padding:8px 16px; font-weight:bold; cursor:pointer; border-radius:6px;">
-            OK
-        </button>
     </div>
 
 </body>
