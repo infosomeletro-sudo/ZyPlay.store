@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="pt-br"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZYPLAY • Meteor Survivor</title>
+<style>
+  :root{--bg:#050510;--pink:#ff007a;--blue:#00d4ff;--gold:#ffcc00;}
+  body{margin:0;background:radial-gradient(900px 600px at 50% -10%, rgba(0,212,255,.16), transparent 60%),
+                 radial-gradient(900px 600px at 90% 10%, rgba(255,0,122,.14), transparent 60%), #050510;
+       color:#fff;font-family:system-ui,Arial;text-align:center}
+  header{display:flex;gap:10px;justify-content:center;align-items:center;padding:14px;background:rgba(18,18,43,.85);
+         border-bottom:3px solid var(--pink);backdrop-filter:blur(10px)}
+  a.btn,button.btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);
+                   color:#fff;cursor:pointer;text-decoration:none;font-weight:800}
+  a.btn:hover,button.btn:hover{border-color:rgba(0,212,255,.6)}
+  canvas{display:block;margin:12px auto;border-radius:16px;border:2px solid rgba(0,212,255,.45);
+         box-shadow:0 0 40px rgba(0,212,255,.12),0 0 50px rgba(255,0,122,.08)}
+  .hud{max-width:720px;margin:10px auto;display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;padding:0 12px;font-weight:900}
+  .pill{flex:1;min-width:170px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.22)}
+  .tip{opacity:.85;font-size:13px}
+</style></head><body>
+<header>
+  <a class="btn" href="/">⬅ Voltar ao menu</a>
+  <button class="btn" id="soundBtn">🔊 Som: ON</button>
+  <button class="btn" id="resetBtn">↻ Reiniciar</button>
+</header>
+
+<div class="hud">
+  <div class="pill">Pontos: <span id="score">0</span></div>
+  <div class="pill">Escudo: <span id="shield">0</span></div>
+  <div class="pill">Dificuldade: <span id="diff">1</span></div>
+</div>
+<div class="tip">Mover: <b>A/D</b> ou <b>←/→</b>. Pegue ⚡ para ganhar escudo (1 hit grátis).</div>
+<canvas id="c" width="520" height="520"></canvas>
+
+<script>
+/* ===== SOM ===== */
+let audioCtx=null, soundOn=true;
+const soundBtn=document.getElementById('soundBtn');
+function initAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+function tone(f=440,d=0.06,type="square",vol=0.05){
+  if(!soundOn) return; initAudio();
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.value=f; g.gain.value=vol;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+d);
+}
+soundBtn.onclick=()=>{ soundOn=!soundOn; tone(700,0.05); soundBtn.textContent=soundOn?"🔊 Som: ON":"🔇 Som: OFF"; };
+document.addEventListener("click", initAudio, {once:true});
+document.addEventListener("keydown", initAudio, {once:true});
+
+/* ===== JOGO ===== */
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height;
+let keys={}, meteors=[], particles=[], power=null;
+let score=0, shield=0, diff=1;
+let player={x:W/2,y:H-70,w:32,h:32,vx:0};
+
+function hud(){
+  document.getElementById('score').textContent=score;
+  document.getElementById('shield').textContent=shield;
+  document.getElementById('diff').textContent=diff;
+}
+function rand(a,b){return a+Math.random()*(b-a);}
+function spawnMeteor(){
+  const r=rand(10,22);
+  meteors.push({x:rand(20,W-20), y:-40, r, vy:rand(2.3,4.2)+diff*0.35, vx:rand(-0.8,0.8)});
+}
+function spawnPower(){
+  power={x:rand(40,W-40), y:-30, vy:2.2, r:12};
+}
+function boom(x,y,color){
+  for(let i=0;i<26;i++){
+    particles.push({x,y,vx:rand(-4,4),vy:rand(-4,4),life:40+Math.random()*20,color});
+  }
+}
+function reset(){
+  meteors=[]; particles=[]; power=null;
+  score=0; shield=0; diff=1;
+  player.x=W/2;
+  hud();
+}
+document.getElementById('resetBtn').onclick=reset;
+
+document.addEventListener('keydown',e=>keys[e.code]=true);
+document.addEventListener('keyup',e=>keys[e.code]=false);
+
+let spawnT=0, powerT=0;
+function step(){
+  // difficulty
+  diff = 1 + Math.floor(score/400);
+  hud();
+
+  // player
+  const left = keys["ArrowLeft"]||keys["KeyA"];
+  const right= keys["ArrowRight"]||keys["KeyD"];
+  player.vx = (right?5.2:0) - (left?5.2:0);
+  player.x = Math.max(24, Math.min(W-24, player.x + player.vx));
+
+  // spawn
+  spawnT++;
+  if(spawnT>Math.max(12, 34-diff*2)){ spawnMeteor(); spawnT=0; tone(240,0.01,"sine",0.01); }
+  powerT++;
+  if(!power && powerT>650){ spawnPower(); powerT=0; }
+
+  // update meteors
+  for(const m of meteors){
+    m.x+=m.vx; m.y+=m.vy;
+  }
+  meteors = meteors.filter(m=>m.y < H+60);
+
+  // power
+  if(power){
+    power.y += power.vy;
+    if(power.y>H+40) power=null;
+  }
+
+  // collisions
+  function hitCircleRect(cx,cy,cr, rx,ry,rw,rh){
+    const nx=Math.max(rx, Math.min(cx, rx+rw));
+    const ny=Math.max(ry, Math.min(cy, ry+rh));
+    const dx=cx-nx, dy=cy-ny;
+    return (dx*dx+dy*dy) <= cr*cr;
+  }
+  const rx=player.x-player.w/2, ry=player.y-player.h/2;
+
+  for(const m of meteors){
+    if(hitCircleRect(m.x,m.y,m.r, rx,ry,player.w,player.h)){
+      if(shield>0){
+        shield--; tone(820,0.06); tone(1180,0.05);
+        boom(m.x,m.y,"rgba(0,212,255,.9)");
+        m.y=H+999;
+      }else{
+        tone(180,0.12,"sawtooth",0.09); setTimeout(()=>tone(120,0.18,"sawtooth",0.09),80);
+        boom(player.x,player.y,"rgba(255,0,122,.95)");
+        setTimeout(()=>alert("Você caiu! Pontos: "+score),80);
+        reset();
+        return requestAnimationFrame(step);
+      }
+    }
+  }
+
+  if(power && hitCircleRect(power.x,power.y,power.r, rx,ry,player.w,player.h)){
+    shield++; tone(980,0.06); setTimeout(()=>tone(1280,0.06),70);
+    boom(power.x,power.y,"rgba(255,204,0,.9)");
+    power=null;
+  }
+
+  // score
+  score += 3;
+
+  // render
+  ctx.clearRect(0,0,W,H);
+  // bg stars
+  ctx.fillStyle="rgba(0,0,0,.25)"; ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=0.9;
+  for(let i=0;i<80;i++){
+    const x=(i*67 + (score*0.2))%W;
+    const y=(i*131 + (score*0.35))%H;
+    ctx.fillStyle="rgba(255,255,255,.15)";
+    ctx.fillRect(x,y,2,2);
+  }
+  ctx.globalAlpha=1;
+
+  // meteors
+  for(const m of meteors){
+    ctx.fillStyle="rgba(255,0,122,.92)";
+    ctx.shadowColor="rgba(255,0,122,.6)"; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  // power
+  if(power){
+    ctx.fillStyle="rgba(255,204,0,.95)";
+    ctx.shadowColor="rgba(255,204,0,.7)"; ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.arc(power.x,power.y,power.r,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle="rgba(3,16,24,.9)";
+    ctx.font="bold 16px system-ui";
+    ctx.fillText("⚡", power.x-7, power.y+6);
+  }
+
+  // particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vx*=0.98; p.vy*=0.98; p.life--;
+    ctx.globalAlpha=Math.max(0,p.life/60);
+    ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,3,3);
+    if(p.life<=0) particles.splice(i,1);
+  }
+  ctx.globalAlpha=1;
+
+  // player ship
+  ctx.save();
+  ctx.translate(player.x,player.y);
+  ctx.fillStyle="rgba(0,212,255,.95)";
+  ctx.shadowColor="rgba(0,212,255,.7)"; ctx.shadowBlur=18;
+  ctx.beginPath();
+  ctx.moveTo(0,-18); ctx.lineTo(16,18); ctx.lineTo(0,10); ctx.lineTo(-16,18); ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur=0;
+  if(shield>0){
+    ctx.strokeStyle="rgba(255,204,0,.65)"; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+
+  requestAnimationFrame(step);
+}
+reset(); step();
+</script>
+</body></html>
