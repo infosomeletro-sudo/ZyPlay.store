@@ -1,0 +1,232 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Rhythm Dash</title>
+<style>
+:root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#1c2a6a,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0b0b22,#050512);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+.bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}.bar>i{display:block;height:100%}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+#toast{position:absolute;left:12px;bottom:12px;max-width:min(760px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style></head><body>
+<div id="wrap">
+  <div id="game"><canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Rhythm Dash</b> — Teclas: A S D F (4 pistas) • Pause: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyPlay Rhythm Dash</b><span class="pill">Música <b id="song">1</b>/3</span></div>
+      <div class="small">Acerte no alvo para aumentar combo. Erro quebra combo.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Score</span><span><b id="score">0</b></span></div>
+      <div class="row small"><span>Combo</span><span><b id="combo">0</b></span></div>
+      <div class="row small"><span>Precisão</span><span><b id="acc">100</b>%</span></div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Progresso</span><span><b id="prog">0</b>%</span></div>
+      <div class="bar"><i id="progB" style="width:0%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="next">Próxima</button><button id="restart">Reiniciar</button>
+      <button id="save">Salvar</button><button id="mute">Som</button>
+    </div>
+    <div class="card small">Som é gerado por síntese (WebAudio). Clique/tecle para ativar áudio no navegador.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // SFX + "music synth"
+  const Audio=(()=>{let c=null,on=true;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const tone=(f,t="sine",d=.08,g=.05)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    const chord=(arr,d=.12)=>{arr.forEach((f,i)=>tone(f,"sine",d,0.03)); tone(arr[0]/2,"triangle",d,0.02);};
+    return {ensure,setOn:(v)=>on=v, hit:()=>tone(1046,"sine",.05,.06), bad:()=>tone(220,"sawtooth",.10,.05),
+      click:()=>tone(880,"square",.04,.04), chord};
+  })();
+  const prime=()=>{Audio.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={song:$("song"),score:$("score"),combo:$("combo"),acc:$("acc"),prog:$("prog"),progB:$("progB")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const SAVE="zyplay_rhythm_dash_v1";
+
+  const songs=[
+    {bpm:120, len:36, scale:[261.63,293.66,329.63,392.00], pattern:seed(1)},
+    {bpm:140, len:42, scale:[293.66,329.63,392.00,440.00], pattern:seed(2)},
+    {bpm:160, len:46, scale:[329.63,392.00,440.00,523.25], pattern:seed(3)},
+  ];
+
+  function seed(k){
+    let s=k*999;
+    const r=()=>{s=(s*1664525+1013904223)>>>0; return (s/4294967296);};
+    const p=[];
+    for(let t=0;t<260;t++){
+      if(r()<0.55){ p.push({lane:Math.floor(r()*4), beat:t, hold:r()<0.12}); }
+    }
+    return p;
+  }
+
+  const fresh=()=>({muted:false, paused:false, song:1, t:0, score:0, combo:0, hit:0, miss:0, notes:[], idx:0});
+  let S=load()||fresh();
+  Audio.setOn(!S.muted); $("mute").textContent=S.muted?"Som: OFF":"Som: ON";
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+  function say(t){toast.innerHTML=`<b>ZyPlay Rhythm Dash</b> — ${t}`;}
+
+  function build(){
+    const song=songs[S.song-1];
+    const beatDur=60/song.bpm;
+    S.notes = song.pattern.map(n=>({lane:n.lane, t:n.beat*beatDur, y:-200, done:false, hold:n.hold?0.25:0}));
+    S.t=0; S.idx=0; S.score=0; S.combo=0; S.hit=0; S.miss=0;
+    say("Acerte no alvo!");
+  }
+  build();
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key.toLowerCase();
+    if(["a","s","d","f","p"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="p"){S.paused=!S.paused; Audio.click(); say(S.paused?"Pausado.":"Continuar!"); save();}
+    if(["a","s","d","f"].includes(k)) hit(["a","s","d","f"].indexOf(k));
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key.toLowerCase()));
+
+  $("next").onclick=()=>{Audio.click(); S.song = S.song%3+1; build(); save();};
+  $("restart").onclick=()=>{Audio.click(); build(); save();};
+  $("save").onclick=()=>{Audio.click(); save(); say("Salvo!");};
+  $("mute").onclick=()=>{S.muted=!S.muted; Audio.setOn(!S.muted); $("mute").textContent=S.muted?"Som: OFF":"Som: ON"; Audio.click(); save();};
+
+  function hit(lane){
+    if(S.paused) return;
+    const targetY=0.82;
+    // find closest note in lane within window
+    let best=-1,bestDt=999;
+    for(let i=0;i<S.notes.length;i++){
+      const n=S.notes[i];
+      if(n.done||n.lane!==lane) continue;
+      const dt=Math.abs((n.t - S.t));
+      if(dt<bestDt){bestDt=dt; best=i;}
+    }
+    if(best>=0 && bestDt<0.18){
+      const n=S.notes[best];
+      n.done=true;
+      const mult = bestDt<0.06 ? 1.6 : (bestDt<0.12 ? 1.2 : 1.0);
+      S.combo++;
+      S.hit++;
+      S.score += Math.floor(50*mult + S.combo*2);
+      Audio.hit();
+      // tiny "music" feedback
+      const song=songs[S.song-1];
+      const f=song.scale[lane];
+      Audio.chord([f, f*1.25, f*1.5], 0.10);
+    } else {
+      S.combo=0; S.miss++; Audio.bad();
+    }
+  }
+
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    if(!S.paused){
+      const song=songs[S.song-1];
+      S.t += dt;
+      const totalTime = song.len;
+      // auto "metronome chord" each 2 seconds
+      if(Math.floor((S.t-dt)/2) !== Math.floor(S.t/2)){
+        Audio.chord([220,277,330],0.06);
+      }
+      // finish
+      if(S.t>totalTime){
+        const acc = S.hit / Math.max(1, (S.hit+S.miss));
+        alert(`Fim! Score ${S.score}\nPrecisão ${(acc*100).toFixed(1)}%`);
+        S.song = S.song%3+1; build();
+      }
+
+      // UI
+      ui.song.textContent=S.song;
+      ui.score.textContent=S.score;
+      ui.combo.textContent=S.combo;
+      const acc = S.hit / Math.max(1, (S.hit+S.miss));
+      ui.acc.textContent=(acc*100).toFixed(1);
+      const prog = clamp((S.t/song.len)*100,0,100);
+      ui.prog.textContent=prog.toFixed(0);
+      ui.progB.style.width=prog.toFixed(1)+"%";
+
+      save();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+    // lanes
+    const laneW=W*0.18, gap=W*0.03, baseX=W*0.18;
+    for(let i=0;i<4;i++){
+      const x=baseX + i*(laneW+gap);
+      g.fillStyle="rgba(0,0,0,.25)";
+      g.fillRect(x,0,laneW,H);
+      g.strokeStyle="rgba(255,255,255,.06)";
+      g.strokeRect(x,0,laneW,H);
+    }
+
+    // target line
+    const y=H*0.82;
+    g.fillStyle="rgba(0,224,255,.18)";
+    g.fillRect(0,y-6,W,12);
+    g.fillStyle="rgba(255,255,255,.8)";
+    g.font="700 14px system-ui";
+    g.fillText("A  S  D  F", W*0.42, y+26);
+
+    // notes
+    const speed=H*0.85; // px per second-ish
+    for(const n of S.notes){
+      if(n.done) continue;
+      const x=baseX + n.lane*(laneW+gap) + laneW*0.5;
+      const ny = y - (n.t - S.t)*speed;
+      if(ny<-40||ny>H+40) continue;
+      const glow=g.createRadialGradient(x,ny,2,x,ny,22);
+      glow.addColorStop(0,"rgba(255,209,102,.30)"); glow.addColorStop(1,"rgba(123,0,255,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(x,ny,22,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(255,209,102,.92)";
+      g.beginPath(); g.arc(x,ny,10,0,Math.PI*2); g.fill();
+      if(n.hold){
+        g.fillStyle="rgba(0,224,255,.22)";
+        g.fillRect(x-4, ny, 8, 80);
+      }
+    }
+
+    // brand
+    g.fillStyle="rgba(255,255,255,.9)";
+    g.font="700 16px system-ui";
+    g.fillText("ZyPlay", 14, 26);
+
+    g.restore();
+  }
+
+  say("Pronto! Aperte A/S/D/F.");
+  requestAnimationFrame(loop);
+})();
+</script></body></html>
