@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZySpace Odyssey</title>
+<style>
+  :root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#1c2a6a,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0b0b22,#050512);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(720px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZySpace</b> — Mover: WASD/Setas • Atirar: Espaço • Super: Shift • Pausar: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZySpace Odyssey</b><span class="small">Setor <b id="lvl">1</b>/4</span></div>
+      <div class="small" id="story">Missão: atravesse o Cinturão Nebuloso e sobreviva.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Escudo</span><span><b id="hp">100</b>%</span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+      <div style="height:8px"></div>
+      <div class="row small"><span>Energia</span><span><b id="en">100</b>%</span></div>
+      <div class="bar"><i id="enB" style="width:100%;background:linear-gradient(90deg,#ffd166,#2be37a)"></i></div>
+      <div style="height:10px"></div>
+      <div class="row"><span class="small">Créditos: <b id="gold" style="color:var(--y)">0</b></span><span class="small">Dano: <b id="dmg">8</b></span></div>
+      <div class="row"><span class="small">Tiros: <b id="rate">1</b></span><span class="small">Super: <b id="sup">0</b>%</span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="up1">+Dano</button>
+      <button id="up2">+Cadência</button>
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="card small">Dica: pegue <b>orbes</b> para carregar o Super e comprar upgrades.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // SFX
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,shot:()=>beep(720,"square",.03,.04),hit:()=>beep(140,"sawtooth",.07,.06),
+      boom:()=>{beep(110,"sawtooth",.12,.08);beep(70,"sine",.14,.06)},
+      click:()=>beep(880,"square",.04,.04),
+      power:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={lvl:$("lvl"),story:$("story"),hp:$("hp"),hpB:$("hpB"),en:$("en"),enB:$("enB"),gold:$("gold"),dmg:$("dmg"),rate:$("rate"),sup:$("sup")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+  const SAVE="zyspace_save_v1";
+  const fresh=()=>({
+    lvl:1, score:0, paused:false,
+    p:{x:0,y:0,hp:100,en:100,dmg:8,rate:1,cd:0,super:0,superReady:false},
+    enemies:[], shots:[], pshots:[], orbs:[], stars:[], msg:"Atravessar o setor 1.",
+  });
+  let S=load()||fresh();
+
+  function say(t){toast.innerHTML=`<b>ZySpace</b> — ${t}`;}
+
+  // init stars
+  if(!S.stars.length){
+    for(let i=0;i<220;i++) S.stars.push({x:Math.random(),y:Math.random(),z:Math.random()});
+  }
+
+  // controls
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"," ","Shift","p","P"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="p"||k==="P"){S.paused=!S.paused; SFX.click(); say(S.paused?"Pausado.":"Continuar!"); save();}
+    if(k===" "){shoot();}
+    if(k==="Shift"){super();}
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  $("up1").onclick=()=>{SFX.click(); buy("dmg");};
+  $("up2").onclick=()=>{SFX.click(); buy("rate");};
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); save(); say("Novo jogo.");}};
+
+  function buy(k){
+    const cost = (k==="dmg") ? (25 + S.p.dmg*4) : (40 + S.p.rate*18);
+    if(S.score<cost){ say("Créditos insuficientes."); return; }
+    S.score -= cost;
+    if(k==="dmg"){ S.p.dmg += 2; say("Upgrade: +Dano!"); }
+    else { S.p.rate = clamp(S.p.rate+0.25, 1, 3); say("Upgrade: +Cadência!"); }
+    SFX.power();
+    save(); uiUpdate();
+  }
+
+  function shoot(){
+    if(S.paused) return;
+    if(S.p.cd>0) return;
+    const sp = S.p;
+    const w=canvas.getBoundingClientRect().width, h=canvas.getBoundingClientRect().height;
+    const x=sp.x, y=sp.y;
+    S.pshots.push({x,y,dx:0,dy:-1,life:1.2});
+    SFX.shot();
+    S.p.cd = 0.28 / S.p.rate;
+  }
+
+  function super(){
+    if(S.paused) return;
+    if(S.p.super<100){ say("Super ainda não carregou."); return; }
+    S.p.super = 0;
+    SFX.power();
+    // limpa inimigos na tela
+    for(let i=S.enemies.length-1;i>=0;i--){
+      const e=S.enemies[i];
+      explode(e.x,e.y);
+      dropOrb(e.x,e.y, 6);
+      S.score += 12;
+      S.enemies.splice(i,1);
+    }
+    say("SUPER ATIVADO: pulso cósmico!");
+    save(); uiUpdate();
+  }
+
+  function spawnEnemy(){
+    const w=canvas.getBoundingClientRect().width;
+    const x = rand(40, Math.max(41, w-40));
+    const lvl=S.lvl;
+    const isBoss = (lvl===4 && S.score>=260 && !S.enemies.some(e=>e.boss));
+    if(isBoss){
+      S.enemies.push({x, y:-60, r:34, hp:260, hpM:260, spd:52, boss:true, t:0});
+      say("BOSS DETECTADO: Leviatã Nebuloso!");
+      return;
+    }
+    const hp = 18 + lvl*10;
+    const r = 14 + lvl*2;
+    const spd = 72 + lvl*12;
+    S.enemies.push({x, y:-40, r, hp, hpM:hp, spd, boss:false, t:0});
+  }
+
+  function explode(x,y){
+    S.orbs.push({x,y,kind:"fx",life:0.5});
+    SFX.boom();
+  }
+  function dropOrb(x,y,n=1){
+    for(let i=0;i<n;i++){
+      S.orbs.push({x:x+rand(-12,12),y:y+rand(-12,12),kind:"orb",vx:rand(-20,20),vy:rand(-30,-10),life:6});
+    }
+  }
+
+  function uiUpdate(){
+    ui.lvl.textContent=S.lvl;
+    ui.story.textContent = ["Missão: atravesse o Cinturão Nebuloso.","Setor 2: caçadores aparecem.","Setor 3: tempestade de fragmentos.","Setor 4: prepare-se pro boss."][S.lvl-1] || "Explore!";
+    ui.hp.textContent = S.p.hp|0;
+    ui.hpB.style.width = clamp(S.p.hp,0,100).toFixed(1)+"%";
+    ui.en.textContent = S.p.en|0;
+    ui.enB.style.width = clamp(S.p.en,0,100).toFixed(1)+"%";
+    ui.gold.textContent = S.score|0;
+    ui.dmg.textContent = S.p.dmg;
+    ui.rate.textContent = S.p.rate.toFixed(2);
+    ui.sup.textContent = clamp(S.p.super,0,100).toFixed(0);
+  }
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+
+  // loop
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    const r=canvas.getBoundingClientRect();
+    const W=r.width,H=r.height;
+    if(!S.p.x){ S.p.x=W/2; S.p.y=H*0.75; }
+
+    if(!S.paused){
+      // move
+      let vx=0,vy=0;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) vx=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) vx=1;
+      if(keys.has("ArrowUp")||keys.has("w")||keys.has("W")) vy=-1;
+      if(keys.has("ArrowDown")||keys.has("s")||keys.has("S")) vy=1;
+      const spd=240;
+      S.p.x = clamp(S.p.x + vx*spd*dt, 30, W-30);
+      S.p.y = clamp(S.p.y + vy*spd*dt, 30, H-30);
+
+      // cooldown / energy regen
+      S.p.cd = Math.max(0, S.p.cd - dt);
+      S.p.en = clamp(S.p.en + dt*8, 0, 100);
+
+      // spawn
+      const spawnRate = 0.75 - (S.lvl-1)*0.12;
+      if(Math.random() < dt/spawnRate) spawnEnemy();
+
+      // bullets
+      for(let i=S.pshots.length-1;i>=0;i--){
+        const b=S.pshots[i];
+        b.y += -520*dt; b.life-=dt;
+        if(b.life<=0||b.y<-40) S.pshots.splice(i,1);
+      }
+
+      // enemies move + shots
+      for(const e of S.enemies){
+        e.t += dt;
+        e.y += e.spd*dt;
+        // boss shoots
+        if(e.boss && Math.random()<dt*1.8){
+          S.shots.push({x:e.x,y:e.y+20,dx:(S.p.x-e.x)/260,dy:1,life:3});
+          SFX.shot();
+        }
+      }
+      // enemy bullets
+      for(let i=S.shots.length-1;i>=0;i--){
+        const b=S.shots[i];
+        b.x += b.dx*240*dt; b.y += b.dy*240*dt; b.life-=dt;
+        if(b.life<=0||b.y>H+60||b.x<-60||b.x>W+60) S.shots.splice(i,1);
+      }
+
+      // collisions: player bullets vs enemies
+      for(let i=S.enemies.length-1;i>=0;i--){
+        const e=S.enemies[i];
+        for(let j=S.pshots.length-1;j>=0;j--){
+          const b=S.pshots[j];
+          const dx=b.x-e.x, dy=b.y-e.y;
+          if(dx*dx+dy*dy < (e.r*e.r)){
+            S.pshots.splice(j,1);
+            e.hp -= S.p.dmg;
+            SFX.hit();
+            if(e.hp<=0){
+              explode(e.x,e.y);
+              dropOrb(e.x,e.y, e.boss?16:4);
+              S.score += e.boss ? 200 : (8 + S.lvl*3);
+              S.enemies.splice(i,1);
+              if(e.boss){
+                alert("Você derrotou o BOSS! Campanha concluída!");
+                S=fresh(); save();
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      // enemy bullets vs player
+      for(let i=S.shots.length-1;i>=0;i--){
+        const b=S.shots[i];
+        const dx=b.x-S.p.x, dy=b.y-S.p.y;
+        if(dx*dx+dy*dy < 18*18){
+          S.shots.splice(i,1);
+          S.p.hp -= 10;
+          SFX.hit();
+          say("Você foi atingido!");
+        }
+      }
+
+      // enemy body collision
+      for(let i=S.enemies.length-1;i>=0;i--){
+        const e=S.enemies[i];
+        const dx=e.x-S.p.x, dy=e.y-S.p.y;
+        if(dx*dx+dy*dy < (e.r+14)*(e.r+14)){
+          S.p.hp -= e.boss ? 22 : 12;
+          explode(S.p.x,S.p.y);
+          S.enemies.splice(i,1);
+          say("Colisão!");
+        } else if(e.y>H+80){
+          S.enemies.splice(i,1);
+          // passou inimigo => penaliza
+          S.p.hp -= 4;
+        }
+      }
+
+      // orbs physics & pickup
+      for(let i=S.orbs.length-1;i>=0;i--){
+        const o=S.orbs[i];
+        o.life -= dt;
+        if(o.kind==="orb"){
+          o.vy += 70*dt;
+          o.x += o.vx*dt; o.y += o.vy*dt;
+          // pickup
+          const dx=o.x-S.p.x, dy=o.y-S.p.y;
+          if(dx*dx+dy*dy < 22*22){
+            S.orbs.splice(i,1);
+            S.score += 3;
+            S.p.super = clamp(S.p.super + 6, 0, 100);
+            SFX.click();
+            continue;
+          }
+        }
+        if(o.life<=0) S.orbs.splice(i,1);
+      }
+
+      // level progression
+      if(S.score>=80 && S.lvl===1){S.lvl=2; SFX.power(); say("Entrou no Setor 2!");}
+      if(S.score>=160 && S.lvl===2){S.lvl=3; SFX.power(); say("Entrou no Setor 3!");}
+      if(S.score>=240 && S.lvl===3){S.lvl=4; SFX.power(); say("Setor 4: Boss se aproxima...");}
+
+      // death
+      if(S.p.hp<=0){
+        alert("Game Over! Você foi destruído.");
+        S=fresh();
+      }
+
+      save();
+      uiUpdate();
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0);
+    g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(); const W=r.width,H=r.height;
+
+    // stars
+    for(const s of S.stars){
+      const x = (s.x*W + (S.p.x*0.02)) % W;
+      const y = (s.y*H + (S.p.y*0.02)) % H;
+      g.fillStyle = `rgba(255,255,255,${0.10+0.25*s.z})`;
+      g.fillRect(x,y,1+s.z*1.2,1+s.z*1.2);
+    }
+
+    // player glow
+    const rg=g.createRadialGradient(S.p.x,S.p.y,2,S.p.x,S.p.y,28);
+    rg.addColorStop(0,"rgba(0,224,255,.35)"); rg.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=rg; g.beginPath(); g.arc(S.p.x,S.p.y,28,0,Math.PI*2); g.fill();
+    // ship
+    g.save();
+    g.translate(S.p.x,S.p.y);
+    g.fillStyle="rgba(0,224,255,.95)";
+    g.beginPath(); g.moveTo(0,-16); g.lineTo(11,14); g.lineTo(0,8); g.lineTo(-11,14); g.closePath(); g.fill();
+    g.strokeStyle="rgba(255,255,255,.35)"; g.stroke();
+    g.restore();
+
+    // bullets
+    g.fillStyle="rgba(255,209,102,.95)";
+    for(const b of S.pshots) g.fillRect(b.x-2,b.y-10,4,14);
+
+    // enemy bullets
+    g.fillStyle="rgba(255,77,109,.95)";
+    for(const b of S.shots) g.fillRect(b.x-2,b.y-2,4,10);
+
+    // enemies
+    for(const e of S.enemies){
+      const grad=g.createRadialGradient(e.x,e.y,2,e.x,e.y,e.r+10);
+      grad.addColorStop(0,"rgba(255,77,109,.25)");
+      grad.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=grad; g.beginPath(); g.arc(e.x,e.y,e.r+10,0,Math.PI*2); g.fill();
+
+      g.fillStyle=e.boss?"rgba(123,0,255,.95)":"rgba(255,77,109,.92)";
+      g.beginPath(); g.arc(e.x,e.y,e.r,0,Math.PI*2); g.fill();
+      g.strokeStyle="rgba(255,255,255,.25)"; g.stroke();
+
+      // hp
+      g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(e.x-e.r, e.y-e.r-10, e.r*2, 5);
+      g.fillStyle="rgba(255,209,102,.9)"; g.fillRect(e.x-e.r, e.y-e.r-10, (e.r*2)*(e.hp/e.hpM), 5);
+    }
+
+    // orbs
+    for(const o of S.orbs){
+      if(o.kind!=="orb") continue;
+      g.fillStyle="rgba(0,224,255,.9)";
+      g.beginPath(); g.arc(o.x,o.y,4,0,Math.PI*2); g.fill();
+    }
+
+    // boss warning
+    if(S.lvl===4 && S.enemies.some(e=>e.boss)){
+      g.fillStyle="rgba(255,77,109,.12)";
+      g.fillRect(0,0,W,40);
+      g.fillStyle="#fff";
+      g.font="16px system-ui";
+      g.fillText("BOSS: Leviatã Nebuloso", 12, 26);
+    }
+
+    g.restore();
+  }
+
+  uiUpdate(); say(S.msg||"Decole!");
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
