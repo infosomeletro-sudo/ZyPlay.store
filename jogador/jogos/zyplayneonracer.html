@@ -1,0 +1,266 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Neon Racer</title>
+<style>
+:root{--bg:#070714;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2b0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+.bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+.bar>i{display:block;height:100%}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+button:hover{filter:brightness(1.1)}button:active{transform:translateY(1px)}
+#toast{position:absolute;left:12px;bottom:12px;max-width:min(760px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style></head><body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Neon Racer</b> — Dirigir: ← → / A D • Nitro: Shift • Pausar: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyPlay Neon Racer</b><span class="pill">Pista <b id="lap">1</b>/3</span></div>
+      <div class="small" id="obj">Objetivo: chegue em 3 voltas e bata seu recorde.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Velocidade</span><span><b id="spd">0</b> km/h</span></div>
+      <div class="row small"><span>Nitro</span><span><b id="nit">100</b>%</span></div>
+      <div class="bar"><i id="nitB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Tempo</span><span><b id="time">0.0</b>s</span></div>
+      <div class="row small"><span>Recorde</span><span><b id="best">--</b></span></div>
+      <div style="height:10px"></div>
+      <div class="row"><span class="pill">Pontuação: <b id="score" style="color:var(--y)">0</b></span><span class="pill">Combo: <b id="combo">0</b></span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+      <button id="help">Ajuda</button>
+      <button id="mute">Som</button>
+    </div>
+    <div class="card small">Dica: faça curvas suaves para ganhar <b>combo</b>. Nitro recarrega com direção limpa.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // --- WebAudio ---
+  const SFX=(()=>{let c=null,on=true;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,setOn:(v)=>on=v, click:()=>beep(880,"square",.04,.04), boost:()=>beep(520,"sawtooth",.06,.06),
+      hit:()=>beep(160,"sawtooth",.10,.06), coin:()=>beep(1046,"sine",.05,.05),
+      win:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={lap:$("lap"),spd:$("spd"),nit:$("nit"),nitB:$("nitB"),time:$("time"),best:$("best"),score:$("score"),combo:$("combo")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+
+  const SAVE="zyplay_neon_racer_v1";
+  const fresh=()=>({best:null, muted:false, paused:false, t:0, lap:1, score:0, combo:0, clean:0,
+    car:{x:0.5, y:0.78, vx:0, steer:0, speed:0, nit:100}, gates:[0.25,0.5,0.75], gateIdx:0, msg:"Corra!"});
+  let S=load()||fresh();
+  SFX.setOn(!S.muted);
+  $("mute").textContent = S.muted ? "Som: OFF" : "Som: ON";
+
+  function say(t){toast.innerHTML=`<b>ZyPlay Neon Racer</b> — ${t}`;}
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowLeft","ArrowRight","a","d","A","D","Shift","p","P"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="p"||k==="P"){S.paused=!S.paused; SFX.click(); say(S.paused?"Pausado.":"Continuar!"); save();}
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  $("help").onclick=()=>{SFX.click(); alert("ZyPlay Neon Racer\n← → / A D para virar\nShift: Nitro\nPasse pelos 3 checkpoints (linhas neon) pra completar volta.\nNitro recarrega com direção limpa (sem bater).");};
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); save(); say("Novo jogo.");}};
+  $("mute").onclick=()=>{S.muted=!S.muted; SFX.setOn(!S.muted); $("mute").textContent=S.muted?"Som: OFF":"Som: ON"; SFX.click(); save();};
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    if(!S.paused){
+      S.t+=dt;
+      const car=S.car;
+
+      // steer input
+      let st=0;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) st=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) st=1;
+      car.steer = clamp(car.steer + st*dt*4.0, -1, 1);
+      car.steer *= Math.pow(0.001, dt); // auto-center
+
+      // base speed
+      const target=0.62;
+      car.speed = car.speed + (target - car.speed)*dt*0.8;
+
+      // nitro
+      const boosting = (keys.has("Shift") && car.nit>0);
+      if(boosting){
+        car.speed += 0.38*dt;
+        car.nit = clamp(car.nit - 38*dt, 0, 100);
+        if(Math.random()<dt*8) SFX.boost();
+      } else {
+        // recharge if clean
+        const r = (S.clean>0.6) ? 18 : 8;
+        car.nit = clamp(car.nit + r*dt, 0, 100);
+      }
+
+      // road wiggle (track difficulty)
+      const curve = 0.18*Math.sin(S.t*0.9) + 0.10*Math.sin(S.t*0.33);
+      const drift = car.steer*0.015 + curve*0.012;
+
+      // update x with constraints
+      car.x += (car.steer*0.28 + curve*0.14)*dt;
+      const left=0.18 + 0.06*Math.sin(S.t*0.5), right=0.82 + 0.06*Math.sin(S.t*0.4+1.2);
+      const hit = (car.x<left || car.x>right);
+      if(hit){
+        car.x = clamp(car.x, left, right);
+        car.nit = clamp(car.nit - 18, 0, 100);
+        S.combo = 0;
+        S.clean = 0;
+        SFX.hit();
+        say("Bateu na borda! Combo zerado.");
+      } else {
+        // clean driving adds combo slowly
+        S.clean = clamp(S.clean + dt*0.55, 0, 1);
+        S.combo = clamp(S.combo + dt*0.9, 0, 50);
+      }
+
+      // score
+      const v = car.speed*200;
+      S.score += (v*dt)*(1 + S.combo*0.02);
+
+      // gates progression (3 checkpoints per lap)
+      // gates are simulated as time windows: every ~6s hit expected x zone
+      const gateTime = (S.gateIdx+1)*6 + (S.lap-1)*20;
+      if(Math.abs(S.t - gateTime) < 0.35){
+        const gx=S.gates[S.gateIdx];
+        if(Math.abs(car.x-gx)<0.12){
+          S.gateIdx++;
+          SFX.coin();
+          say(`Checkpoint ${S.gateIdx}/3!`);
+          if(S.gateIdx>=3){
+            S.gateIdx=0;
+            S.lap++;
+            SFX.win();
+            say(`Volta completa! (${Math.min(S.lap,3)}/3)`);
+            if(S.lap>3){
+              // finish
+              const time=S.t;
+              if(S.best==null || time<S.best){S.best=time;}
+              alert(`Você venceu! Tempo: ${time.toFixed(1)}s`);
+              // new run but keep best
+              const best=S.best, muted=S.muted;
+              S=fresh(); S.best=best; S.muted=muted; SFX.setOn(!muted);
+              save();
+            }
+          }
+        } else {
+          S.combo=0; S.clean=0;
+          say("Errou checkpoint! Tente alinhar nas linhas neon.");
+        }
+      }
+
+      // UI
+      ui.lap.textContent = Math.min(S.lap,3);
+      ui.spd.textContent = Math.round(v);
+      ui.nit.textContent = Math.round(car.nit);
+      ui.nitB.style.width = car.nit.toFixed(1)+"%";
+      ui.time.textContent = S.t.toFixed(1);
+      ui.best.textContent = (S.best==null) ? "--" : (S.best.toFixed(1)+"s");
+      ui.score.textContent = Math.floor(S.score);
+      ui.combo.textContent = Math.floor(S.combo);
+
+      save();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+    // road
+    const t=S.t;
+    const left=0.18 + 0.06*Math.sin(t*0.5), right=0.82 + 0.06*Math.sin(t*0.4+1.2);
+    const roadL=left*W, roadR=right*W;
+    g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(roadL,0,roadR-roadL,H);
+
+    // neon borders
+    g.strokeStyle="rgba(0,224,255,.35)"; g.lineWidth=3;
+    g.beginPath(); g.moveTo(roadL,0); g.lineTo(roadL,H); g.stroke();
+    g.strokeStyle="rgba(123,0,255,.35)";
+    g.beginPath(); g.moveTo(roadR,0); g.lineTo(roadR,H); g.stroke();
+
+    // lane lines
+    for(let i=1;i<6;i++){
+      const y = (i*120 + (t*220)%120);
+      g.strokeStyle="rgba(255,255,255,.06)";
+      g.beginPath(); g.moveTo((roadL+roadR)/2, H-y); g.lineTo((roadL+roadR)/2, H-y-60); g.stroke();
+    }
+
+    // checkpoints lines (visual hints)
+    for(let i=0;i<3;i++){
+      const gx=S.gates[i]*W;
+      const y = H*0.22 + i*90;
+      g.fillStyle="rgba(255,209,102,.10)";
+      g.fillRect(gx-60, y, 120, 10);
+      g.fillStyle="rgba(0,224,255,.25)";
+      g.fillRect(gx-35, y, 70, 10);
+    }
+
+    // car glow + body
+    const cx=S.car.x*W, cy=H*S.car.y;
+    const glow=g.createRadialGradient(cx,cy,2,cx,cy,48);
+    glow.addColorStop(0,"rgba(0,224,255,.30)"); glow.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,48,0,Math.PI*2); g.fill();
+
+    g.save();
+    g.translate(cx,cy);
+    g.rotate(S.car.steer*0.2);
+    g.fillStyle="rgba(0,224,255,.95)";
+    g.fillRect(-18,-26,36,52);
+    g.fillStyle="rgba(255,255,255,.18)";
+    g.fillRect(-10,-18,20,14);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(-18,-26,36,52);
+    g.restore();
+
+    // brand
+    g.fillStyle="rgba(255,255,255,.9)";
+    g.font="700 16px system-ui";
+    g.fillText("ZyPlay", 14, 26);
+
+    g.restore();
+  }
+
+  say(S.msg||"Acelera!");
+  requestAnimationFrame(loop);
+})();
+</script></body></html>
