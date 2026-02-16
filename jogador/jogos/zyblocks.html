@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyBlocks — Sandbox (estilo Roblox longo)</title>
+<style>
+  :root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#162a60,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 380px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(900px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+  #modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+  #modal .box{width:min(900px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:linear-gradient(180deg,#15153a,#0a0a16);border:1px solid var(--l);border-radius:18px;padding:12px}
+  #modal h3{margin:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{border:1px solid var(--l);background:linear-gradient(180deg,#121232,#0c0c1a);border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:10px}
+  .tag{font-size:11px;color:var(--m);border:1px solid var(--l);padding:3px 8px;border-radius:999px}
+  code{background:#0b0b18;border:1px solid var(--l);padding:2px 6px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyBlocks</b> — Mover: WASD/Setas • Pular: Espaço • Minerar: Q • Construir: E • Trocar bloco: 1-6 • Modo: Tab • Menu: M</div>
+    <div id="modal"><div class="box">
+      <div class="row" style="margin-bottom:8px"><h3 id="mt">Menu</h3><button id="mc">Fechar (Esc)</button></div>
+      <div id="mb"></div>
+    </div></div>
+  </div>
+
+  <aside id="side">
+    <div class="card">
+      <div class="row">
+        <b>ZyBlocks Sandbox</b>
+        <span class="pill">Modo: <b id="mode">JOGAR</b></span>
+      </div>
+      <div class="small" id="obj">Objetivo: minere 10 pedras e entregue ao NPC Engenheiro (⚙).</div>
+      <div style="height:10px"></div>
+
+      <div class="row small"><span>Vida</span><span><b id="hp">100</b>%</span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8aa0)"></i></div>
+      <div style="height:8px"></div>
+      <div class="row small"><span>Stamina</span><span><b id="st">100</b>%</span></div>
+      <div class="bar"><i id="stB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+
+      <div style="height:10px"></div>
+      <div class="row">
+        <span class="pill">Moedas: <b id="coin" style="color:var(--y)">0</b></span>
+        <span class="pill">XP: <b id="xp">0</b></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="pill">Bloco: <b id="sel">GRAMA</b></span>
+        <span class="pill">Pedra: <b id="stone">0</b></span>
+      </div>
+    </div>
+
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="inv">Inventário</button>
+      <button id="craft">Craft</button>
+      <button id="save">Salvar Mundo</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="card small">
+      <b>Construção:</b> no modo <b>CONSTRUIR</b>, use <code>E</code> para colocar bloco e <code>Q</code> para quebrar.  
+      <div style="height:6px"></div>
+      <b>Mundo:</b> tem vila, portal e mini-missões. Tudo salva offline.
+    </div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // SFX
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,click:()=>beep(880,"square",.04,.04),
+      step:()=>beep(160,"triangle",.03,.02),
+      mine:()=>beep(140,"sawtooth",.07,.06),
+      place:()=>beep(720,"square",.03,.04),
+      win:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)},
+      hit:()=>beep(120,"sawtooth",.10,.06)};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={mode:$("mode"),obj:$("obj"),hp:$("hp"),hpB:$("hpB"),st:$("st"),stB:$("stB"),
+    coin:$("coin"),xp:$("xp"),sel:$("sel"),stone:$("stone"),
+    modal:$("modal"),mt:$("mt"),mb:$("mb"),mc:$("mc")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+  // World
+  const WORLD_W=120, WORLD_H=70, TILE=20;
+
+  // Blocks (ID)
+  const B = {
+    AIR:0, GRASS:1, DIRT:2, STONE:3, WOOD:4, WATER:5, GLASS:6,
+  };
+  const BLOCKS = [
+    {id:B.GRASS, name:"GRAMA", solid:true},
+    {id:B.DIRT, name:"TERRA", solid:true},
+    {id:B.STONE, name:"PEDRA", solid:true},
+    {id:B.WOOD, name:"MADEIRA", solid:true},
+    {id:B.WATER, name:"ÁGUA", solid:false},
+    {id:B.GLASS, name:"VIDRO", solid:true},
+  ];
+
+  const SAVE="zyblocks_world_v1";
+
+  const fresh=()=> {
+    // terrain gen
+    const map=new Uint8Array(WORLD_W*WORLD_H);
+    const heightLine=new Array(WORLD_W).fill(0).map((_,x)=>Math.floor(34 + 6*Math.sin(x*0.12) + 3*Math.sin(x*0.04)));
+    for(let x=0;x<WORLD_W;x++){
+      const h=heightLine[x];
+      for(let y=0;y<WORLD_H;y++){
+        const idx=x+y*WORLD_W;
+        if(y<h) map[idx]=B.AIR;
+        else if(y===h) map[idx]=B.GRASS;
+        else if(y<h+3) map[idx]=B.DIRT;
+        else map[idx]=B.STONE;
+      }
+      // water lakes
+      if(x>82 && x<110){
+        for(let y=38;y<44;y++) map[x+y*WORLD_W]=B.WATER;
+      }
+    }
+    // village platform
+    for(let x=10;x<30;x++) for(let y=42;y<46;y++) map[x+y*WORLD_W]=B.DIRT;
+    for(let x=12;x<28;x++) map[x+41*WORLD_W]=B.GRASS;
+
+    // trees
+    for(let i=0;i<40;i++){
+      const x=rand(3,WORLD_W-4);
+      const y=findSurface(map,x);
+      if(y<0) continue;
+      // trunk
+      for(let k=0;k<3;k++) set(map,x,y-1-k,B.WOOD);
+      // leaves glass-ish
+      for(let yy=y-5;yy<=y-3;yy++) for(let xx=x-2;xx<=x+2;xx++){
+        if(Math.random()<0.5) set(map,xx,yy,B.GLASS);
+      }
+    }
+    // portal structure
+    for(let y=36;y<44;y++){ set(map,55,y,B.GLASS); set(map,62,y,B.GLASS); }
+    for(let x=55;x<=62;x++){ set(map,x,36,B.GLASS); set(map,x,43,B.GLASS); }
+    for(let y=37;y<43;y++) for(let x=56;x<62;x++) set(map,x,y,B.AIR);
+
+    return {
+      map: Array.from(map), // store as array for JSON
+      p:{x:14,y:30,vx:0,vy:0,hp:100,st:100,coin:0,xp:0,stone:0,wood:0,sel:0,mode:"PLAY"},
+      // NPCs / quests
+      npcs:[
+        {id:"eng", name:"Engenheiro Zed", x:18, y:38, icon:"⚙", q:"Traga 10 PEDRAS.", done:false},
+        {id:"mage", name:"Maga Nyra", x:59, y:34, icon:"✦", q:"Ative o portal com 30 XP.", done:false},
+      ],
+      msg:"Bem-vindo ao ZyBlocks! Construa, mine e faça missões.",
+    };
+  };
+
+  let S=load()||fresh();
+
+  function set(arrMap,x,y,v){
+    if(x<0||y<0||x>=WORLD_W||y>=WORLD_H) return;
+    arrMap[x+y*WORLD_W]=v;
+  }
+  function get(x,y){
+    if(x<0||y<0||x>=WORLD_W||y>=WORLD_H) return B.STONE;
+    return S.map[x+y*WORLD_W]|0;
+  }
+  function solidAt(x,y){
+    const v=get(x,y);
+    if(v===B.AIR) return false;
+    if(v===B.WATER) return false;
+    return true;
+  }
+  function findSurface(mapArr, x){
+    for(let y=0;y<WORLD_H;y++){
+      const v=mapArr[x+y*WORLD_W];
+      if(v!==B.AIR && v!==B.WATER) return y;
+    }
+    return -1;
+  }
+
+  function say(t){toast.innerHTML=`<b>ZyBlocks</b> — ${t}`;}
+
+  // Modal
+  function openModal(title,html){ui.mt.textContent=title;ui.mb.innerHTML=html;ui.modal.style.display="flex";}
+  function closeModal(){ui.modal.style.display="none";}
+  ui.mc.onclick=()=>{SFX.click();closeModal();};
+
+  // UI actions
+  $("inv").onclick=()=>{SFX.click();showInv();};
+  $("craft").onclick=()=>{SFX.click();showCraft();};
+  $("save").onclick=()=>{SFX.click();save();say("Mundo salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar mundo?")){S=fresh();save();say("Novo mundo.");}};
+
+  function showInv(){
+    openModal("Inventário", `
+      <div class="grid">
+        <div class="item"><div><b>Pedra</b> <span class="tag">MAT</span><div class="small">Qtd: <b>${S.p.stone}</b></div></div></div>
+        <div class="item"><div><b>Madeira</b> <span class="tag">MAT</span><div class="small">Qtd: <b>${S.p.wood}</b></div></div></div>
+        <div class="item"><div><b>Moedas</b> <span class="tag">ECO</span><div class="small">Qtd: <b>${S.p.coin}</b></div></div></div>
+        <div class="item"><div><b>XP</b> <span class="tag">PROG</span><div class="small">Qtd: <b>${S.p.xp}</b></div></div></div>
+      </div>
+      <div class="small" style="margin-top:10px">
+        Use <b>1-6</b> para trocar bloco no modo CONSTRUIR. <b>Tab</b> alterna modo.
+      </div>
+    `);
+  }
+
+  function showCraft(){
+    const canGlass = S.p.stone>=6;
+    const canWood = S.p.wood>=6;
+    openModal("Craft", `
+      <div class="grid">
+        ${craftCard("Vidro x6","glass", "Bloco decorativo resistente.", "Custo: 6 pedra", canGlass)}
+        ${craftCard("Madeira x6","wood", "Blocos de madeira para construir.", "Custo: 6 madeira", canWood)}
+        ${craftCard("Converter pedra em moedas","stone2coin", "Venda pedra para ganhar moedas.", "Custo: 5 pedra => +20 moedas", S.p.stone>=5)}
+      </div>
+    `);
+    ui.mb.querySelectorAll("button[data-craft]").forEach(b=>{
+      b.onclick=()=>{SFX.click(); craft(b.getAttribute("data-craft")); showCraft(); uiUpdate(); save();};
+    });
+  }
+  function craftCard(n,k,desc,cost,ok){
+    return `<div class="item"><div><b>${n}</b> <span class="tag">CRAFT</span><div class="small">${desc}<br/><b>${cost}</b></div></div>
+      <div><button data-craft="${k}" ${ok?"":"disabled"}>Criar</button></div></div>`;
+  }
+  function craft(k){
+    if(k==="glass"){
+      if(S.p.stone<6) return;
+      S.p.stone-=6;
+      // adiciona bloco "vidro" para seleção (já tem, mas aqui é “produção” simbólica)
+      S.p.coin += 8;
+      SFX.win();
+      say("Você craftou vidro e ganhou moedas bônus!");
+    }
+    if(k==="wood"){
+      if(S.p.wood<6) return;
+      S.p.wood-=6;
+      S.p.coin += 6;
+      SFX.win();
+      say("Você refinou madeira e ganhou moedas bônus!");
+    }
+    if(k==="stone2coin"){
+      if(S.p.stone<5) return;
+      S.p.stone-=5; S.p.coin+=20;
+      SFX.win();
+      say("Venda concluída: +20 moedas!");
+    }
+  }
+
+  // Controls
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"," ","q","Q","e","E","Tab","m","M","Escape","1","2","3","4","5","6"].includes(k)) e.preventDefault();
+    keys.add(k);
+
+    if(k==="Escape") closeModal();
+    if(k==="Tab"){toggleMode(); SFX.click();}
+    if(k==="m"||k==="M"){menu();}
+    if(k===" ") jump();
+    if(k==="q"||k==="Q") mine();
+    if(k==="e"||k==="E") place();
+    if("123456".includes(k)) selectBlock(parseInt(k,10)-1);
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  function toggleMode(){
+    S.p.mode = (S.p.mode==="PLAY") ? "BUILD" : "PLAY";
+    say(`Modo: ${S.p.mode==="PLAY"?"JOGAR":"CONSTRUIR"}`);
+    uiUpdate(); save();
+  }
+  function selectBlock(i){
+    S.p.sel = clamp(i,0,BLOCKS.length-1);
+    SFX.click();
+    uiUpdate(); save();
+  }
+
+  function menu(){
+    openModal("Menu ZyBlocks", `
+      <div class="grid">
+        <div class="item">
+          <div><b>Salvar Mundo</b> <span class="tag">SAVE</span>
+            <div class="small">Salva tudo no navegador (localStorage).</div>
+          </div>
+          <div><button id="ms">Salvar</button></div>
+        </div>
+        <div class="item">
+          <div><b>Exportar JSON</b> <span class="tag">DATA</span>
+            <div class="small">Copia um resumo do mundo (mapa compactado não incluso).</div>
+          </div>
+          <div><button id="mx">Copiar</button></div>
+        </div>
+      </div>
+      <div class="small" style="margin-top:10px">
+        Missões: entregue itens ao Engenheiro (⚙) e ative o portal com XP para finalizar.
+      </div>
+    `);
+    $("ms").onclick=()=>{SFX.click(); save(); say("Mundo salvo!");};
+    $("mx").onclick=()=>{
+      SFX.click();
+      const info={p:S.p,npcs:S.npcs,tip:"Mapa não incluso aqui (fica salvo no jogo)."};
+      navigator.clipboard?.writeText(JSON.stringify(info,null,2));
+      say("Resumo copiado (se o navegador permitir).");
+    };
+  }
+
+  // Movement & Physics (2.5D side)
+  function jump(){
+    if(ui.modal.style.display==="flex") return;
+    if(S.p.st<8) return;
+    // grounded check
+    if(!isGrounded()) return;
+    S.p.vy = -9.5;
+    S.p.st = clamp(S.p.st-6,0,100);
+    SFX.click();
+  }
+
+  function isGrounded(){
+    // check block under feet
+    const bx=Math.floor(S.p.x), by=Math.floor(S.p.y+1.05);
+    return solidAt(bx,by);
+  }
+
+  function place(){
+    if(ui.modal.style.display==="flex") return;
+    if(S.p.mode!=="BUILD"){ interactNPC(); return; } // no build -> talk
+    if(S.p.st<5){ say("Sem stamina."); return; }
+    const sel = BLOCKS[S.p.sel].id;
+    // place in front
+    const dir = keys.has("ArrowLeft")||keys.has("a")||keys.has("A") ? -1 : (keys.has("ArrowRight")||keys.has("d")||keys.has("D") ? 1 : 1);
+    const tx = Math.floor(S.p.x + dir*1.1);
+    const ty = Math.floor(S.p.y);
+    if(get(tx,ty)!==B.AIR && get(tx,ty)!==B.WATER){ say("Espaço ocupado."); return; }
+    // costs
+    if(sel===B.STONE && S.p.stone<=0){ say("Sem pedra no inventário."); return; }
+    if(sel===B.WOOD && S.p.wood<=0){ say("Sem madeira no inventário."); return; }
+    if(sel===B.STONE) S.p.stone--;
+    if(sel===B.WOOD) S.p.wood--;
+    set(S.map, tx, ty, sel);
+    S.p.st = clamp(S.p.st-4,0,100);
+    SFX.place();
+    say("Bloco colocado.");
+    uiUpdate(); save();
+  }
+
+  function mine(){
+    if(ui.modal.style.display==="flex") return;
+    if(S.p.st<6){ say("Sem stamina."); return; }
+    const dir = keys.has("ArrowLeft")||keys.has("a")||keys.has("A") ? -1 : (keys.has("ArrowRight")||keys.has("d")||keys.has("D") ? 1 : 1);
+    const tx = Math.floor(S.p.x + dir*1.1);
+    const ty = Math.floor(S.p.y);
+    const v = get(tx,ty);
+    if(v===B.AIR || v===B.WATER){ say("Nada para minerar."); return; }
+    // mine yields
+    if(v===B.STONE){ S.p.stone++; S.p.xp += 2; S.p.coin += 1; }
+    if(v===B.WOOD){ S.p.wood++; S.p.xp += 1; S.p.coin += 1; }
+    if(v===B.DIRT||v===B.GRASS){ S.p.xp += 1; }
+    set(S.map, tx, ty, B.AIR);
+    S.p.st = clamp(S.p.st-5,0,100);
+    SFX.mine();
+    say("Mineração concluída.");
+    checkQuests();
+    uiUpdate(); save();
+  }
+
+  function interactNPC(){
+    // interact if close
+    const px=Math.floor(S.p.x), py=Math.floor(S.p.y);
+    for(const n of S.npcs){
+      if(Math.abs(n.x-px)+Math.abs(n.y-py)<=2){
+        SFX.click();
+        // engineer quest
+        if(n.id==="eng"){
+          if(!n.done){
+            if(S.p.stone>=10){
+              S.p.stone-=10;
+              S.p.coin+=60;
+              S.p.xp+=25;
+              n.done=true;
+              SFX.win();
+              say("Missão completa! Engenheiro: +60 moedas, +25 XP.");
+              ui.obj.textContent="Objetivo: acumule 30 XP e fale com a Maga (✦) no portal.";
+            } else {
+              say(`Engenheiro: '${n.q}' Você tem ${S.p.stone}/10 pedras.`);
+            }
+          } else {
+            say("Engenheiro: 'Construa algo incrível!'");
+          }
+        }
+        if(n.id==="mage"){
+          if(!n.done){
+            if(S.p.xp>=30){
+              n.done=true;
+              SFX.win();
+              say("Maga: Portal ativado! Entre na estrutura de vidro para vencer.");
+            } else {
+              say(`Maga: '${n.q}' Você tem ${S.p.xp}/30 XP.`);
+            }
+          } else {
+            say("Maga: 'O portal está pronto.'");
+          }
+        }
+        save(); uiUpdate();
+        return;
+      }
+    }
+    say("Sem NPC por perto. No modo CONSTRUIR, E coloca bloco.");
+  }
+
+  function checkQuests(){
+    // update objective text
+    const eng=S.npcs.find(n=>n.id==="eng");
+    const mage=S.npcs.find(n=>n.id==="mage");
+    if(eng && !eng.done){
+      ui.obj.textContent="Objetivo: minere 10 pedras e entregue ao NPC Engenheiro (⚙).";
+    } else if(mage && !mage.done){
+      ui.obj.textContent="Objetivo: consiga 30 XP e fale com a Maga (✦) perto do portal.";
+    } else {
+      ui.obj.textContent="Objetivo: entre no portal (estrutura de vidro) para finalizar!";
+    }
+  }
+
+  function portalCheck(){
+    // portal area: x 55..62, y 36..43, inside air
+    const px=Math.floor(S.p.x), py=Math.floor(S.p.y);
+    const mage=S.npcs.find(n=>n.id==="mage");
+    if(!mage?.done) return false;
+    if(px>=56&&px<=61 && py>=37&&py<=42){
+      alert("Você entrou no portal! Parabéns — ZyBlocks concluído (modo sandbox liberado).");
+      // sandbox continues, give rewards
+      S.p.coin += 200;
+      S.p.xp += 100;
+      say("Sandbox liberado: agora construa livremente!");
+      save();
+      return true;
+    }
+    return false;
+  }
+
+  function uiUpdate(){
+    ui.mode.textContent = (S.p.mode==="PLAY") ? "JOGAR" : "CONSTRUIR";
+    ui.hp.textContent = Math.floor(S.p.hp);
+    ui.hpB.style.width = clamp(S.p.hp,0,100).toFixed(1)+"%";
+    ui.st.textContent = Math.floor(S.p.st);
+    ui.stB.style.width = clamp(S.p.st,0,100).toFixed(1)+"%";
+    ui.coin.textContent = S.p.coin|0;
+    ui.xp.textContent = S.p.xp|0;
+    ui.stone.textContent = S.p.stone|0;
+    ui.sel.textContent = BLOCKS[clamp(S.p.sel,0,BLOCKS.length-1)].name;
+    checkQuests();
+  }
+
+  function save(){try{localStorage.setItem(SAVE, JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE); return s?JSON.parse(s):null;}catch{return null;}}
+
+  // Camera & render
+  let camX=0, camY=0;
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0);
+    g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(); const W=r.width,H=r.height;
+
+    // camera follow
+    camX = S.p.x*TILE - W*0.5;
+    camY = S.p.y*TILE - H*0.5;
+    camX = clamp(camX, 0, WORLD_W*TILE - W);
+    camY = clamp(camY, 0, WORLD_H*TILE - H);
+
+    // background sky gradient
+    const sky=g.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"rgba(0,224,255,.10)");
+    sky.addColorStop(1,"rgba(123,0,255,.05)");
+    g.fillStyle=sky; g.fillRect(0,0,W,H);
+
+    // visible tiles range
+    const x0=Math.floor(camX/TILE)-1, y0=Math.floor(camY/TILE)-1;
+    const x1=x0 + Math.ceil(W/TILE)+3;
+    const y1=y0 + Math.ceil(H/TILE)+3;
+
+    for(let y=y0;y<=y1;y++){
+      for(let x=x0;x<=x1;x++){
+        if(x<0||y<0||x>=WORLD_W||y>=WORLD_H) continue;
+        const v=get(x,y);
+        if(v===B.AIR) continue;
+
+        const px=x*TILE - camX;
+        const py=y*TILE - camY;
+
+        // colors
+        if(v===B.GRASS) g.fillStyle="#0f2a1b";
+        if(v===B.DIRT) g.fillStyle="#2a1f3f";
+        if(v===B.STONE) g.fillStyle="#2a2a3a";
+        if(v===B.WOOD) g.fillStyle="#3a2a16";
+        if(v===B.WATER) g.fillStyle="#0b2a4a";
+        if(v===B.GLASS) g.fillStyle="rgba(0,224,255,.18)";
+
+        g.fillRect(px,py,TILE,TILE);
+        g.strokeStyle="rgba(255,255,255,.05)";
+        g.strokeRect(px,py,TILE,TILE);
+
+        // shimmer water
+        if(v===B.WATER){
+          g.fillStyle="rgba(255,255,255,.04)";
+          g.fillRect(px+2,py+2,TILE-4,2);
+        }
+      }
+    }
+
+    // NPCs
+    for(const n of S.npcs){
+      const px=n.x*TILE - camX;
+      const py=n.y*TILE - camY;
+      // base marker
+      g.fillStyle="rgba(123,0,255,.15)";
+      g.fillRect(px+2,py+2,TILE-4,TILE-4);
+      g.strokeStyle="rgba(0,224,255,.35)";
+      g.strokeRect(px+2,py+2,TILE-4,TILE-4);
+      g.fillStyle="#fff"; g.font="16px system-ui";
+      g.fillText(n.icon, px+5, py+16);
+      g.font="12px system-ui";
+      g.fillText(n.name, px-8, py-4);
+    }
+
+    // Player
+    const px=S.p.x*TILE - camX;
+    const py=S.p.y*TILE - camY;
+    const cx=px+TILE/2, cy=py+TILE/2;
+    const glow=g.createRadialGradient(cx,cy,2,cx,cy,28);
+    glow.addColorStop(0,"rgba(0,224,255,.35)"); glow.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,28,0,Math.PI*2); g.fill();
+
+    g.fillStyle="rgba(0,224,255,.95)";
+    g.fillRect(px+4,py+4,TILE-8,TILE-8);
+    g.strokeStyle="rgba(255,255,255,.35)";
+    g.strokeRect(px+4,py+4,TILE-8,TILE-8);
+
+    // crosshair for build
+    const dir = (keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) ? -1 : 1;
+    const tx=Math.floor(S.p.x + dir*1.1), ty=Math.floor(S.p.y);
+    const hx=tx*TILE - camX, hy=ty*TILE - camY;
+    g.strokeStyle = (S.p.mode==="BUILD") ? "rgba(255,209,102,.7)" : "rgba(255,255,255,.2)";
+    g.strokeRect(hx+1,hy+1,TILE-2,TILE-2);
+
+    // hud mini
+    g.fillStyle="rgba(0,0,0,.25)";
+    g.fillRect(12,12,220,46);
+    g.fillStyle="#fff"; g.font="12px system-ui";
+    g.fillText(`Pos: ${Math.floor(S.p.x)},${Math.floor(S.p.y)} • Mundo: ${WORLD_W}x${WORLD_H}`, 18, 30);
+    g.fillText(`Modo: ${S.p.mode} • Seleção: ${BLOCKS[S.p.sel].name}`, 18, 48);
+
+    g.restore();
+  }
+
+  // Update loop
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+
+    if(ui.modal.style.display!=="flex"){
+      // stamina regen
+      S.p.st = clamp(S.p.st + dt*10, 0, 100);
+
+      // gravity + move
+      const speed=6.2;
+      let mv=0;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) mv=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) mv=1;
+
+      // apply x
+      S.p.vx = mv*speed;
+      const nx = S.p.x + S.p.vx*dt;
+      // collision x (simple)
+      if(!solidAt(Math.floor(nx), Math.floor(S.p.y)) && !solidAt(Math.floor(nx), Math.floor(S.p.y+0.9))){
+        S.p.x = clamp(nx, 1, WORLD_W-2);
+        if(mv!==0 && Math.random()<dt*5) SFX.step();
+      }
+
+      // apply y
+      S.p.vy += 18*dt;
+      let ny = S.p.y + S.p.vy*dt;
+      if(S.p.vy>0){
+        // falling: check below
+        if(solidAt(Math.floor(S.p.x), Math.floor(ny+1.0))){
+          S.p.vy=0;
+          ny = Math.floor(ny);
+        }
+      } else {
+        // jumping: check head
+        if(solidAt(Math.floor(S.p.x), Math.floor(ny))){
+          S.p.vy=0;
+          ny = S.p.y;
+        }
+      }
+      S.p.y = clamp(ny, 1, WORLD_H-3);
+
+      // water slow + damage if too long
+      const under=get(Math.floor(S.p.x), Math.floor(S.p.y));
+      if(under===B.WATER){
+        S.p.st = clamp(S.p.st - dt*8, 0, 100);
+        if(Math.random()<dt*0.6){
+          S.p.hp = clamp(S.p.hp - 1, 0, 100);
+          SFX.hit();
+        }
+      }
+
+      // portal
+      portalCheck();
+
+      // death recovery
+      if(S.p.hp<=0){
+        say("Você desmaiou e voltou para a vila.");
+        S.p.hp=100; S.p.st=100;
+        S.p.x=14; S.p.y=30;
+      }
+
+      save();
+      uiUpdate();
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  uiUpdate(); say(S.msg||"Construa livremente!");
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
