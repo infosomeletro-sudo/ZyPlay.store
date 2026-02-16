@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyIsland Survival</title>
+<style>
+  :root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#25105a,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(720px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+  #modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+  #modal .box{width:min(820px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:linear-gradient(180deg,#15153a,#0a0a16);border:1px solid var(--l);border-radius:18px;padding:12px}
+  #modal h3{margin:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{border:1px solid var(--l);background:linear-gradient(180deg,#121232,#0c0c1a);border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:10px}
+  .tag{font-size:11px;color:var(--m);border:1px solid var(--l);padding:3px 8px;border-radius:999px}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyIsland</b> — Mover: WASD/Setas • Coletar/Interagir: E • Construir: B • Comer: 1 • Dormir: 2 • Inventário: I</div>
+    <div id="modal"><div class="box">
+      <div class="row" style="margin-bottom:8px"><h3 id="mt">Menu</h3><button id="mc">Fechar (Esc)</button></div>
+      <div id="mb"></div>
+    </div></div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>Sobrevivente</b><span class="pill">Dia <b id="day">1</b></span></div>
+      <div class="small" id="obj">Objetivo: colete madeira e pedra para fazer uma fogueira.</div>
+      <div style="height:10px"></div>
+
+      <div class="row small"><span>Vida</span><span><b id="hp">80</b>/80</span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8aa0)"></i></div>
+      <div style="height:8px"></div>
+
+      <div class="row small"><span>Fome</span><span><b id="food">100</b>%</span></div>
+      <div class="bar"><i id="foodB" style="width:100%;background:linear-gradient(90deg,#ffd166,#2be37a)"></i></div>
+      <div style="height:8px"></div>
+
+      <div class="row small"><span>Energia</span><span><b id="en">100</b>%</span></div>
+      <div class="bar"><i id="enB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+
+      <div style="height:10px"></div>
+      <div class="row">
+        <span class="pill">Madeira: <b id="="wood">0</b></span>
+        <span class="pill">Pedra: <b id="stone">0</b></span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="pill">Comida: <b id="fish">0</b></span>
+        <span class="pill">Abrigo: <b id="shelter">0</b></span>
+      </div>
+    </div>
+
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="inv">Inventário</button>
+      <button id="craft">Craft</button>
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="card small">Dica: faça <b>fogueira</b> para cozinhar e recuperar energia mais rápido. Evite a noite sem abrigo.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // ------- SFX WebAudio (sem arquivos) -------
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.08,g=.06)=>{const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,click:()=>beep(880,"square",.04,.04),step:()=>beep(160,"triangle",.03,.02),
+      hit:()=>beep(120,"sawtooth",.08,.06),heal:()=>{beep(520,"sine",.10,.06);beep(780,"sine",.10,.05)},
+      win:()=>{beep(523,"sine",.10,.06);beep(659,"sine",.10,.06);beep(784,"sine",.12,.07)},
+      low:()=>beep(220,"sine",.14,.05)};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={day:$("day"),obj:$("obj"),hp:$("hp"),hpB:$("hpB"),food:$("food"),foodB:$("foodB"),en:$("en"),enB:$("enB"),
+    wood:$("wood"),stone:$("stone"),fish:$("fish"),shelter:$("shelter"),
+    modal:$("modal"),mt:$("mt"),mb:$("mb"),mc:$("mc")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const pick=a=>a[(Math.random()*a.length)|0];
+
+  const SAVE="zyisland_save_v1";
+  const fresh=()=>({
+    day:1, time:0, // 0..1
+    p:{x:18,y:12,hp:80,hpM:80,food:100,en:100,wood:0,stone:0,fish:0,shelter:0,fire:0},
+    world:null, nodes:[], animals:[], built:[], msg:"Colete recursos para sobreviver."
+  });
+  let S=load()||fresh();
+
+  function say(t){toast.innerHTML=`<b>ZyIsland</b> — ${t}`;}
+
+  const W=42,H=26,T=30;
+  function gen(){
+    // 0 areia, 1 grama, 2 floresta, 3 agua, 4 rocha
+    const w=new Array(W*H).fill(1);
+    // borda mar
+    for(let x=0;x<W;x++){w[x]=3;w[x+(H-1)*W]=3}
+    for(let y=0;y<H;y++){w[0+y*W]=3;w[(W-1)+y*W]=3}
+    // costa
+    for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){
+      const d=Math.min(x,y,W-1-x,H-1-y);
+      if(d<=2 && Math.random()<0.85) w[x+y*W]=0;
+    }
+    // lago interno
+    for(let y=7;y<12;y++)for(let x=28;x<35;x++) if(Math.random()<0.75) w[x+y*W]=3;
+    // rochas e floresta
+    for(let i=0;i<380;i++){
+      const x=rand(3,W-4), y=rand(3,H-4);
+      if(w[x+y*W]===1 && Math.random()<0.35) w[x+y*W]=2;
+      if(w[x+y*W]===1 && Math.random()<0.12) w[x+y*W]=4;
+    }
+    S.world=w;
+    // nodes coletáveis
+    S.nodes=[];
+    for(let i=0;i<45;i++){
+      const x=rand(3,W-4), y=rand(3,H-4);
+      const t=w[x+y*W];
+      if(t===2) S.nodes.push({x,y,k:"wood",hp:2});
+      if(t===4) S.nodes.push({x,y,k:"stone",hp:3});
+    }
+    // animais (peixe perto da água e coelho na grama)
+    S.animals=[];
+    for(let i=0;i<10;i++){
+      let x=rand(3,W-4),y=rand(3,H-4);
+      if(w[x+y*W]===1) S.animals.push({x,y,t:"rabbit",hp:1});
+    }
+    // player spawn
+    S.p.x=12; S.p.y=18;
+  }
+  if(!S.world) gen();
+
+  function tile(x,y){return S.world[x+y*W];}
+  function solid(x,y){
+    // água bloqueia, rocha bloqueia
+    const t=tile(x,y);
+    if(t===3) return true;
+    // construção sólida
+    if(S.built.some(b=>b.x===x&&b.y===y && (b.k==="wall"||b.k==="bed"))) return true;
+    return false;
+  }
+
+  // Modal
+  function openModal(title,html){ui.mt.textContent=title;ui.mb.innerHTML=html;ui.modal.style.display="flex";}
+  function closeModal(){ui.modal.style.display="none";}
+  ui.mc.onclick=()=>{SFX.click();closeModal();};
+
+  // Buttons
+  $("inv").onclick=()=>{SFX.click();showInv();};
+  $("craft").onclick=()=>{SFX.click();showCraft();};
+  $("save").onclick=()=>{SFX.click();save();say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); gen(); save(); say("Novo jogo.");}};
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D","e","E","b","B","i","I","1","2","Escape"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="Escape") closeModal();
+    if(k==="e"||k==="E") interact();
+    if(k==="b"||k==="B") buildMenu();
+    if(k==="i"||k==="I") showInv();
+    if(k==="1") eat();
+    if(k==="2") sleep();
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  function showInv(){
+    openModal("Inventário", `
+      <div class="grid">
+        ${invCard("Madeira","WOOD",S.p.wood,"Recurso para construir e craftar.")}
+        ${invCard("Pedra","STONE",S.p.stone,"Recurso para ferramentas e fogueira.")}
+        ${invCard("Comida (Peixe)","FOOD",S.p.fish,"Aperte 1 para comer e recuperar fome.")}
+        ${invCard("Abrigo","SHELTER",S.p.shelter,"Ponto de proteção contra a noite.")}
+      </div>
+      <div class="small" style="margin-top:10px">
+        Atalhos: <b>1</b> comer • <b>2</b> dormir (se tiver cama) • <b>B</b> construir.
+      </div>
+    `);
+  }
+  function invCard(n,tag,q,desc){
+    return `<div class="item"><div><b>${n}</b> <span class="tag">${tag}</span><div class="small">Quantidade: <b>${q}</b><br/>${desc}</div></div></div>`;
+  }
+
+  function showCraft(){
+    openModal("Craft", `
+      <div class="grid">
+        ${craftCard("Fogueira","fire","Cozinha peixe, recupera energia mais rápido.","2 madeira + 2 pedra", S.p.wood>=2 && S.p.stone>=2)}
+        ${craftCard("Parede","wall","Construção para marcar área do abrigo.","2 madeira", S.p.wood>=2)}
+        ${craftCard("Cama","bed","Permite dormir e passar o dia.","4 madeira + 1 pedra", S.p.wood>=4 && S.p.stone>=1)}
+        ${craftCard("Vara de Pesca","rod","Aumenta chance de pegar peixe perto d'água.","3 madeira", S.p.wood>=3)}
+      </div>
+    `);
+    ui.mb.querySelectorAll("button[data-craft]").forEach(b=>{
+      b.onclick=()=>{SFX.click(); craft(b.getAttribute("data-craft")); showCraft(); uiUpdate(); save();};
+    });
+  }
+  function craftCard(n,k,desc,cost,ok){
+    return `<div class="item"><div><b>${n}</b> <span class="tag">CRAFT</span><div class="small">${desc}<br/><b>Custo:</b> ${cost}</div></div>
+      <div><button data-craft="${k}" ${ok?"":"disabled"}>Criar</button></div></div>`;
+  }
+
+  function craft(k){
+    if(k==="fire"){S.p.wood-=2;S.p.stone-=2; S.p.fire=1; SFX.win(); say("Você criou uma Fogueira!"); ui.obj.textContent="Objetivo: construa um abrigo e sobreviva à noite."; }
+    if(k==="wall"){S.p.wood-=2; S.built.push({x:S.p.x,y:S.p.y,k:"wall"}); SFX.click(); say("Parede colocada no seu tile.");}
+    if(k==="bed"){S.p.wood-=4;S.p.stone-=1; S.built.push({x:S.p.x,y:S.p.y,k:"bed"}); SFX.win(); say("Cama construída! Agora você pode dormir (2).");}
+    if(k==="rod"){S.p.wood-=3; S.p.rod=1; SFX.win(); say("Vara de pesca criada! Pescar ficou mais fácil.");}
+  }
+
+  function buildMenu(){
+    openModal("Construir (B)", `
+      <div class="small">Constrói no tile onde você está (cuidado: água não permite). Use Craft para criar cama/fogueira.</div>
+      <div style="height:8px"></div>
+      <div class="grid">
+        ${simpleBuild("Parede","wall",2,"wood")}
+        ${simpleBuild("Remover bloco","remove",0,"")}
+      </div>
+    `);
+    ui.mb.querySelectorAll("button[data-build]").forEach(b=>{
+      b.onclick=()=>{SFX.click(); build(b.getAttribute("data-build")); buildMenu(); uiUpdate(); save();};
+    });
+  }
+  function simpleBuild(n,k,c,mat){
+    const ok = (k==="remove") ? true : (S.p[mat]>=c && !solid(S.p.x,S.p.y));
+    return `<div class="item"><div><b>${n}</b> <span class="tag">BUILD</span><div class="small">${k==="remove"?"Remove parede/cama do tile atual.":`Custo: ${c} ${mat}`}</div></div>
+      <div><button data-build="${k}" ${ok?"":"disabled"}>${k==="remove"?"Remover":"Construir"}</button></div></div>`;
+  }
+  function build(k){
+    const x=S.p.x,y=S.p.y;
+    if(k==="wall"){
+      if(solid(x,y)) { say("Não dá pra construir aqui."); return; }
+      if(S.p.wood<2){ say("Falta madeira."); return; }
+      S.p.wood-=2;
+      S.built.push({x,y,k:"wall"});
+      // abrigo conta quando tem construções
+      S.p.shelter = Math.min(10, S.built.filter(b=>b.k==="wall"||b.k==="bed").length);
+      say("Construído! Seu abrigo está ficando pronto.");
+    }
+    if(k==="remove"){
+      const i=S.built.findIndex(b=>b.x===x&&b.y===y);
+      if(i>=0){ S.built.splice(i,1); SFX.click(); say("Removido.");}
+      S.p.shelter = Math.min(10, S.built.filter(b=>b.k==="wall"||b.k==="bed").length);
+    }
+  }
+
+  function eat(){
+    if(S.p.fish<=0){say("Sem comida."); return;}
+    S.p.fish--;
+    S.p.food=clamp(S.p.food+35,0,100);
+    SFX.heal();
+    say("Você comeu e recuperou fome.");
+    save(); uiUpdate();
+  }
+
+  function sleep(){
+    // só dorme se tiver cama no tile atual
+    const hasBed=S.built.some(b=>b.x===S.p.x&&b.y===S.p.y && b.k==="bed");
+    if(!hasBed){ say("Você precisa estar em cima da cama para dormir."); return; }
+    SFX.win();
+    // passa o dia
+    S.day++;
+    S.time=0;
+    // recup
+    S.p.en=100;
+    S.p.food=clamp(S.p.food-8,0,100);
+    S.p.hp=clamp(S.p.hp+25,0,S.p.hpM);
+    say(`Você dormiu. Dia ${S.day} começou.`);
+    save(); uiUpdate();
+  }
+
+  function interact(){
+    if(ui.modal.style.display==="flex") return;
+    const p=S.p;
+    // coletar nodes adjacentes
+    let got=false;
+    for(const n of S.nodes){
+      if(n.hp<=0) continue;
+      if(Math.abs(n.x-p.x)+Math.abs(n.y-p.y)<=1){
+        got=true;
+        n.hp--;
+        if(n.k==="wood"){S.p.wood++; SFX.click(); say("Coletou madeira.");}
+        if(n.k==="stone"){S.p.stone++; SFX.click(); say("Coletou pedra.");}
+        break;
+      }
+    }
+    // pescar se perto da água
+    const nearWater = [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{
+      const x=p.x+dx,y=p.y+dy; if(x<0||y<0||x>=W||y>=H) return false;
+      return tile(x,y)===3;
+    });
+    if(!got && nearWater){
+      const chance = S.p.rod ? 0.45 : 0.22;
+      if(Math.random()<chance){ S.p.fish++; SFX.win(); say("Você pescou um peixe!"); got=true; }
+      else { SFX.low(); say("Nada fisgou... tente de novo."); got=true; }
+    }
+    if(!got) say("Nada para coletar/interagir aqui.");
+    save(); uiUpdate();
+  }
+
+  function uiUpdate(){
+    ui.day.textContent=S.day;
+    ui.hp.textContent=S.p.hp; ui.hpB.style.width=(S.p.hp/S.p.hpM*100).toFixed(1)+"%";
+    ui.food.textContent=S.p.food|0; ui.foodB.style.width=(S.p.food).toFixed(1)+"%";
+    ui.en.textContent=S.p.en|0; ui.enB.style.width=(S.p.en).toFixed(1)+"%";
+    ui.wood.textContent=S.p.wood; ui.stone.textContent=S.p.stone; ui.fish.textContent=S.p.fish; ui.shelter.textContent=S.p.shelter|0;
+
+    if(!S.p.fire) ui.obj.textContent="Objetivo: colete madeira e pedra para fazer uma fogueira.";
+    else if(S.p.shelter<3) ui.obj.textContent="Objetivo: construa um abrigo (paredes) e uma cama.";
+    else ui.obj.textContent="Objetivo: sobreviva, pesque, explore e evolua seu abrigo.";
+  }
+
+  function tick(dt){
+    // relógio e status
+    S.time += dt*0.00002; // ~ 50s por dia
+    if(S.time>=1){
+      S.time=0; S.day++;
+      // eventos do dia
+      if(Math.random()<0.35){ // respawn nodes
+        for(let i=0;i<10;i++){
+          const x=rand(3,W-4),y=rand(3,H-4);
+          const t=tile(x,y);
+          if(t===2) S.nodes.push({x,y,k:"wood",hp:2});
+          if(t===4) S.nodes.push({x,y,k:"stone",hp:3});
+        }
+      }
+    }
+
+    // fome/energia caem com o tempo
+    S.p.food = clamp(S.p.food - dt*0.0022, 0, 100);
+    S.p.en   = clamp(S.p.en   - dt*0.0018, 0, 100);
+
+    // penalidades
+    const night = (S.time>0.72 || S.time<0.08);
+    if(night && S.p.shelter<3){
+      // noite perigosa sem abrigo
+      if(Math.random()<0.0025*dt){
+        const dmg=rand(2,6);
+        S.p.hp = clamp(S.p.hp - dmg, 0, S.p.hpM);
+        SFX.hit();
+        say(`A noite te castigou sem abrigo! -${dmg} HP.`);
+      }
+    }
+
+    // se fome/energia muito baixa, perde vida
+    if(S.p.food<=0 || S.p.en<=0){
+      if(Math.random()<0.0030*dt){
+        const dmg=rand(1,4);
+        S.p.hp = clamp(S.p.hp - dmg, 0, S.p.hpM);
+        SFX.hit();
+      }
+    }
+
+    if(S.p.fire){
+      // fogueira recupera energia quando perto (no tile)
+      if(S.built.some(b=>b.x===S.p.x&&b.y===S.p.y && b.k==="fire")){
+        S.p.en = clamp(S.p.en + dt*0.01, 0, 100);
+      }
+    }
+
+    // morte
+    if(S.p.hp<=0){
+      SFX.low();
+      say("Você desmaiou... voltou para a praia com itens preservados.");
+      S.p.hp = Math.max(30, Math.floor(S.p.hpM*0.5));
+      S.p.food = 60; S.p.en = 60;
+      S.p.x=12; S.p.y=18;
+    }
+  }
+
+  // input movimento
+  let moveCD=0,last=performance.now();
+  function loop(now){
+    const dt=now-last; last=now;
+    if(ui.modal.style.display!=="flex"){
+      moveCD-=dt;
+      if(moveCD<=0){
+        let dx=0,dy=0;
+        if(keys.has("ArrowUp")||keys.has("w")||keys.has("W")) dy=-1;
+        if(keys.has("ArrowDown")||keys.has("s")||keys.has("S")) dy=1;
+        if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) dx=-1;
+        if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) dx=1;
+        if(dx||dy){
+          const nx=S.p.x+dx, ny=S.p.y+dy;
+          if(nx>=0&&ny>=0&&nx<W&&ny<H && !solid(nx,ny)){
+            S.p.x=nx; S.p.y=ny;
+            SFX.step();
+            // gasto leve
+            S.p.en=clamp(S.p.en-0.35,0,100);
+            S.p.food=clamp(S.p.food-0.25,0,100);
+          }
+          moveCD=95;
+        }
+      }
+      tick(dt);
+      save();
+      uiUpdate();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(), w=canvas.width, h=canvas.height;
+    g.clearRect(0,0,w,h);
+    g.save(); g.scale(dpr,dpr);
+    const bw=canvas.getBoundingClientRect().width, bh=canvas.getBoundingClientRect().height;
+    const scale=Math.min(bw/(W*T), bh/(H*T));
+    const ox=(bw-W*T*scale)/2, oy=(bh-H*T*scale)/2;
+    g.translate(ox,oy); g.scale(scale,scale);
+
+    // background time
+    const night = (S.time>0.72 || S.time<0.08);
+    if(night){ g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(0,0,W*T,H*T); }
+
+    // tiles
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const v=tile(x,y);
+      if(v===0) g.fillStyle="#2b2314";       // areia
+      if(v===1) g.fillStyle="#0f2a1b";       // grama
+      if(v===2) g.fillStyle="#12361f";       // floresta
+      if(v===3) g.fillStyle="#0b2a4a";       // água
+      if(v===4) g.fillStyle="#2a2a3a";       // rocha
+      g.fillRect(x*T,y*T,T,T);
+      g.strokeStyle="rgba(255,255,255,.02)";
+      g.strokeRect(x*T,y*T,T,T);
+    }
+
+    // nodes
+    for(const n of S.nodes){
+      if(n.hp<=0) continue;
+      if(n.k==="wood"){
+        g.fillStyle="rgba(43,227,122,.18)"; g.fillRect(n.x*T+7,n.y*T+7,T-14,T-14);
+        g.strokeStyle="rgba(43,227,122,.45)"; g.strokeRect(n.x*T+7,n.y*T+7,T-14,T-14);
+        g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText("🌲", n.x*T+10, n.y*T+20);
+      } else {
+        g.fillStyle="rgba(255,209,102,.16)"; g.fillRect(n.x*T+7,n.y*T+7,T-14,T-14);
+        g.strokeStyle="rgba(255,209,102,.45)"; g.strokeRect(n.x*T+7,n.y*T+7,T-14,T-14);
+        g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText("⛰", n.x*T+10, n.y*T+20);
+      }
+    }
+
+    // built
+    for(const b of S.built){
+      if(b.k==="wall"){
+        g.fillStyle="rgba(123,0,255,.18)"; g.fillRect(b.x*T+6,b.y*T+6,T-12,T-12);
+        g.strokeStyle="rgba(0,224,255,.30)"; g.strokeRect(b.x*T+6,b.y*T+6,T-12,T-12);
+      }
+      if(b.k==="bed"){
+        g.fillStyle="rgba(0,224,255,.16)"; g.fillRect(b.x*T+6,b.y*T+10,T-12,T-16);
+        g.strokeStyle="rgba(0,224,255,.40)"; g.strokeRect(b.x*T+6,b.y*T+10,T-12,T-16);
+        g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText("🛏", b.x*T+10, b.y*T+22);
+      }
+      if(b.k==="fire"){
+        g.fillStyle="rgba(255,77,109,.16)"; g.fillRect(b.x*T+8,b.y*T+8,T-16,T-16);
+        g.strokeStyle="rgba(255,209,102,.45)"; g.strokeRect(b.x*T+8,b.y*T+8,T-16,T-16);
+        g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText("🔥", b.x*T+10, b.y*T+22);
+      }
+    }
+
+    // player
+    const p=S.p;
+    const cx=p.x*T+T/2, cy=p.y*T+T/2;
+    const rg=g.createRadialGradient(cx,cy,2,cx,cy,18);
+    rg.addColorStop(0,"rgba(0,224,255,.35)"); rg.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=rg; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.fill();
+    g.fillStyle="#00e0ff"; g.fillRect(p.x*T+10,p.y*T+10,T-20,T-20);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(p.x*T+10,p.y*T+10,T-20,T-20);
+
+    // hud time bar
+    g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(6,6,140,8);
+    g.fillStyle=night?"rgba(123,0,255,.85)":"rgba(255,209,102,.85)";
+    g.fillRect(6,6,140*S.time,8);
+
+    g.restore();
+  }
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+
+  uiUpdate(); say(S.msg||"Sobreviva!");
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
