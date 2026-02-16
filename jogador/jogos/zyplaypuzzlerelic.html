@@ -1,0 +1,304 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Puzzle Relic</title>
+<style>
+:root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2b0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+#toast{position:absolute;left:12px;bottom:12px;max-width:min(760px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style></head><body>
+<div id="wrap">
+  <div id="game"><canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Puzzle Relic</b> — Clique nas peças para girar • Objetivo: alinhar caminhos do cristal</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyPlay Puzzle Relic</b><span class="pill">Nível <b id="lv">1</b>/8</span></div>
+      <div class="small" id="obj">Conecte a energia do início ao cristal (final).</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Movimentos</span><span><b id="mv">0</b></span></div>
+      <div class="row small"><span>Melhor</span><span><b id="best">--</b></span></div>
+      <div class="row small"><span>Status</span><span><b id="st">---</b></span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="hint">Dica</button><button id="next">Próximo</button>
+      <button id="save">Salvar</button><button id="reset">Reset</button>
+    </div>
+    <div class="card small">Dica: peças com “curva” precisam apontar para a direção certa. Gire até conectar.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;let on=true;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,setOn:(v)=>on=v, click:()=>beep(880,"square",.04,.04), turn:()=>beep(520,"sine",.06,.05),
+      ok:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)},
+      bad:()=>beep(220,"sawtooth",.10,.05)};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={lv:$("lv"),obj:$("obj"),mv:$("mv"),best:$("best"),st:$("st")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const SAVE="zyplay_puzzle_relic_v1";
+
+  // piece types: 0 empty, 1 straight, 2 corner, 3 tee, 4 cross (all rotate)
+  const levels=[
+    {w:5,h:5, start:[0,2], end:[4,2], grid:[
+      [2,1,1,1,2],
+      [1,0,0,0,1],
+      [2,1,2,1,2],
+      [1,0,0,0,1],
+      [2,1,1,1,2]], rotSeed:1},
+    {w:6,h:5, start:[0,1], end:[5,3], grid:[
+      [2,1,2,1,2,1],
+      [1,0,1,0,1,2],
+      [2,1,2,1,2,1],
+      [1,0,1,0,1,2],
+      [2,1,2,1,2,1]], rotSeed:2},
+    {w:6,h:6, start:[0,3], end:[5,2], grid:[
+      [2,1,2,1,2,1],
+      [1,0,1,0,1,2],
+      [2,1,2,1,2,1],
+      [1,0,1,0,1,2],
+      [2,1,2,1,2,1],
+      [1,2,1,2,1,2]], rotSeed:3},
+    {w:7,h:6, start:[0,2], end:[6,3], grid:[
+      [2,1,2,1,2,1,2],
+      [1,0,1,0,1,0,1],
+      [2,1,2,1,2,1,2],
+      [1,0,1,0,1,0,1],
+      [2,1,2,1,2,1,2],
+      [1,2,1,2,1,2,1]], rotSeed:4},
+    {w:7,h:7, start:[0,3], end:[6,3], grid:[
+      [2,1,2,1,2,1,2],
+      [1,0,1,0,1,0,1],
+      [2,1,3,1,3,1,2],
+      [1,0,1,4,1,0,1],
+      [2,1,3,1,3,1,2],
+      [1,0,1,0,1,0,1],
+      [2,1,2,1,2,1,2]], rotSeed:5},
+    {w:8,h:7, start:[0,2], end:[7,4], grid:null, rotSeed:6},
+    {w:8,h:8, start:[0,4], end:[7,3], grid:null, rotSeed:7},
+    {w:9,h:8, start:[0,3], end:[8,4], grid:null, rotSeed:8},
+  ];
+
+  function genGrid(w,h,seed){
+    let s=seed*999;
+    const r=()=>{s=(s*1664525+1013904223)>>>0; return (s/4294967296);};
+    const grid=Array.from({length:h},()=>Array.from({length:w},()=>0));
+    // fill with pieces around edges and paths
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const edge = (x===0||y===0||x===w-1||y===h-1);
+      if(edge && r()<0.8) grid[y][x]=2;
+      else if(r()<0.62) grid[y][x]= (r()<0.55? 1 : 2);
+      if(r()<0.08) grid[y][x]=3;
+      if(r()<0.03) grid[y][x]=4;
+      if(r()<0.18) grid[y][x]=0;
+    }
+    return grid;
+  }
+
+  const fresh=()=>({lv:1, moves:0, best:{}, hint:0, grid:[], rot:[], msg:"Gire para conectar."});
+  let S=load()||fresh();
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+  function say(t){toast.innerHTML=`<b>ZyPlay Puzzle Relic</b> — ${t}`;}
+
+  function buildLevel(){
+    const L=levels[S.lv-1];
+    const w=L.w,h=L.h;
+    const grid = L.grid ? L.grid : genGrid(w,h,L.rotSeed);
+    S.grid = grid.map(row=>row.slice());
+    // random rotations 0..3
+    let seed=L.rotSeed*12345;
+    const rr=()=>{seed=(seed*1103515245+12345)>>>0; return seed/4294967296;};
+    S.rot = Array.from({length:h},()=>Array.from({length:w},()=>Math.floor(rr()*4)));
+    S.moves=0; S.hint=0;
+    say(`Nível ${S.lv}: conecte início → cristal.`);
+    uiUpdate();
+  }
+
+  function uiUpdate(){
+    ui.lv.textContent=S.lv;
+    ui.mv.textContent=S.moves;
+    const b=S.best[S.lv];
+    ui.best.textContent=b? (b+" mov") : "--";
+    const ok=check();
+    ui.st.textContent= ok ? "CONCLUÍDO" : "EM PROGRESSO";
+    ui.obj.textContent="Conecte a energia do início ao cristal (final).";
+  }
+
+  function conn(piece, rot){
+    // returns open sides [up,right,down,left] booleans
+    const r=((rot%4)+4)%4;
+    const base = {
+      0:[0,0,0,0],
+      1:[1,0,1,0],     // straight vertical
+      2:[1,1,0,0],     // corner up-right
+      3:[1,1,1,0],     // tee (missing left)
+      4:[1,1,1,1],     // cross
+    }[piece] || [0,0,0,0];
+    // rotate sides
+    const s=base.slice();
+    for(let i=0;i<r;i++) s.unshift(s.pop());
+    return s;
+  }
+
+  function check(){
+    const L=levels[S.lv-1], w=L.w,h=L.h, sx=L.start[0],sy=L.start[1], ex=L.end[0],ey=L.end[1];
+    const seen=new Set();
+    const q=[[sx,sy]];
+    seen.add(sx+","+sy);
+    while(q.length){
+      const [x,y]=q.shift();
+      const p=S.grid[y][x], r=S.rot[y][x];
+      const s=conn(p,r);
+      const neigh=[
+        [x,y-1,0,2], [x+1,y,1,3], [x,y+1,2,0], [x-1,y,3,1]
+      ];
+      for(const [nx,ny,side,oside] of neigh){
+        if(nx<0||ny<0||nx>=w||ny>=h) continue;
+        const np=S.grid[ny][nx], nr=S.rot[ny][nx];
+        const ns=conn(np,nr);
+        if(s[side] && ns[oside]){
+          const k=nx+","+ny;
+          if(!seen.has(k)){ seen.add(k); q.push([nx,ny]); }
+        }
+      }
+    }
+    return seen.has(ex+","+ey);
+  }
+
+  function next(){
+    if(S.lv<levels.length){ S.lv++; buildLevel(); }
+    else { alert("Você concluiu ZyPlay Puzzle Relic!"); S.lv=1; buildLevel(); }
+    save();
+  }
+
+  $("hint").onclick=()=>{
+    SFX.click();
+    S.hint++;
+    // small hint: rotate a random non-empty tile towards a likely connection by trying rotations
+    const L=levels[S.lv-1]; const w=L.w,h=L.h;
+    for(let tries=0;tries<120;tries++){
+      const x=Math.floor(Math.random()*w), y=Math.floor(Math.random()*h);
+      if(S.grid[y][x]===0) continue;
+      const old=S.rot[y][x];
+      let best=old, bestOk=false;
+      for(let r=0;r<4;r++){
+        S.rot[y][x]=r;
+        if(check()){best=r; bestOk=true; break;}
+      }
+      S.rot[y][x]=bestOk?best:old;
+      if(bestOk){ SFX.ok(); say("Dica aplicada: uma peça foi alinhada."); uiUpdate(); save(); return; }
+      S.rot[y][x]=old;
+    }
+    SFX.bad(); say("Sem dica útil agora. Continue tentando!");
+    save();
+  };
+
+  $("next").onclick=()=>{SFX.click(); if(check()) next(); else say("Conclua o nível para avançar.");};
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar progresso?")){S=fresh(); buildLevel(); save();}};
+  canvas.addEventListener("pointerdown",(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+    const L=levels[S.lv-1]; const w=L.w,h=L.h;
+    // board rect
+    const pad=0.10;
+    const bx=pad, by=0.12, bw=1-pad*2, bh=0.78;
+    if(x<bx||x>bx+bw||y<by||y>by+bh) return;
+    const cx=Math.floor(((x-bx)/bw)*w);
+    const cy=Math.floor(((y-by)/bh)*h);
+    if(S.grid[cy][cx]===0){SFX.bad(); return;}
+    S.rot[cy][cx]=(S.rot[cy][cx]+1)%4;
+    S.moves++; SFX.turn();
+    if(check()){
+      SFX.ok();
+      say("Conectado! Clique em Próximo.");
+      const best=S.best[S.lv];
+      if(!best || S.moves<best) S.best[S.lv]=S.moves;
+    }
+    uiUpdate(); save();
+  });
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(), W=r.width,H=r.height;
+    const L=levels[S.lv-1], w=L.w,h=L.h;
+
+    // board
+    const bx=W*0.10, by=H*0.12, bw=W*0.80, bh=H*0.78;
+    g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(bx,by,bw,bh);
+    g.strokeStyle="rgba(0,224,255,.18)"; g.strokeRect(bx,by,bw,bh);
+
+    const cell=Math.min(bw/w,bh/h);
+    const ox=bx + (bw - cell*w)/2;
+    const oy=by + (bh - cell*h)/2;
+
+    // start/end
+    const sx=L.start[0],sy=L.start[1], ex=L.end[0],ey=L.end[1];
+
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const px=ox+x*cell, py=oy+y*cell;
+      g.strokeStyle="rgba(255,255,255,.06)"; g.strokeRect(px,py,cell,cell);
+
+      const p=S.grid[y][x];
+      if(p===0) continue;
+
+      // tile bg
+      g.fillStyle="rgba(123,0,255,.10)"; g.fillRect(px+2,py+2,cell-4,cell-4);
+
+      // connectors
+      const s=conn(p,S.rot[y][x]);
+      const cx=px+cell/2, cy=py+cell/2;
+      g.strokeStyle="rgba(0,224,255,.55)"; g.lineWidth=Math.max(3,cell*0.10);
+      g.beginPath();
+      if(s[0]){g.moveTo(cx,cy); g.lineTo(cx,py+6);}
+      if(s[1]){g.moveTo(cx,cy); g.lineTo(px+cell-6,cy);}
+      if(s[2]){g.moveTo(cx,cy); g.lineTo(cx,py+cell-6);}
+      if(s[3]){g.moveTo(cx,cy); g.lineTo(px+6,cy);}
+      g.stroke();
+
+      g.fillStyle="rgba(255,209,102,.85)";
+      g.beginPath(); g.arc(cx,cy,Math.max(4,cell*0.10),0,Math.PI*2); g.fill();
+
+      if(x===sx&&y===sy){ g.fillStyle="rgba(255,209,102,.22)"; g.fillRect(px,py,cell,cell); g.fillStyle="#fff"; g.font=`700 ${Math.max(12,cell*0.22)}px system-ui`; g.fillText("IN", px+cell*0.18, py+cell*0.62); }
+      if(x===ex&&y===ey){ g.fillStyle="rgba(0,224,255,.20)"; g.fillRect(px,py,cell,cell); g.fillStyle="#fff"; g.font=`700 ${Math.max(12,cell*0.22)}px system-ui`; g.fillText("CR", px+cell*0.18, py+cell*0.62); }
+    }
+
+    // brand
+    g.fillStyle="rgba(255,255,255,.9)";
+    g.font="700 16px system-ui";
+    g.fillText("ZyPlay", 14, 26);
+
+    g.restore();
+  }
+
+  buildLevel();
+  (function anim(){ draw(); requestAnimationFrame(anim); })();
+})();
+</script></body></html>
