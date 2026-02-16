@@ -1,0 +1,1431 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Arena</title>
+<style>
+:root{
+  --bg:#050513;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;
+  --a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;
+}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2b0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 380px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:320px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+.bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}.bar>i{display:block;height:100%}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:900}
+button:hover{filter:brightness(1.08)}button:active{transform:translateY(1px)}
+#toast{
+  position:absolute;left:12px;bottom:12px;max-width:min(900px,calc(100% - 24px));
+  background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)
+}
+kbd{font:700 12px system-ui;background:#0b0b18;border:1px solid var(--l);padding:2px 6px;border-radius:8px;color:var(--t)}
+.badge{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--l);background:rgba(255,255,255,.03);font-size:12px;color:var(--m)}
+hr{border:none;border-top:1px solid rgba(255,255,255,.06);margin:8px 0}
+</style></head><body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Arena</b> — <span id="hint">WASD/Setas mover • <kbd>E</kbd> entrar no portal • <kbd>Esc</kbd> voltar</span></div>
+  </div>
+
+  <aside id="side">
+    <div class="card">
+      <div class="row">
+        <b>ZyPlay Arena</b>
+        <span class="pill">Perfil: <b id="heroName">Neo</b></span>
+      </div>
+      <div class="small">Arena principal com salas/jogos. Jogue, faça recordes e desbloqueie skins.</div>
+      <div style="height:10px"></div>
+
+      <div class="row small"><span>Modo atual</span><span class="badge" id="mode">ARENA</span></div>
+      <div class="row small"><span>Moedas</span><span><b id="coins">0</b></span></div>
+      <div class="row small"><span>XP</span><span><b id="xp">0</b></span></div>
+      <div class="bar"><i id="xpB" style="width:0%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+      <div style="height:10px"></div>
+
+      <div class="row small"><span>Último resultado</span><span><b id="last">--</b></span></div>
+      <div class="row small"><span>Recordes</span><span class="badge" id="bests">--</span></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><b>Salas / Jogos</b><span class="badge">5 salas</span></div>
+      <div class="small">
+        <div>1) <b>Blaster Dome</b> (tiro arena)</div>
+        <div>2) <b>Sky Jump</b> (plataforma)</div>
+        <div>3) <b>Neon Runner</b> (corrida)</div>
+        <div>4) <b>Relic Link</b> (puzzle)</div>
+        <div>5) <b>Tower Guard</b> (defesa)</div>
+      </div>
+      <hr/>
+      <div class="small">Entre num portal e conclua a missão da sala para ganhar moedas e XP.</div>
+    </div>
+
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="char">Personagem</button>
+      <button id="mute">Som</button>
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="card small">
+      <b>Observação:</b> o navegador pode exigir clique/tecla pra liberar áudio.  
+      Dica: complete 3 salas para desbloquear a skin “Violet”.
+    </div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // =========================
+  // Util
+  // =========================
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+  const randi=(a,b)=>Math.floor(rand(a,b+1));
+  const dist=(ax,ay,bx,by)=>Math.hypot(ax-bx,ay-by);
+  const now=()=>performance.now();
+
+  // =========================
+  // Audio (WebAudio synth) - música + sfx
+  // =========================
+  const Audio = (() => {
+    let ctx=null, master=null, musicGain=null, sfxGain=null;
+    let on=true, musicOn=true, musicTimer=0, musicStep=0, musicKey=0;
+    let musicType="arena"; // arena / action / calm
+    const AC=window.AudioContext||window.webkitAudioContext;
+
+    function ensure(){
+      if(!ctx){
+        ctx=new AC();
+        master=ctx.createGain(); master.gain.value=0.85;
+        musicGain=ctx.createGain(); musicGain.gain.value=0.30;
+        sfxGain=ctx.createGain(); sfxGain.gain.value=0.55;
+        musicGain.connect(master); sfxGain.connect(master);
+        master.connect(ctx.destination);
+      }
+      if(ctx.state==="suspended") ctx.resume();
+      return ctx;
+    }
+
+    function setOn(v){on=v;}
+    function setMusic(v){musicOn=v;}
+    function setMusicType(t){musicType=t;}
+
+    function tone(freq,type="sine",dur=0.07,vol=0.05){
+      if(!on) return;
+      const c=ensure();
+      const o=c.createOscillator(), g=c.createGain();
+      o.type=type; o.frequency.value=freq;
+      g.gain.value=0.0001;
+      o.connect(g); g.connect(sfxGain);
+      const T=c.currentTime;
+      g.gain.exponentialRampToValueAtTime(vol, T+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, T+dur);
+      o.start(T); o.stop(T+dur+0.02);
+    }
+
+    function noiseBurst(dur=0.06,vol=0.08){
+      if(!on) return;
+      const c=ensure();
+      const buffer=c.createBuffer(1, Math.floor(c.sampleRate*dur), c.sampleRate);
+      const data=buffer.getChannelData(0);
+      for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,2);
+      const src=c.createBufferSource(); src.buffer=buffer;
+      const g=c.createGain(); g.gain.value=vol;
+      src.connect(g); g.connect(sfxGain);
+      src.start();
+    }
+
+    // SFX pack
+    const sfx={
+      click:()=>tone(880,"square",0.04,0.05),
+      ok:()=>{tone(523,"sine",0.08,0.06);tone(659,"sine",0.08,0.05);tone(784,"sine",0.10,0.05)},
+      bad:()=>tone(220,"sawtooth",0.10,0.06),
+      coin:()=>tone(1046,"sine",0.05,0.06),
+      hit:()=>{tone(160,"sawtooth",0.10,0.06);noiseBurst(0.05,0.06)},
+      shot:()=>{tone(720,"square",0.03,0.06);tone(540,"square",0.03,0.03)},
+      jump:()=>tone(520,"sine",0.09,0.06),
+      portal:()=>{tone(660,"triangle",0.10,0.05);tone(990,"sine",0.08,0.05)}
+    };
+
+    // lightweight “music sequencer” by scheduling tones
+    function musicTick(dt){
+      if(!on || !musicOn) return;
+      ensure();
+      musicTimer += dt;
+
+      // choose bpm by type
+      const bpm = (musicType==="arena") ? 112 : (musicType==="action" ? 140 : 96);
+      const stepDur = 60/bpm/2; // 8th notes
+      if(musicTimer < stepDur) return;
+      musicTimer -= stepDur;
+
+      // scales
+      const scales=[
+        [261.63,293.66,329.63,392.00,440.00], // C-ish
+        [220.00,246.94,293.66,329.63,392.00], // A-ish
+        [233.08,261.63,311.13,349.23,415.30], // Bb-ish
+      ];
+      const scale = scales[musicKey%scales.length];
+
+      const c=ctx;
+      const t=c.currentTime;
+      const o=c.createOscillator();
+      const g=c.createGain();
+      o.connect(g); g.connect(musicGain);
+
+      // pattern changes
+      const patArena=[0,2,1,3,  0,2,4,3];
+      const patAction=[0,2,4,2,  1,3,4,3];
+      const patCalm =[0,1,2,1,  0,2,3,2];
+      const pat = (musicType==="arena")?patArena:(musicType==="action"?patAction:patCalm);
+
+      const idx = pat[musicStep%pat.length];
+      const base = scale[idx];
+      const octave = (musicType==="action") ? 2 : 1.5;
+      const freq = base * octave;
+
+      o.type = (musicType==="calm")?"sine":(musicType==="arena"?"triangle":"sawtooth");
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.08, t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.12);
+      o.start(t); o.stop(t+0.14);
+
+      // soft bass every 2 steps
+      if(musicStep%2===0){
+        const ob=c.createOscillator(), gb=c.createGain();
+        ob.type="sine"; ob.frequency.value=freq/2;
+        gb.gain.value=0.0001;
+        ob.connect(gb); gb.connect(musicGain);
+        gb.gain.exponentialRampToValueAtTime(0.05, t+0.01);
+        gb.gain.exponentialRampToValueAtTime(0.0001, t+0.18);
+        ob.start(t); ob.stop(t+0.20);
+      }
+
+      musicStep++;
+      if(musicStep%32===0) musicKey++;
+    }
+
+    return {ensure,setOn,setMusic,setMusicType,musicTick,sfx};
+  })();
+
+  const prime=()=>{Audio.ensure(); removeEventListener("pointerdown",prime); removeEventListener("keydown",prime);};
+  addEventListener("pointerdown",prime,{once:true});
+  addEventListener("keydown",prime,{once:true});
+
+  // =========================
+  // UI
+  // =========================
+  const $=id=>document.getElementById(id);
+  const ui={
+    hint:$("hint"), mode:$("mode"), heroName:$("heroName"),
+    coins:$("coins"), xp:$("xp"), xpB:$("xpB"),
+    last:$("last"), bests:$("bests")
+  };
+  const toast=$("toast");
+
+  function say(title, msg){
+    toast.innerHTML = `<b>${title}</b> — ${msg}`;
+  }
+
+  // =========================
+  // Canvas
+  // =========================
+  const canvas=$("c"), g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect(); canvas.width=(r.width*DPR())|0; canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  // =========================
+  // Save
+  // =========================
+  const SAVE_KEY="zyplay_arena_v1";
+  const defaults=()=>({
+    muted:false, music:true,
+    hero:{name:"Neo", skin:0},
+    coins:0, xp:0, clears:0,
+    best:{
+      blaster:0,
+      sky:0,
+      runner:0,
+      relic:0,
+      tower:0
+    },
+    last:"--"
+  });
+
+  let P = load() || defaults();
+  function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(P)); }catch{} }
+  function load(){ try{ const s=localStorage.getItem(SAVE_KEY); return s?JSON.parse(s):null; }catch{ return null; } }
+
+  // Apply audio settings
+  Audio.setOn(!P.muted);
+  Audio.setMusic(P.music);
+
+  // =========================
+  // Input
+  // =========================
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Escape","e","E","p","P","Enter","z","Z","x","X","c","C"].includes(k)) e.preventDefault();
+    keys.add(k);
+
+    if(k==="Escape"){
+      if(Scene.name!=="arena"){ Scene.goto("arena"); Audio.sfx.click(); }
+    }
+    if(k==="p"||k==="P"){
+      Scene.paused = !Scene.paused;
+      Audio.sfx.click();
+      say("ZyPlay", Scene.paused?"Pausado.":"Continuar!");
+    }
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  // =========================
+  // Characters / skins
+  // =========================
+  const skins=[
+    {name:"Neo",  c1:"rgba(0,224,255,.95)", c2:"rgba(123,0,255,.18)"},
+    {name:"Violet",c1:"rgba(123,0,255,.95)", c2:"rgba(0,224,255,.18)"},
+    {name:"Solar", c1:"rgba(255,209,102,.95)", c2:"rgba(255,77,109,.18)"},
+  ];
+  function unlockedSkins(){
+    // unlock rules: base = 0, violet if clears>=3, solar if coins>=300
+    const u=[0];
+    if(P.clears>=3) u.push(1);
+    if(P.coins>=300) u.push(2);
+    return u;
+  }
+
+  // =========================
+  // Scene Manager
+  // =========================
+  const Scene = {
+    name:"arena",
+    paused:false,
+    // shared camera
+    cam:{x:0,y:0},
+    goto(name, payload){
+      this.name=name;
+      this.paused=false;
+      if(name==="arena"){ Audio.setMusicType("arena"); ui.mode.textContent="ARENA"; ui.hint.textContent="WASD/Setas mover • E entrar no portal • Esc voltar"; say("ZyPlay Arena","Entre em um portal para jogar."); }
+      else { ui.mode.textContent=name.toUpperCase(); }
+      // init scene
+      if(name==="arena") Arena.init();
+      if(name==="blaster") Blaster.init(payload);
+      if(name==="sky") Sky.init(payload);
+      if(name==="runner") Runner.init(payload);
+      if(name==="relic") Relic.init(payload);
+      if(name==="tower") Tower.init(payload);
+      updateUI();
+      save();
+    }
+  };
+
+  function updateUI(){
+    ui.heroName.textContent = skins[P.hero.skin]?.name || P.hero.name || "Neo";
+    ui.coins.textContent = Math.floor(P.coins);
+    ui.xp.textContent = Math.floor(P.xp);
+    const lvl = Math.floor(P.xp/100);
+    const pct = clamp((P.xp%100),0,100);
+    ui.xpB.style.width = pct.toFixed(1)+"%";
+    ui.last.textContent = P.last || "--";
+    ui.bests.textContent =
+      `B:${P.best.blaster} • S:${P.best.sky} • R:${P.best.runner} • P:${P.best.relic} • T:${P.best.tower}`;
+  }
+
+  // =========================
+  // Arena World
+  // =========================
+  const Arena = {
+    W:1800,H:1200,
+    p:{x:340,y:640,vx:0,vy:0,spd:240},
+    npcs:[],
+    portals:[],
+    particles:[],
+    init(){
+      this.p={x:340,y:640,vx:0,vy:0,spd:240};
+      this.npcs=[
+        {x:520,y:520,name:"Maya",msg:"Bem-vindo ao ZyPlay Arena! Faça recordes para desbloquear skins."},
+        {x:1080,y:520,name:"Dex",msg:"Dica: complete 3 salas pra liberar Violet. Colete moedas pra Solar."},
+        {x:820,y:880,name:"Kai",msg:"Você pode voltar pro HUB a qualquer momento com Esc."},
+      ];
+      this.portals=[
+        {id:"blaster",x:520,y:360,r:42,title:"Blaster Dome",desc:"Tiro em arena (60s)"},
+        {id:"sky",x:860,y:360,r:42,title:"Sky Jump",desc:"Plataforma (pontuação)"},
+        {id:"runner",x:1200,y:360,r:42,title:"Neon Runner",desc:"Corrida (distância)"},
+        {id:"relic",x:700,y:980,r:42,title:"Relic Link",desc:"Puzzle (movimentos)"},
+        {id:"tower",x:1060,y:980,r:42,title:"Tower Guard",desc:"Defesa (ondas)"},
+      ];
+      say("ZyPlay Arena","Caminhe até um portal e aperte E.");
+    },
+    update(dt){
+      // movement
+      let mx=0,my=0;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) mx=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) mx=1;
+      if(keys.has("ArrowUp")||keys.has("w")||keys.has("W")) my=-1;
+      if(keys.has("ArrowDown")||keys.has("s")||keys.has("S")) my=1;
+
+      const p=this.p;
+      const len=Math.hypot(mx,my)||1;
+      mx/=len; my/=len;
+      p.vx = mx*p.spd; p.vy=my*p.spd;
+      p.x = clamp(p.x + p.vx*dt, 60, this.W-60);
+      p.y = clamp(p.y + p.vy*dt, 60, this.H-60);
+
+      // camera follow
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+      Scene.cam.x = clamp(p.x - W*0.5, 0, this.W - W);
+      Scene.cam.y = clamp(p.y - H*0.5, 0, this.H - H);
+
+      // particles (ambient)
+      if(Math.random()<dt*6){
+        this.particles.push({x:p.x+rand(-220,220),y:p.y+rand(-220,220),vx:rand(-20,20),vy:rand(-20,20),t:0,life:rand(1.2,2.0)});
+      }
+      for(const pt of this.particles){ pt.t+=dt; pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; }
+      this.particles=this.particles.filter(pt=>pt.t<pt.life);
+
+      // interactions
+      // NPC talk (auto)
+      let nearNpc=null;
+      for(const n of this.npcs){
+        if(dist(p.x,p.y,n.x,n.y)<70){ nearNpc=n; break; }
+      }
+      // Portal enter
+      let nearPortal=null;
+      for(const po of this.portals){
+        if(dist(p.x,p.y,po.x,po.y)<po.r+24){ nearPortal=po; break; }
+      }
+
+      if(nearPortal){
+        ui.hint.textContent = `Pronto para entrar: ${nearPortal.title} • Aperte E`;
+        if(keys.has("e")||keys.has("E")){
+          keys.delete("e"); keys.delete("E");
+          Audio.sfx.portal();
+          Scene.goto(nearPortal.id);
+        }
+      } else if(nearNpc){
+        ui.hint.textContent = `${nearNpc.name}: “${nearNpc.msg}”`;
+      } else {
+        ui.hint.textContent="WASD/Setas mover • E entrar no portal • Esc voltar";
+      }
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), VW=r.width, VH=r.height;
+
+      // background gradient
+      const bg=g.createRadialGradient(VW*0.5,VH*0.2,10,VW*0.5,VH*0.5,Math.max(VW,VH));
+      bg.addColorStop(0,"rgba(0,224,255,.08)");
+      bg.addColorStop(1,"rgba(123,0,255,.02)");
+      g.fillStyle=bg; g.fillRect(0,0,VW,VH);
+
+      // world transform
+      g.translate(-Scene.cam.x, -Scene.cam.y);
+
+      // floor grid
+      g.fillStyle="rgba(255,255,255,.02)";
+      for(let x=0;x<this.W;x+=60){ g.fillRect(x,0,1,this.H); }
+      for(let y=0;y<this.H;y+=60){ g.fillRect(0,y,this.W,1); }
+
+      // central plaza
+      g.fillStyle="rgba(0,0,0,.25)";
+      g.fillRect(260,260,1280,720);
+      g.strokeStyle="rgba(0,224,255,.10)";
+      g.strokeRect(260,260,1280,720);
+
+      // ambient particles
+      for(const pt of this.particles){
+        const a=1-pt.t/pt.life;
+        g.fillStyle=`rgba(255,209,102,${0.12*a})`;
+        g.beginPath(); g.arc(pt.x,pt.y,22*a,0,Math.PI*2); g.fill();
+      }
+
+      // portals
+      for(const po of this.portals){
+        const pulse = 0.6 + 0.4*Math.sin(now()/300 + po.x*0.01);
+        const cx=po.x, cy=po.y;
+        const glow=g.createRadialGradient(cx,cy,2,cx,cy,po.r*2.2);
+        glow.addColorStop(0, `rgba(0,224,255,${0.20*pulse})`);
+        glow.addColorStop(1, "rgba(123,0,255,0)");
+        g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,po.r*2.2,0,Math.PI*2); g.fill();
+
+        g.fillStyle="rgba(0,224,255,.14)";
+        g.beginPath(); g.arc(cx,cy,po.r*1.15,0,Math.PI*2); g.fill();
+        g.strokeStyle="rgba(255,255,255,.15)";
+        g.lineWidth=2; g.beginPath(); g.arc(cx,cy,po.r,0,Math.PI*2); g.stroke();
+
+        g.fillStyle="rgba(255,255,255,.90)";
+        g.font="800 14px system-ui";
+        g.fillText(po.title, cx - g.measureText(po.title).width/2, cy - po.r - 14);
+        g.fillStyle="rgba(170,182,230,.85)";
+        g.font="12px system-ui";
+        g.fillText(po.desc, cx - g.measureText(po.desc).width/2, cy + po.r + 18);
+      }
+
+      // NPCs
+      for(const n of this.npcs){
+        const cx=n.x, cy=n.y;
+        const glow=g.createRadialGradient(cx,cy,2,cx,cy,60);
+        glow.addColorStop(0,"rgba(255,209,102,.18)");
+        glow.addColorStop(1,"rgba(123,0,255,0)");
+        g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,60,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(255,209,102,.85)";
+        g.fillRect(cx-14,cy-18,28,36);
+        g.strokeStyle="rgba(255,255,255,.25)"; g.strokeRect(cx-14,cy-18,28,36);
+        g.fillStyle="rgba(255,255,255,.90)";
+        g.font="700 12px system-ui";
+        g.fillText(n.name, cx - g.measureText(n.name).width/2, cy-26);
+      }
+
+      // player
+      const s=skins[P.hero.skin]||skins[0];
+      const px=this.p.x, py=this.p.y;
+      const glow=g.createRadialGradient(px,py,2,px,py,70);
+      glow.addColorStop(0, s.c2);
+      glow.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(px,py,70,0,Math.PI*2); g.fill();
+      g.fillStyle=s.c1; g.fillRect(px-14,py-18,28,36);
+      g.strokeStyle="rgba(255,255,255,.30)"; g.strokeRect(px-14,py-18,28,36);
+
+      // ZyPlay branding
+      g.setTransform(dpr,0,0,dpr,0,0);
+      g.fillStyle="rgba(255,255,255,.92)";
+      g.font="900 16px system-ui";
+      g.fillText("ZyPlay", 14, 26);
+      g.fillStyle="rgba(170,182,230,.75)";
+      g.font="12px system-ui";
+      g.fillText("Arena principal • Salas de jogos", 14, 44);
+
+      g.restore();
+    }
+  };
+
+  // =========================
+  // Mini-game 1: Blaster Dome (top-down shooter)
+  // =========================
+  const Blaster = {
+    t:0, score:0, hp:5, bullets:[], enemies:[], spawn:0, p:{x:0,y:0,ang:0},
+    init(){
+      this.t=0; this.score=0; this.hp=5; this.bullets=[]; this.enemies=[]; this.spawn=0;
+      this.p={x:0.5,y:0.55,ang:0};
+      Audio.setMusicType("action");
+      ui.hint.textContent="Blaster Dome: WASD mover • Mouse mirar • Clique atirar • Esc voltar";
+      say("Blaster Dome","Sobreviva 60s e faça pontos.");
+    },
+    update(dt){
+      this.t+=dt;
+      // controls
+      let mx=0,my=0;
+      if(keys.has("a")||keys.has("ArrowLeft")) mx=-1;
+      if(keys.has("d")||keys.has("ArrowRight")) mx=1;
+      if(keys.has("w")||keys.has("ArrowUp")) my=-1;
+      if(keys.has("s")||keys.has("ArrowDown")) my=1;
+      const l=Math.hypot(mx,my)||1; mx/=l; my/=l;
+
+      this.p.x=clamp(this.p.x + mx*dt*0.45, 0.08, 0.92);
+      this.p.y=clamp(this.p.y + my*dt*0.45, 0.12, 0.92);
+
+      // spawn enemies
+      this.spawn += dt;
+      const rate = Math.max(0.25, 0.65 - (this.t/60)*0.30);
+      if(this.spawn>rate){
+        this.spawn=0;
+        const side=randi(0,3);
+        let ex=0.1, ey=0.1;
+        if(side===0){ex=rand(0.1,0.9); ey=0.08;}
+        if(side===1){ex=0.92; ey=rand(0.12,0.92);}
+        if(side===2){ex=rand(0.1,0.9); ey=0.92;}
+        if(side===3){ex=0.08; ey=rand(0.12,0.92);}
+        this.enemies.push({x:ex,y:ey,hp:2+Math.floor(this.t/20),spd:0.12+this.t*0.0007,hit:0});
+      }
+
+      // bullets
+      for(const b of this.bullets){ b.t+=dt; b.x+=b.vx*dt; b.y+=b.vy*dt; }
+      this.bullets=this.bullets.filter(b=>b.t<1.2 && b.x>-0.1&&b.x<1.1&&b.y>-0.1&&b.y<1.1);
+
+      // enemies move
+      for(const e of this.enemies){
+        const dx=this.p.x-e.x, dy=this.p.y-e.y;
+        const d=Math.hypot(dx,dy)||1;
+        e.x += (dx/d)*e.spd*dt;
+        e.y += (dy/d)*e.spd*dt;
+        // touch damage
+        if(d<0.05 && e.hit<=0){
+          this.hp--; e.hit=0.8;
+          Audio.sfx.hit();
+        }
+        e.hit=Math.max(0,e.hit-dt);
+      }
+
+      // collisions
+      for(let i=this.enemies.length-1;i>=0;i--){
+        const e=this.enemies[i];
+        for(let j=this.bullets.length-1;j>=0;j--){
+          const b=this.bullets[j];
+          if(dist(e.x,e.y,b.x,b.y)<0.035){
+            e.hp--; this.bullets.splice(j,1);
+            Audio.sfx.hit();
+            if(e.hp<=0){
+              this.enemies.splice(i,1);
+              this.score += 10 + Math.floor(this.t);
+              P.coins += 1;
+              Audio.sfx.coin();
+            }
+            break;
+          }
+        }
+      }
+
+      // finish conditions
+      if(this.hp<=0){ return this.finish(false); }
+      if(this.t>=60){ return this.finish(true); }
+    },
+    finish(win){
+      const gainedXP = win ? 80 : 30;
+      const gainedCoins = win ? 30 : 8;
+      P.xp += gainedXP;
+      P.coins += gainedCoins;
+      P.last = `Blaster: ${this.score} pts`;
+      P.best.blaster = Math.max(P.best.blaster||0, this.score);
+      if(win) P.clears++;
+      save(); updateUI();
+      alert(`${win?"Vitória!":"Derrota!"}\nBlaster Dome\nScore: ${this.score}\n+${gainedCoins} moedas • +${gainedXP} XP`);
+      Scene.goto("arena");
+    },
+    shoot(tx,ty){
+      // tx/ty are normalized (0..1)
+      const px=this.p.x, py=this.p.y;
+      const dx=tx-px, dy=ty-py;
+      const d=Math.hypot(dx,dy)||1;
+      this.bullets.push({x:px,y:py,vx:(dx/d)*0.9,vy:(dy/d)*0.9,t:0});
+      Audio.sfx.shot();
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+      // bg arena
+      const bg=g.createRadialGradient(W*0.5,H*0.4,10,W*0.5,H*0.6,Math.max(W,H));
+      bg.addColorStop(0,"rgba(0,224,255,.10)");
+      bg.addColorStop(1,"rgba(123,0,255,.03)");
+      g.fillStyle=bg; g.fillRect(0,0,W,H);
+
+      // grid
+      g.fillStyle="rgba(255,255,255,.02)";
+      for(let x=0;x<W;x+=40) g.fillRect(x,0,1,H);
+      for(let y=0;y<H;y+=40) g.fillRect(0,y,W,1);
+
+      // HUD top
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(12,12,260,64);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(12,12,260,64);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="800 14px system-ui";
+      g.fillText("Blaster Dome", 24, 34);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(`Tempo: ${(60-this.t).toFixed(0)}s  •  HP: ${this.hp}  •  Score: ${this.score}`, 24, 56);
+
+      // entities
+      const toPix=(x,y)=>({x:x*W,y:y*H});
+
+      // bullets
+      g.fillStyle="rgba(255,209,102,.92)";
+      for(const b of this.bullets){
+        const p=toPix(b.x,b.y);
+        g.beginPath(); g.arc(p.x,p.y,4,0,Math.PI*2); g.fill();
+      }
+
+      // enemies
+      for(const e of this.enemies){
+        const p=toPix(e.x,e.y);
+        const glow=g.createRadialGradient(p.x,p.y,2,p.x,p.y,42);
+        glow.addColorStop(0,"rgba(255,77,109,.22)");
+        glow.addColorStop(1,"rgba(123,0,255,0)");
+        g.fillStyle=glow; g.beginPath(); g.arc(p.x,p.y,42,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(255,77,109,.90)";
+        g.beginPath(); g.arc(p.x,p.y,14,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(p.x-16,p.y-28,32,5);
+        g.fillStyle="rgba(255,209,102,.90)"; g.fillRect(p.x-16,p.y-28,32*(e.hp/6),5);
+      }
+
+      // player
+      const s=skins[P.hero.skin]||skins[0];
+      const pp=toPix(this.p.x,this.p.y);
+      const glow=g.createRadialGradient(pp.x,pp.y,2,pp.x,pp.y,56);
+      glow.addColorStop(0,s.c2); glow.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(pp.x,pp.y,56,0,Math.PI*2); g.fill();
+      g.fillStyle=s.c1; g.fillRect(pp.x-12,pp.y-16,24,32);
+      g.strokeStyle="rgba(255,255,255,.30)"; g.strokeRect(pp.x-12,pp.y-16,24,32);
+
+      // brand
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 16px system-ui";
+      g.fillText("ZyPlay", 14, H-14);
+
+      g.restore();
+    }
+  };
+
+  // mouse shoot for Blaster
+  canvas.addEventListener("pointerdown",(e)=>{
+    if(Scene.name!=="blaster") return;
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width;
+    const y=(e.clientY-r.top)/r.height;
+    Blaster.shoot(x,y);
+  });
+
+  // =========================
+  // Mini-game 2: Sky Jump (platform score)
+  // =========================
+  const Sky = {
+    score:0, vy:0, y:0, x:0.5, t:0, platforms:[], coins:[], hp:3,
+    init(){
+      this.score=0; this.t=0; this.hp=3;
+      this.x=0.5; this.y=0.75; this.vy=0;
+      this.platforms=[]; this.coins=[];
+      Audio.setMusicType("calm");
+      ui.hint.textContent="Sky Jump: ←→ mover • Espaço pular (auto ao tocar) • Colete moedas";
+      say("Sky Jump","Suba o máximo possível!");
+      // initial platforms
+      for(let i=0;i<10;i++){
+        this.platforms.push({x:rand(0.10,0.90), y:0.90 - i*0.08, w:rand(0.16,0.26)});
+      }
+      for(let i=0;i<8;i++){
+        this.coins.push({x:rand(0.12,0.88), y:rand(0.05,0.80), got:false});
+      }
+    },
+    update(dt){
+      this.t+=dt;
+      let mx=0;
+      if(keys.has("a")||keys.has("ArrowLeft")) mx=-1;
+      if(keys.has("d")||keys.has("ArrowRight")) mx=1;
+      this.x = clamp(this.x + mx*dt*0.60, 0.05, 0.95);
+
+      // gravity
+      this.vy += 1.25*dt;
+      this.y += this.vy*dt;
+
+      // collide with platforms (only if falling)
+      if(this.vy>0){
+        for(const p of this.platforms){
+          const px=p.x, py=p.y;
+          if(Math.abs(this.x-px)<p.w*0.5 && this.y>py-0.02 && this.y<py+0.02){
+            this.vy = -0.78; // bounce
+            Audio.sfx.jump();
+            this.score += 3;
+          }
+        }
+      }
+
+      // collect coins
+      for(const c of this.coins){
+        if(c.got) continue;
+        if(dist(this.x,this.y,c.x,c.y)<0.04){ c.got=true; this.score+=15; P.coins+=2; Audio.sfx.coin(); }
+      }
+
+      // camera: when player above mid, move world down
+      if(this.y<0.45){
+        const dy = (0.45 - this.y);
+        this.y = 0.45;
+        // shift platforms/coins down
+        for(const p of this.platforms) p.y += dy;
+        for(const c of this.coins) c.y += dy;
+        this.score += Math.floor(dy*200);
+
+        // recycle platforms
+        this.platforms = this.platforms.filter(p=>p.y<1.1);
+        while(this.platforms.length<12){
+          const top = Math.min(...this.platforms.map(p=>p.y));
+          this.platforms.push({x:rand(0.10,0.90), y:top - rand(0.07,0.12), w:rand(0.14,0.26)});
+        }
+        // recycle coins
+        this.coins = this.coins.filter(c=>c.y<1.2);
+        if(Math.random()<0.3){
+          this.coins.push({x:rand(0.12,0.88), y:rand(-0.10,0.20), got:false});
+        }
+      }
+
+      // fall
+      if(this.y>1.08){
+        this.hp--;
+        Audio.sfx.hit();
+        this.x=0.5; this.y=0.70; this.vy=-0.6;
+        if(this.hp<=0) return this.finish();
+      }
+    },
+    finish(){
+      const gainedXP = 50 + Math.floor(this.score/40);
+      const gainedCoins = 10 + Math.floor(this.score/120);
+      P.xp += gainedXP;
+      P.coins += gainedCoins;
+      P.last = `Sky: ${this.score} pts`;
+      P.best.sky = Math.max(P.best.sky||0, this.score);
+      P.clears++;
+      save(); updateUI();
+      alert(`Fim!\nSky Jump\nScore: ${this.score}\n+${gainedCoins} moedas • +${gainedXP} XP`);
+      Scene.goto("arena");
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+      const sky=g.createLinearGradient(0,0,0,H);
+      sky.addColorStop(0,"rgba(0,224,255,.10)");
+      sky.addColorStop(1,"rgba(123,0,255,.03)");
+      g.fillStyle=sky; g.fillRect(0,0,W,H);
+
+      // clouds
+      for(let i=0;i<10;i++){
+        const x=((i*220 + (now()/20))%(W+260))-130;
+        const y=60+i*28;
+        g.fillStyle="rgba(255,255,255,.05)";
+        g.beginPath(); g.ellipse(x+140,y,90,22,0,0,Math.PI*2); g.fill();
+      }
+
+      // HUD
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(12,12,280,64);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(12,12,280,64);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="800 14px system-ui";
+      g.fillText("Sky Jump", 24, 34);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(`HP: ${this.hp}  •  Score: ${this.score}`, 24, 56);
+
+      // platforms
+      for(const p of this.platforms){
+        const x=p.x*W, y=p.y*H, w=p.w*W;
+        g.fillStyle="rgba(0,0,0,.22)"; g.fillRect(x-w/2,y,w,10);
+        g.strokeStyle="rgba(0,224,255,.20)"; g.strokeRect(x-w/2,y,w,10);
+      }
+
+      // coins
+      for(const c of this.coins){
+        if(c.got) continue;
+        const x=c.x*W, y=c.y*H;
+        const glow=g.createRadialGradient(x,y,2,x,y,26);
+        glow.addColorStop(0,"rgba(255,209,102,.25)");
+        glow.addColorStop(1,"rgba(123,0,255,0)");
+        g.fillStyle=glow; g.beginPath(); g.arc(x,y,26,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(255,209,102,.92)"; g.beginPath(); g.arc(x,y,10,0,Math.PI*2); g.fill();
+      }
+
+      // player
+      const s=skins[P.hero.skin]||skins[0];
+      const px=this.x*W, py=this.y*H;
+      const glow=g.createRadialGradient(px,py,2,px,py,60);
+      glow.addColorStop(0,s.c2); glow.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(px,py,60,0,Math.PI*2); g.fill();
+      g.fillStyle=s.c1; g.fillRect(px-12,py-16,24,32);
+      g.strokeStyle="rgba(255,255,255,.30)"; g.strokeRect(px-12,py-16,24,32);
+
+      // brand
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 16px system-ui";
+      g.fillText("ZyPlay", 14, H-14);
+
+      g.restore();
+    }
+  };
+
+  // =========================
+  // Mini-game 3: Neon Runner (distance runner)
+  // =========================
+  const Runner = {
+    t:0, dist:0, x:0.5, v:0.55, lanes:[0.32,0.5,0.68], lane:1, obs:[], nit:100,
+    init(){
+      this.t=0; this.dist=0;
+      this.lane=1; this.x=this.lanes[this.lane];
+      this.obs=[]; this.nit=100;
+      Audio.setMusicType("action");
+      ui.hint.textContent="Neon Runner: ←→ trocar pista • Shift nitro • Desvie obstáculos";
+      say("Neon Runner","Corra o máximo que puder!");
+    },
+    update(dt){
+      this.t+=dt;
+
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")){
+        keys.delete("ArrowLeft"); keys.delete("a"); keys.delete("A");
+        this.lane=clamp(this.lane-1,0,2); this.x=this.lanes[this.lane]; Audio.sfx.click();
+      }
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")){
+        keys.delete("ArrowRight"); keys.delete("d"); keys.delete("D");
+        this.lane=clamp(this.lane+1,0,2); this.x=this.lanes[this.lane]; Audio.sfx.click();
+      }
+
+      const boosting=(keys.has("Shift") && this.nit>0);
+      let speed = this.v + (boosting?0.30:0);
+      if(boosting){ this.nit=clamp(this.nit-30*dt,0,100); if(Math.random()<dt*8) Audio.sfx.portal(); }
+      else { this.nit=clamp(this.nit+10*dt,0,100); }
+
+      this.dist += speed*dt*100;
+
+      // spawn obstacles
+      if(Math.random()<dt*(1.2 + this.t*0.02)){
+        this.obs.push({lane:randi(0,2), y:-0.1, spd:speed*(1.2+rand(0.0,0.4))});
+      }
+      for(const o of this.obs){ o.y += o.spd*dt; }
+      this.obs = this.obs.filter(o=>o.y<1.2);
+
+      // collide
+      for(const o of this.obs){
+        if(o.lane===this.lane && o.y>0.78 && o.y<0.88){
+          Audio.sfx.hit();
+          return this.finish();
+        }
+      }
+    },
+    finish(){
+      const score = Math.floor(this.dist);
+      const gainedXP = 40 + Math.floor(score/120);
+      const gainedCoins = 8 + Math.floor(score/200);
+      P.xp += gainedXP;
+      P.coins += gainedCoins;
+      P.last = `Runner: ${score}m`;
+      P.best.runner = Math.max(P.best.runner||0, score);
+      P.clears++;
+      save(); updateUI();
+      alert(`Fim!\nNeon Runner\nDistância: ${score}m\n+${gainedCoins} moedas • +${gainedXP} XP`);
+      Scene.goto("arena");
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+      // bg
+      const bg=g.createLinearGradient(0,0,0,H);
+      bg.addColorStop(0,"rgba(0,224,255,.07)");
+      bg.addColorStop(1,"rgba(123,0,255,.03)");
+      g.fillStyle=bg; g.fillRect(0,0,W,H);
+
+      // road lanes
+      const laneW=W*0.18, gap=W*0.04, baseX=W*0.22;
+      for(let i=0;i<3;i++){
+        const x=baseX + i*(laneW+gap);
+        g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(x,0,laneW,H);
+        g.strokeStyle="rgba(255,255,255,.06)"; g.strokeRect(x,0,laneW,H);
+      }
+      // neon dashes
+      for(let i=0;i<12;i++){
+        const y=(i*70 + (now()/8)%70);
+        g.strokeStyle="rgba(0,224,255,.12)";
+        g.beginPath(); g.moveTo(W*0.50, H-y); g.lineTo(W*0.50, H-y-40); g.stroke();
+      }
+
+      // HUD
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(12,12,320,78);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(12,12,320,78);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="800 14px system-ui";
+      g.fillText("Neon Runner", 24, 34);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(`Distância: ${Math.floor(this.dist)}m`, 24, 54);
+      g.fillText(`Nitro: ${Math.floor(this.nit)}% (Shift)`, 24, 72);
+
+      // obstacles
+      for(const o of this.obs){
+        const x=baseX + o.lane*(laneW+gap) + laneW*0.5;
+        const y=o.y*H;
+        const glow=g.createRadialGradient(x,y,2,x,y,46);
+        glow.addColorStop(0,"rgba(255,77,109,.20)");
+        glow.addColorStop(1,"rgba(123,0,255,0)");
+        g.fillStyle=glow; g.beginPath(); g.arc(x,y,46,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(255,77,109,.90)"; g.fillRect(x-14,y-14,28,28);
+      }
+
+      // player
+      const s=skins[P.hero.skin]||skins[0];
+      const px=(baseX + this.lane*(laneW+gap) + laneW*0.5), py=H*0.84;
+      const glow=g.createRadialGradient(px,py,2,px,py,56);
+      glow.addColorStop(0,s.c2); glow.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(px,py,56,0,Math.PI*2); g.fill();
+      g.fillStyle=s.c1; g.fillRect(px-12,py-16,24,32);
+      g.strokeStyle="rgba(255,255,255,.30)"; g.strokeRect(px-12,py-16,24,32);
+
+      // brand
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 16px system-ui";
+      g.fillText("ZyPlay", 14, H-14);
+
+      g.restore();
+    }
+  };
+
+  // =========================
+  // Mini-game 4: Relic Link (puzzle pipe connect)
+  // =========================
+  const Relic = {
+    lv:1, moves:0, best:0, w:6,h:6, grid:[], rot:[],
+    init(){
+      this.lv=1; this.moves=0;
+      Audio.setMusicType("calm");
+      ui.hint.textContent="Relic Link: Clique para girar peças • Conecte IN → CR";
+      say("Relic Link","Conecte a energia no menor número de movimentos.");
+      this.build();
+    },
+    build(){
+      const w=6+Math.min(3,Math.floor((P.best.relic||0)/80));
+      const h=w;
+      this.w=w; this.h=h; this.moves=0;
+      // random-ish grid
+      const grid=Array.from({length:h},()=>Array.from({length:w},()=> (Math.random()<0.18?0:(Math.random()<0.75? (Math.random()<0.55?1:2) : (Math.random()<0.6?3:4))));
+      this.grid=grid;
+      this.rot=Array.from({length:h},()=>Array.from({length:w},()=>randi(0,3)));
+      this.start=[0, Math.floor(h/2)];
+      this.end=[w-1, Math.floor(h/2)];
+    },
+    conn(piece, rot){
+      const r=((rot%4)+4)%4;
+      const base = {0:[0,0,0,0],1:[1,0,1,0],2:[1,1,0,0],3:[1,1,1,0],4:[1,1,1,1]}[piece]||[0,0,0,0];
+      const s=base.slice();
+      for(let i=0;i<r;i++) s.unshift(s.pop());
+      return s;
+    },
+    check(){
+      const w=this.w,h=this.h;
+      const [sx,sy]=this.start, [ex,ey]=this.end;
+      const seen=new Set([sx+","+sy]);
+      const q=[[sx,sy]];
+      while(q.length){
+        const [x,y]=q.shift();
+        const s=this.conn(this.grid[y][x], this.rot[y][x]);
+        const neigh=[[x,y-1,0,2],[x+1,y,1,3],[x,y+1,2,0],[x-1,y,3,1]];
+        for(const [nx,ny,side,os] of neigh){
+          if(nx<0||ny<0||nx>=w||ny>=h) continue;
+          const ns=this.conn(this.grid[ny][nx], this.rot[ny][nx]);
+          if(s[side] && ns[os]){
+            const k=nx+","+ny;
+            if(!seen.has(k)){ seen.add(k); q.push([nx,ny]); }
+          }
+        }
+      }
+      return seen.has(ex+","+ey);
+    },
+    update(dt){
+      // nothing continuous; click rotates handled below
+    },
+    finish(){
+      const score = Math.max(1, Math.floor(200 - this.moves*4));
+      const gainedXP = 60 + Math.floor(score/8);
+      const gainedCoins = 12 + Math.floor(score/14);
+      P.xp += gainedXP;
+      P.coins += gainedCoins;
+      P.last = `Relic: ${this.moves} mov`;
+      // store "best" as higher score (more points) for simplicity
+      P.best.relic = Math.max(P.best.relic||0, score);
+      P.clears++;
+      save(); updateUI();
+      alert(`Concluído!\nRelic Link\nMovimentos: ${this.moves}\nPontuação: ${score}\n+${gainedCoins} moedas • +${gainedXP} XP`);
+      Scene.goto("arena");
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+      // bg
+      const bg=g.createRadialGradient(W*0.5,H*0.3,10,W*0.5,H*0.6,Math.max(W,H));
+      bg.addColorStop(0,"rgba(255,209,102,.08)");
+      bg.addColorStop(1,"rgba(123,0,255,.03)");
+      g.fillStyle=bg; g.fillRect(0,0,W,H);
+
+      // HUD
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(12,12,340,70);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(12,12,340,70);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="800 14px system-ui";
+      g.fillText("Relic Link", 24, 34);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(`Movimentos: ${this.moves}  •  Objetivo: conectar IN → CR`, 24, 56);
+
+      // board
+      const pad=0.12;
+      const bx=W*pad, by=H*0.16, bw=W*(1-pad*2), bh=H*0.78;
+      g.fillStyle="rgba(0,0,0,.22)"; g.fillRect(bx,by,bw,bh);
+      g.strokeStyle="rgba(0,224,255,.14)"; g.strokeRect(bx,by,bw,bh);
+
+      const cell=Math.min(bw/this.w, bh/this.h);
+      const ox=bx + (bw-cell*this.w)/2;
+      const oy=by + (bh-cell*this.h)/2;
+
+      const [sx,sy]=this.start, [ex,ey]=this.end;
+
+      for(let y=0;y<this.h;y++)for(let x=0;x<this.w;x++){
+        const px=ox+x*cell, py=oy+y*cell;
+        g.strokeStyle="rgba(255,255,255,.06)"; g.strokeRect(px,py,cell,cell);
+        const p=this.grid[y][x];
+        if(p===0) continue;
+        g.fillStyle="rgba(123,0,255,.10)"; g.fillRect(px+2,py+2,cell-4,cell-4);
+
+        const s=this.conn(p,this.rot[y][x]);
+        const cx=px+cell/2, cy=py+cell/2;
+        g.strokeStyle="rgba(0,224,255,.55)";
+        g.lineWidth=Math.max(3,cell*0.10);
+        g.beginPath();
+        if(s[0]){g.moveTo(cx,cy); g.lineTo(cx,py+6);}
+        if(s[1]){g.moveTo(cx,cy); g.lineTo(px+cell-6,cy);}
+        if(s[2]){g.moveTo(cx,cy); g.lineTo(cx,py+cell-6);}
+        if(s[3]){g.moveTo(cx,cy); g.lineTo(px+6,cy);}
+        g.stroke();
+
+        g.fillStyle="rgba(255,209,102,.85)";
+        g.beginPath(); g.arc(cx,cy,Math.max(4,cell*0.10),0,Math.PI*2); g.fill();
+
+        if(x===sx&&y===sy){
+          g.fillStyle="rgba(255,209,102,.18)"; g.fillRect(px,py,cell,cell);
+          g.fillStyle="#fff"; g.font=`800 ${Math.max(12,cell*0.22)}px system-ui`;
+          g.fillText("IN", px+cell*0.16, py+cell*0.62);
+        }
+        if(x===ex&&y===ey){
+          g.fillStyle="rgba(0,224,255,.18)"; g.fillRect(px,py,cell,cell);
+          g.fillStyle="#fff"; g.font=`800 ${Math.max(12,cell*0.22)}px system-ui`;
+          g.fillText("CR", px+cell*0.16, py+cell*0.62);
+        }
+      }
+
+      // status
+      const ok=this.check();
+      g.fillStyle= ok ? "rgba(43,227,122,.22)" : "rgba(255,77,109,.12)";
+      g.fillRect(W-220, 16, 200, 56);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(W-220, 16, 200, 56);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 14px system-ui";
+      g.fillText(ok?"CONCLUÍDO":"EM PROGRESSO", W-210, 40);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(ok?"Pressione Enter para concluir":"Gire peças clicando", W-210, 60);
+
+      // brand
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 16px system-ui";
+      g.fillText("ZyPlay", 14, H-14);
+
+      g.restore();
+    }
+  };
+
+  canvas.addEventListener("pointerdown",(e)=>{
+    if(Scene.name!=="relic") return;
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+
+    // board rect
+    const pad=0.12;
+    const bx=pad, by=0.16, bw=1-pad*2, bh=0.78;
+    if(x<bx||x>bx+bw||y<by||y>by+bh) return;
+
+    const cellW=bw/Relic.w, cellH=bh/Relic.h;
+    const cx=Math.floor((x-bx)/cellW);
+    const cy=Math.floor((y-by)/cellH);
+    if(cx<0||cy<0||cx>=Relic.w||cy>=Relic.h) return;
+    if(Relic.grid[cy][cx]===0){ Audio.sfx.bad(); return; }
+
+    Relic.rot[cy][cx]=(Relic.rot[cy][cx]+1)%4;
+    Relic.moves++;
+    Audio.sfx.click();
+
+    if(Relic.check()){ Audio.sfx.ok(); say("Relic Link","Conectado! Pressione Enter para concluir."); }
+  });
+
+  // finish relic by Enter
+  addEventListener("keydown",(e)=>{
+    if(Scene.name==="relic" && e.key==="Enter"){
+      if(Relic.check()) Relic.finish();
+      else Audio.sfx.bad();
+    }
+  });
+
+  // =========================
+  // Mini-game 5: Tower Guard (compact defense)
+  // =========================
+  const Tower = {
+    wave:1, core:100, gold:120, kills:0, towers:[], enemies:[], bullets:[], inWave:false, spawnT:0, spawned:0,
+    init(){
+      this.wave=1; this.core=100; this.gold=120; this.kills=0;
+      this.towers=[]; this.enemies=[]; this.bullets=[];
+      this.inWave=false; this.spawnT=0; this.spawned=0;
+      Audio.setMusicType("arena");
+      ui.hint.textContent="Tower Guard: Clique para colocar torre • Enter iniciar onda • Esc voltar";
+      say("Tower Guard","Defenda o núcleo até a onda 6.");
+    },
+    path:[{x:0.05,y:0.75},{x:0.30,y:0.75},{x:0.30,y:0.30},{x:0.70,y:0.30},{x:0.70,y:0.82},{x:0.92,y:0.82}],
+    corePos:{x:0.92,y:0.82},
+    startWave(){
+      if(this.inWave) return;
+      this.inWave=true;
+      this.spawnT=0; this.spawned=0;
+      Audio.sfx.ok();
+      say("Tower Guard",`Onda ${this.wave} iniciada!`);
+    },
+    spawnEnemy(){
+      const hp=18 + this.wave*10;
+      const spd=0.11 + this.wave*0.01;
+      this.enemies.push({x:this.path[0].x,y:this.path[0].y,i:0,hp,hpM:hp,spd});
+    },
+    stepEnemy(en,dt){
+      const a=this.path[en.i], b=this.path[en.i+1];
+      if(!b){ en.dead=true; this.core-=10; Audio.sfx.hit(); return; }
+      const dx=b.x-en.x, dy=b.y-en.y;
+      const d=Math.hypot(dx,dy)||1;
+      en.x += (dx/d)*en.spd*dt;
+      en.y += (dy/d)*en.spd*dt;
+      if(d<0.012) en.i++;
+    },
+    update(dt){
+      // start wave
+      if(keys.has("Enter")){ keys.delete("Enter"); this.startWave(); }
+
+      if(this.inWave){
+        this.spawnT+=dt;
+        const total=6 + this.wave*2;
+        const rate=Math.max(0.28, 0.65 - this.wave*0.06);
+        if(this.spawned<total && this.spawnT>rate){
+          this.spawnT=0; this.spawned++;
+          this.spawnEnemy();
+        }
+        if(this.spawned>=total && this.enemies.length===0){
+          this.inWave=false;
+          this.wave++;
+          this.gold += 60 + this.wave*10;
+          Audio.sfx.ok();
+          if(this.wave>6){
+            return this.finish();
+          }
+        }
+      }
+
+      // towers shoot
+      for(const t of this.towers){
+        t.cd=Math.max(0,t.cd-dt);
+        const range=0.20 + t.lv*0.02;
+        const dmg=7 + t.lv*2;
+        if(t.cd<=0){
+          const target=this.enemies.find(e=>!e.dead && dist(e.x,e.y,t.x,t.y)<range);
+          if(target){
+            t.cd=0.32;
+            this.bullets.push({x:t.x,y:t.y,tx:target.x,ty:target.y,v:0.70,dmg,t:0});
+            Audio.sfx.shot();
+          }
+        }
+      }
+
+      // bullets
+      for(let i=this.bullets.length-1;i>=0;i--){
+        const b=this.bullets[i];
+        b.t+=dt;
+        // retarget nearest
+        const nearest=this.enemies.reduce((best,e)=>{
+          const d=dist(e.x,e.y,b.x,b.y);
+          return (!best||d<best.d)?{e,d}:best;
+        },null);
+        if(nearest){ b.tx=nearest.e.x; b.ty=nearest.e.y; }
+        const dx=b.tx-b.x, dy=b.ty-b.y;
+        const d=Math.hypot(dx,dy)||1;
+        b.x += (dx/d)*b.v*dt; b.y += (dy/d)*b.v*dt;
+        if(nearest && nearest.d<0.02){
+          nearest.e.hp -= b.dmg;
+          Audio.sfx.hit();
+          if(nearest.e.hp<=0){
+            nearest.e.dead=true;
+            this.kills++;
+            this.gold += 6 + this.wave*2;
+            P.coins += 1;
+          }
+          this.bullets.splice(i,1);
+        } else if(b.t>1.4){
+          this.bullets.splice(i,1);
+        }
+      }
+
+      // enemies
+      for(const e of this.enemies) this.stepEnemy(e,dt);
+      this.enemies=this.enemies.filter(e=>!e.dead);
+
+      if(this.core<=0){
+        return this.finish(true); // fail
+      }
+    },
+    finish(fail=false){
+      const score = this.kills*10 + Math.max(0,Math.floor(this.core));
+      const gainedXP = fail ? 30 : (70 + this.wave*12);
+      const gainedCoins = fail ? 8 : (20 + this.wave*8);
+      P.xp += gainedXP;
+      P.coins += gainedCoins;
+      P.last = `Tower: ${score} pts`;
+      P.best.tower = Math.max(P.best.tower||0, score);
+      if(!fail) P.clears++;
+      save(); updateUI();
+      alert(`${fail?"Derrota!":"Vitória!"}\nTower Guard\nScore: ${score}\n+${gainedCoins} moedas • +${gainedXP} XP`);
+      Scene.goto("arena");
+    },
+    place(x,y){
+      // avoid path area
+      const nearPath=this.path.some(p=>dist(p.x,p.y,x,y)<0.10);
+      if(nearPath){ Audio.sfx.bad(); return; }
+      const cost=40;
+      if(this.gold<cost){ Audio.sfx.bad(); return; }
+      this.gold-=cost;
+      this.towers.push({x,y,cd:0,lv:1});
+      Audio.sfx.click();
+    },
+    draw(){
+      const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+      g.save(); g.scale(dpr,dpr);
+      const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+      // bg + grid
+      g.fillStyle="rgba(255,255,255,.02)";
+      for(let x=0;x<W;x+=40) g.fillRect(x,0,1,H);
+      for(let y=0;y<H;y+=40) g.fillRect(0,y,W,1);
+
+      // HUD
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(12,12,420,76);
+      g.strokeStyle="rgba(255,255,255,.08)"; g.strokeRect(12,12,420,76);
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="800 14px system-ui";
+      g.fillText("Tower Guard", 24, 34);
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText(`Onda: ${this.wave}${this.inWave?" (em andamento)":" (parada)"}`, 24, 54);
+      g.fillText(`Núcleo: ${Math.max(0,Math.floor(this.core))}%  •  Ouro: ${Math.floor(this.gold)}  •  Kills: ${this.kills}`, 24, 72);
+
+      // path
+      g.strokeStyle="rgba(0,224,255,.20)"; g.lineWidth=18; g.lineCap="round";
+      g.beginPath();
+      for(let i=0;i<this.path.length;i++){
+        const p=this.path[i];
+        const x=p.x*W, y=p.y*H;
+        if(i===0) g.moveTo(x,y); else g.lineTo(x,y);
+      }
+      g.stroke();
+
+      // core
+      const cx=this.corePos.x*W, cy=this.corePos.y*H;
+      const glow=g.createRadialGradient(cx,cy,2,cx,cy,60);
+      glow.addColorStop(0,"rgba(255,209,102,.25)");
+      glow.addColorStop(1,"rgba(123,0,255,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,60,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(255,209,102,.85)"; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.fill();
+
+      // towers
+      for(const t of this.towers){
+        const x=t.x*W,y=t.y*H;
+        const rg=g.createRadialGradient(x,y,2,x,y,34);
+        rg.addColorStop(0,"rgba(0,224,255,.28)");
+        rg.addColorStop(1,"rgba(123,0,255,0)");
+        g.fillStyle=rg; g.beginPath(); g.arc(x,y,34,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(0,224,255,.90)"; g.fillRect(x-10,y-10,20,20);
+        g.strokeStyle="rgba(255,255,255,.30)"; g.strokeRect(x-10,y-10,20,20);
+      }
+
+      // enemies
+      for(const e of this.enemies){
+        const x=e.x*W,y=e.y*H;
+        g.fillStyle="rgba(255,77,109,.90)";
+        g.beginPath(); g.arc(x,y,12,0,Math.PI*2); g.fill();
+        g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(x-14,y-22,28,5);
+        g.fillStyle="rgba(255,209,102,.90)"; g.fillRect(x-14,y-22,28*(e.hp/e.hpM),5);
+      }
+
+      // bullets
+      g.fillStyle="rgba(255,209,102,.95)";
+      for(const b of this.bullets){
+        g.beginPath(); g.arc(b.x*W,b.y*H,4,0,Math.PI*2); g.fill();
+      }
+
+      // hint
+      g.fillStyle="rgba(170,182,230,.85)"; g.font="12px system-ui";
+      g.fillText("Clique para colocar torre • Enter iniciar onda • Esc voltar", 14, H-14);
+
+      // brand
+      g.fillStyle="rgba(255,255,255,.92)"; g.font="900 16px system-ui";
+      g.fillText("ZyPlay", W-80, H-14);
+
+      g.restore();
+    }
+  };
+
+  canvas.addEventListener("pointerdown",(e)=>{
+    if(Scene.name!=="tower") return;
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width;
+    const y=(e.clientY-r.top)/r.height;
+    Tower.place(x,y);
+  });
+
+  // =========================
+  // Main Loop
+  // =========================
+  let last=now();
+  function tick(){
+    const t=now();
+    const dt=Math.min(0.033,(t-last)/1000);
+    last=t;
+
+    // music
+    Audio.musicTick(dt);
+
+    if(!Scene.paused){
+      if(Scene.name==="arena"){ Arena.update(dt); }
+      if(Scene.name==="blaster"){ Blaster.update(dt); }
+      if(Scene.name==="sky"){ Sky.update(dt); }
+      if(Scene.name==="runner"){ Runner.update(dt); }
+      if(Scene.name==="relic"){ Relic.update(dt); }
+      if(Scene.name==="tower"){ Tower.update(dt); }
+    }
+
+    // draw
+    if(Scene.name==="arena"){ Arena.draw(); }
+    if(Scene.name==="blaster"){ Blaster.draw(); }
+    if(Scene.name==="sky"){ Sky.draw(); }
+    if(Scene.name==="runner"){ Runner.draw(); }
+    if(Scene.name==="relic"){ Relic.draw(); }
+    if(Scene.name==="tower"){ Tower.draw(); }
+
+    requestAnimationFrame(tick);
+  }
+
+  // =========================
+  // Buttons
+  // =========================
+  $("save").onclick=()=>{ Audio.sfx.click(); save(); updateUI(); say("ZyPlay","Salvo!"); };
+  $("reset").onclick=()=>{
+    Audio.sfx.click();
+    if(confirm("Resetar ZyPlay Arena? (perde coins/xp/recordes)")){
+      P=defaults(); Audio.setOn(!P.muted); Audio.setMusic(P.music);
+      save(); updateUI();
+      Scene.goto("arena");
+    }
+  };
+  $("mute").onclick=()=>{
+    P.muted=!P.muted;
+    Audio.setOn(!P.muted);
+    Audio.sfx.click();
+    $("mute").textContent = P.muted ? "Som: OFF" : "Som: ON";
+    save();
+  };
+  $("char").onclick=()=>{
+    Audio.sfx.click();
+    const u=unlockedSkins();
+    const names=u.map(i=>`${i}: ${skins[i].name}`).join("\n");
+    const pick=prompt(`Escolha skin (número):\n${names}\n\nEx: 0`, String(P.hero.skin));
+    if(pick==null) return;
+    const idx=Number(pick);
+    if(!Number.isFinite(idx) || !u.includes(idx)){ Audio.sfx.bad(); alert("Skin bloqueada ou inválida."); return; }
+    P.hero.skin=idx;
+    save(); updateUI();
+    Audio.sfx.ok();
+  };
+
+  // show mute label
+  $("mute").textContent = P.muted ? "Som: OFF" : "Som: ON";
+
+  // Start
+  updateUI();
+  Scene.goto("arena");
+  requestAnimationFrame(tick);
+
+})();
+</script></body></html>
