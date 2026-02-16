@@ -1,0 +1,312 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Tower Guard</title>
+<style>
+:root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2b0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 380px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+.bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}.bar>i{display:block;height:100%}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+#toast{position:absolute;left:12px;bottom:12px;max-width:min(820px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style></head><body>
+<div id="wrap">
+  <div id="game"><canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Tower Guard</b> — Clique para colocar torres • Iniciar onda: Enter • Pausar: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyPlay Tower Guard</b><span class="pill">Onda <b id="w">1</b></span></div>
+      <div class="small" id="obj">Objetivo: defenda o núcleo até a onda 10.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Núcleo</span><span><b id="hp">100</b>%</span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8aa0)"></i></div>
+      <div style="height:10px"></div>
+      <div class="row"><span class="pill">Ouro: <b id="gold" style="color:var(--y)">120</b></span><span class="pill">Torres: <b id="t">0</b></span></div>
+      <div class="row"><span class="pill">Kills: <b id="k">0</b></span><span class="pill">Dific.: <b id="d">1</b></span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="start">Iniciar Onda</button><button id="up">Upgrade Global</button>
+      <button id="save">Salvar</button><button id="reset">Reset</button>
+    </div>
+    <div class="card small">
+      Clique no mapa para colocar torre (custo 40). Upgrade global aumenta dano/alcance.
+    </div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  const SFX=(()=>{let c=null,on=true;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,setOn:(v)=>on=v, click:()=>beep(880,"square",.04,.04), shot:()=>beep(720,"square",.03,.04),
+      hit:()=>beep(140,"sawtooth",.07,.06), win:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={w:$("w"),hp:$("hp"),hpB:$("hpB"),gold:$("gold"),t:$("t"),k:$("k"),d:$("d")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+
+  const SAVE="zyplay_tower_guard_v1";
+  const fresh=()=>({paused:false, wave:1, inWave:false, core:100, gold:120, kills:0, diff:1, up:0,
+    towers:[], enemies:[], bullets:[], spawnT:0, msg:"Clique para colocar torres."});
+  let S=load()||fresh();
+
+  function say(t){toast.innerHTML=`<b>ZyPlay Tower Guard</b> — ${t}`;}
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+
+  $("start").onclick=()=>startWave();
+  $("up").onclick=()=>upgrade();
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); save(); say("Novo jogo.");}};
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["Enter","p","P"].includes(k)) e.preventDefault();
+    if(k==="Enter") startWave();
+    if(k==="p"||k==="P"){S.paused=!S.paused; SFX.click(); say(S.paused?"Pausado.":"Continuar!"); save();}
+  });
+
+  // map path (normalized coords)
+  const path=[{x:0.02,y:0.70},{x:0.30,y:0.70},{x:0.30,y:0.30},{x:0.70,y:0.30},{x:0.70,y:0.78},{x:0.95,y:0.78}];
+  const corePos={x:0.95,y:0.78};
+
+  function startWave(){
+    if(S.inWave){ say("Onda já em andamento."); return; }
+    S.inWave=true;
+    S.spawnT=0;
+    SFX.win();
+    say(`Onda ${S.wave} iniciada!`);
+    save();
+  }
+
+  function upgrade(){
+    const cost=90 + S.up*60;
+    if(S.gold<cost){ say("Ouro insuficiente."); return; }
+    S.gold-=cost; S.up++;
+    S.diff = 1 + S.up*0.25;
+    SFX.win();
+    say(`Upgrade global +${S.up} (dano/alcance).`);
+    save();
+  }
+
+  // place towers by click
+  canvas.addEventListener("pointerdown",(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+    // avoid placing on path area (simple distance check)
+    const nearPath = path.some(p=>Math.hypot(p.x-x,p.y-y)<0.08);
+    if(nearPath){ say("Não dá pra colocar torre em cima do caminho."); return; }
+    const cost=40;
+    if(S.gold<cost){ say("Sem ouro."); return; }
+    S.gold-=cost;
+    S.towers.push({x,y,cd:0,lv:1});
+    SFX.click();
+    say("Torre colocada!");
+    save();
+  });
+
+  function spawnEnemy(){
+    const hp=22 + S.wave*8*S.diff;
+    const spd=0.10 + S.wave*0.006;
+    S.enemies.push({x:path[0].x,y:path[0].y,i:0,hp,hpM:hp,spd,hit:0});
+  }
+
+  function stepEnemy(en,dt){
+    const a=path[en.i], b=path[en.i+1];
+    if(!b){ // reached core
+      en.dead=true;
+      S.core -= 8;
+      SFX.hit();
+      say("Inimigo atingiu o núcleo!");
+      return;
+    }
+    const dx=b.x-en.x, dy=b.y-en.y;
+    const d=Math.hypot(dx,dy)||1;
+    const v=en.spd*dt;
+    en.x += (dx/d)*v; en.y += (dy/d)*v;
+    if(d<0.01) en.i++;
+  }
+
+  function uiUpdate(){
+    ui.w.textContent=S.wave;
+    ui.hp.textContent=Math.max(0,Math.floor(S.core));
+    ui.hpB.style.width=clamp(S.core,0,100).toFixed(1)+"%";
+    ui.gold.textContent=Math.floor(S.gold);
+    ui.t.textContent=S.towers.length;
+    ui.k.textContent=S.kills;
+    ui.d.textContent=S.diff.toFixed(2);
+  }
+
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+
+    if(!S.paused){
+      // spawning wave
+      if(S.inWave){
+        S.spawnT += dt;
+        const total = 8 + S.wave*2;
+        const rate = Math.max(0.20, 0.70 - S.wave*0.04);
+        // spawn enemies until count reached
+        const spawned = S.spawned||0;
+        if((S.spawned||0) < total && S.spawnT>rate){
+          S.spawnT=0;
+          spawnEnemy();
+          S.spawned=(S.spawned||0)+1;
+        }
+        // end wave when all spawned and dead
+        if((S.spawned||0)>=total && S.enemies.length===0){
+          S.inWave=false; S.spawned=0;
+          S.wave++;
+          S.gold += 50 + S.wave*10;
+          SFX.win();
+          say(`Onda concluída! Ouro bônus.`);
+          if(S.wave>10){
+            alert("Você venceu ZyPlay Tower Guard!");
+            S=fresh();
+          }
+        }
+      }
+
+      // towers shoot
+      for(const t of S.towers){
+        t.cd=Math.max(0,t.cd-dt);
+        const range = 0.20 + S.up*0.02 + t.lv*0.01;
+        const dmg = 8 + S.up*2 + t.lv*1;
+        if(t.cd<=0){
+          const target = S.enemies.find(e=>!e.dead && Math.hypot(e.x-t.x,e.y-t.y)<range);
+          if(target){
+            t.cd = 0.30;
+            S.bullets.push({x:t.x,y:t.y,tx:target.x,ty:target.y,v:0.60,dmg});
+            SFX.shot();
+          }
+        }
+      }
+
+      // bullets move & hit
+      for(let i=S.bullets.length-1;i>=0;i--){
+        const b=S.bullets[i];
+        const dx=b.tx-b.x, dy=b.ty-b.y;
+        const d=Math.hypot(dx,dy)||1;
+        b.x += (dx/d)*b.v*dt; b.y += (dy/d)*b.v*dt;
+        // update target position by nearest enemy at time
+        const nearest = S.enemies.reduce((best,e)=>{
+          const dist=Math.hypot(e.x-b.x,e.y-b.y);
+          return (!best||dist<best.dist)?{e,dist}:best;
+        },null);
+        if(nearest){ b.tx=nearest.e.x; b.ty=nearest.e.y; }
+        if(nearest && nearest.dist<0.02){
+          nearest.e.hp -= b.dmg;
+          SFX.hit();
+          if(nearest.e.hp<=0){
+            nearest.e.dead=true;
+            S.kills++;
+            S.gold += 6 + S.wave*1.2;
+          }
+          S.bullets.splice(i,1);
+        } else if(b.x<0||b.x>1||b.y<0||b.y>1){
+          S.bullets.splice(i,1);
+        }
+      }
+
+      // enemies
+      for(const e of S.enemies) stepEnemy(e,dt);
+      S.enemies = S.enemies.filter(e=>!e.dead);
+
+      if(S.core<=0){
+        alert("Game Over! Núcleo destruído.");
+        S=fresh();
+      }
+
+      save();
+      uiUpdate();
+    }
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+    // grid bg
+    g.fillStyle="rgba(255,255,255,.02)";
+    for(let x=0;x<W;x+=40){ g.fillRect(x,0,1,H); }
+    for(let y=0;y<H;y+=40){ g.fillRect(0,y,W,1); }
+
+    // path
+    g.strokeStyle="rgba(0,224,255,.25)"; g.lineWidth=20; g.lineCap="round";
+    g.beginPath();
+    for(let i=0;i<path.length;i++){
+      const p=path[i]; const x=p.x*W, y=p.y*H;
+      if(i===0) g.moveTo(x,y); else g.lineTo(x,y);
+    }
+    g.stroke();
+
+    // core
+    const cx=corePos.x*W, cy=corePos.y*H;
+    const glow=g.createRadialGradient(cx,cy,2,cx,cy,60);
+    glow.addColorStop(0,"rgba(255,209,102,.25)"); glow.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,60,0,Math.PI*2); g.fill();
+    g.fillStyle="rgba(255,209,102,.85)"; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.fill();
+
+    // towers
+    for(const t of S.towers){
+      const x=t.x*W,y=t.y*H;
+      const rg=g.createRadialGradient(x,y,2,x,y,34);
+      rg.addColorStop(0,"rgba(0,224,255,.30)"); rg.addColorStop(1,"rgba(123,0,255,0)");
+      g.fillStyle=rg; g.beginPath(); g.arc(x,y,34,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(0,224,255,.90)"; g.fillRect(x-10,y-10,20,20);
+      g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(x-10,y-10,20,20);
+    }
+
+    // enemies
+    for(const e of S.enemies){
+      const x=e.x*W,y=e.y*H;
+      g.fillStyle="rgba(255,77,109,.90)";
+      g.beginPath(); g.arc(x,y,12,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(x-14,y-22,28,5);
+      g.fillStyle="rgba(255,209,102,.90)"; g.fillRect(x-14,y-22,28*(e.hp/e.hpM),5);
+    }
+
+    // bullets
+    g.fillStyle="rgba(255,209,102,.95)";
+    for(const b of S.bullets){
+      g.beginPath(); g.arc(b.x*W,b.y*H,4,0,Math.PI*2); g.fill();
+    }
+
+    // brand
+    g.fillStyle="rgba(255,255,255,.9)";
+    g.font="700 16px system-ui";
+    g.fillText("ZyPlay", 14, 26);
+
+    g.restore();
+  }
+
+  say(S.msg||"Defenda!");
+  uiUpdate();
+  requestAnimationFrame(loop);
+})();
+</script></body></html>
