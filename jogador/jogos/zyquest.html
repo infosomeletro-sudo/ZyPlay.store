@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyQuest Legends</title>
+<style>
+  :root{--bg:#070714;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#28105a,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(560px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+  #toast b{color:#fff}
+  #modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+  #modal .box{width:min(720px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:linear-gradient(180deg,#15153a,#0a0a16);border:1px solid var(--l);border-radius:18px;padding:12px}
+  #modal h3{margin:0} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{border:1px solid var(--l);background:linear-gradient(180deg,#121232,#0c0c1a);border-radius:14px;padding:10px;display:flex;justify-content:space-between;gap:10px}
+  .tag{font-size:11px;color:var(--m);border:1px solid var(--l);padding:3px 8px;border-radius:999px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyQuest</b> — Mover: WASD/Setas • Atacar: Espaço • Interagir: E • Inventário/Missões: botões</div>
+    <div id="modal"><div class="box">
+      <div class="row" style="margin-bottom:8px">
+        <h3 id="mt">Menu</h3><button id="mc">Fechar (Esc)</button>
+      </div>
+      <div id="mb"></div>
+    </div></div>
+  </div>
+
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b id="name">Herói</b><span class="pill">Lv <b id="lv">1</b></span></div>
+      <div class="small" id="questLine">Objetivo: fale com a Guardiã (✦) na vila.</div>
+      <div style="height:8px"></div>
+      <div class="row small"><span>HP</span><span><b id="hpT">40</b>/<span id="hpM">40</span></span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8aa0)"></i></div>
+      <div style="height:8px"></div>
+      <div class="row small"><span>Stamina</span><span><b id="stT">100</b>%</span></div>
+      <div class="bar"><i id="stB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+      <div style="height:8px"></div>
+      <div class="row">
+        <span class="pill">Ouro: <b id="gold" style="color:var(--y)">20</b></span>
+        <span class="pill">Poções: <b id="pot">1</b></span>
+      </div>
+    </div>
+
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="inv">Inventário</button>
+      <button id="qs">Missões</button>
+      <button id="sv">Salvar</button>
+      <button id="rs">Reset</button>
+    </div>
+
+    <div class="card small">
+      <b>Dica:</b> explore a floresta (lado leste) para achar <span style="color:var(--y)"><b>3 Relíquias</b></span>. Cuidado com os bandidos!
+    </div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // ---------- WebAudio (som sem arquivos) ----------
+  const SFX=(()=>{let c=null,on=true;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.08,g=.06)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,click:()=>beep(880,"square",.04,.04),step:()=>beep(160,"triangle",.03,.02),
+      hit:()=>beep(120,"sawtooth",.08,.06),heal:()=>{beep(520,"sine",.10,.06);beep(780,"sine",.10,.05)},
+      win:()=>{beep(523,"sine",.10,.06);beep(659,"sine",.10,.06);beep(784,"sine",.12,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();window.removeEventListener("pointerdown",prime);window.removeEventListener("keydown",prime);}
+  window.addEventListener("pointerdown",prime,{once:true}); window.addEventListener("keydown",prime,{once:true});
+
+  const canvas=document.getElementById("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect(); canvas.width=(r.width*DPR())|0; canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const ui={
+    name:gid("name"), lv:gid("lv"), hpT:gid("hpT"), hpM:gid("hpM"), hpB:gid("hpB"),
+    stT:gid("stT"), stB:gid("stB"), gold:gid("gold"), pot:gid("pot"),
+    questLine:gid("questLine"), toast:gid("toast"),
+    inv:gid("inv"), qs:gid("qs"), sv:gid("sv"), rs:gid("rs"),
+    modal:gid("modal"), mt:gid("mt"), mb:gid("mb"), mc:gid("mc"),
+  };
+  function gid(id){return document.getElementById(id)}
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const pick=a=>a[(Math.random()*a.length)|0];
+
+  const SAVE="zyquest_save_v1";
+  const fresh=()=>({
+    p:{x:10,y:10,lv:1,xp:0,xpNeed:25,hp:40,hpM:40,st:100,gold:20,pot:1,atk:7,def:2,relic:0,flags:{met:false,quest:false,done:false}},
+    enemies:[], drops:[], msg:"Fale com a Guardiã (✦) na vila."
+  });
+  let S=load()||fresh();
+
+  // Mapa: 0 grama, 1 parede, 2 água, 3 chão vila
+  const W=34,H=20,T=32;
+  const map=new Array(W*H).fill(0);
+  for(let x=0;x<W;x++){map[x]=1;map[x+(H-1)*W]=1;}
+  for(let y=0;y<H;y++){map[0+y*W]=1;map[(W-1)+y*W]=1;}
+  // lago
+  for(let y=3;y<8;y++)for(let x=24;x<31;x++)map[x+y*W]=2;
+  // vila
+  for(let y=10;y<16;y++)for(let x=6;x<16;x++)map[x+y*W]=3;
+  // casas (paredes)
+  for(let y=11;y<13;y++)for(let x=8;x<10;x++)map[x+y*W]=1;
+  for(let y=13;y<15;y++)for(let x=12;x<14;x++)map[x+y*W]=1;
+
+  const solid=(x,y)=>{const v=map[x+y*W];return v===1||v===2;};
+
+  const NPC={x:9,y:10,icon:"✦",name:"Guardiã Aria"};
+  const RELICS=[{x:20,y:6},{x:28,y:12},{x:18,y:16}];
+
+  function toast(t){ui.toast.innerHTML=`<b>ZyQuest</b> — ${escape(t)}`;}
+  function escape(s){return (s+"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+  // spawn inimigos
+  function ensureEnemies(){
+    if(S.enemies.length) return;
+    for(let i=0;i<6;i++){
+      const e={x:rand(18,32),y:rand(2,18),hp:18, hpM:18, atk:5, def:1, t:"Bandido"};
+      if(!solid(e.x,e.y)) S.enemies.push(e);
+    }
+  }
+  ensureEnemies();
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"," ","e","E","Escape"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="e"||k==="E") interact();
+    if(k==="Escape") closeModal();
+    if(k===" ") attack();
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  // Modal
+  function openModal(title,html){ui.mt.textContent=title;ui.mb.innerHTML=html;ui.modal.style.display="flex";}
+  function closeModal(){ui.modal.style.display="none";}
+  ui.mc.onclick=()=>{SFX.click();closeModal();};
+  ui.inv.onclick=()=>{SFX.click();showInv();};
+  ui.qs.onclick=()=>{SFX.click();showQuests();};
+  ui.sv.onclick=()=>{SFX.click();save();toast("Jogo salvo!");};
+  ui.rs.onclick=()=>{SFX.click(); if(confirm("Resetar progresso?")){S=fresh();ensureEnemies();save();toast("Novo jogo iniciado.");}};
+
+  function showInv(){
+    openModal("Inventário", `
+      <div class="grid">
+        <div class="item">
+          <div>
+            <b>Poção</b> <span class="tag">CURA</span>
+            <div class="small">Cura 18 HP. Quantidade: <b>${S.p.pot}</b></div>
+          </div>
+          <div><button ${S.p.pot? "" : "disabled"} id="usePot">Usar</button></div>
+        </div>
+        <div class="item">
+          <div>
+            <b>Relíquias</b> <span class="tag">MISSÃO</span>
+            <div class="small">Relíquias encontradas: <b>${S.p.relic}</b>/3</div>
+          </div>
+          <div><span class="pill">Valor: <b style="color:var(--y)">${S.p.relic*25}</b></span></div>
+        </div>
+      </div>
+      <div class="small" style="margin-top:10px">Atacar: <b>Espaço</b> perto do inimigo.</div>
+    `);
+    const b=gid("usePot");
+    if(b) b.onclick=()=>{SFX.heal(); S.p.pot--; S.p.hp=clamp(S.p.hp+18,0,S.p.hpM); save(); showInv(); updateUI(); toast("Você usou uma Poção (+HP).");};
+  }
+
+  function showQuests(){
+    const f=S.p.flags;
+    let line=!f.met ? "Fale com a Guardiã Aria (✦) na vila." :
+      !f.quest ? "Aceite a missão: recuperar 3 Relíquias antigas." :
+      (!f.done ? `Colete 3 Relíquias. Progresso: ${S.p.relic}/3` :
+      "Missão concluída! Você salvou ZyQuest!");
+    openModal("Missões", `
+      <div class="item">
+        <div>
+          <b>Relíquias de Zyland</b> <span class="tag">PRINCIPAL</span>
+          <div class="small">${line}</div>
+        </div>
+      </div>
+      <div class="small" style="margin-top:10px">Dica: relíquias ficam em pontos distantes do mapa (ícones ✶).</div>
+    `);
+  }
+
+  function interact(){
+    if(ui.modal.style.display==="flex") return;
+    const p=S.p;
+    const d=Math.abs(p.x-NPC.x)+Math.abs(p.y-NPC.y);
+    if(d<=1){
+      SFX.click();
+      const f=p.flags;
+      if(!f.met){f.met=true; toast("Guardiã Aria: 'Bem-vindo! Preciso que recupere 3 Relíquias.'");}
+      else if(!f.quest){f.quest=true; toast("Missão aceita: encontre 3 Relíquias (✶) e volte!");}
+      else if(f.quest && p.relic>=3 && !f.done){
+        f.done=true;
+        const reward=80 + p.relic*25;
+        p.gold += reward;
+        p.lv++; p.hpM+=10; p.atk+=2; p.def+=1; p.hp=p.hpM;
+        SFX.win();
+        toast(`Missão completa! Recompensa: +${reward} ouro • Lv +1 • Status melhorados.`);
+      } else {
+        toast(`Guardiã Aria: 'Progresso: ${p.relic}/3 Relíquias. Cuidado com bandidos!'`);
+      }
+      save(); updateUI();
+      return;
+    }
+    toast("Nada para interagir aqui.");
+  }
+
+  function attack(){
+    if(ui.modal.style.display==="flex") return;
+    const p=S.p;
+    if(p.st<10){toast("Sem stamina! Espere recuperar."); return;}
+    // encontra inimigo perto
+    const idx=S.enemies.findIndex(e=>Math.abs(e.x-p.x)+Math.abs(e.y-p.y)<=1);
+    if(idx<0){toast("Não há inimigo perto para atacar."); return;}
+    p.st=clamp(p.st-14,0,100);
+    const e=S.enemies[idx];
+    const dmg=Math.max(1,(p.atk+rand(-1,2))-e.def);
+    e.hp=clamp(e.hp-dmg,0,e.hpM);
+    SFX.hit();
+    toast(`Você atacou ${e.t}! Dano: ${dmg}.`);
+    // contra-ataque
+    if(e.hp>0){
+      const edmg=Math.max(1,(e.atk+rand(-1,2))-p.def);
+      p.hp=clamp(p.hp-edmg,0,p.hpM);
+      SFX.hit();
+      if(p.hp<=0){
+        toast("Você caiu... voltou para a vila com HP parcial.");
+        p.hp=Math.max(18,Math.floor(p.hpM*0.45)); p.x=10; p.y=12;
+      } else toast(`O inimigo contra-atacou! Você levou ${edmg} de dano.`);
+    } else {
+      // drop
+      const gold=rand(6,14);
+      S.drops.push({x:e.x,y:e.y,kind:"gold",amt:gold});
+      if(Math.random()<0.25) S.drops.push({x:e.x,y:e.y,kind:"pot",amt:1});
+      S.enemies.splice(idx,1);
+      toast(`Você derrotou o bandido! Drop: +${gold} ouro (pegue passando por cima).`);
+    }
+    save(); updateUI();
+  }
+
+  // pegar drops e relíquias
+  function pickup(){
+    const p=S.p;
+    // drops
+    for(let i=S.drops.length-1;i>=0;i--){
+      const d=S.drops[i];
+      if(d.x===p.x && d.y===p.y){
+        if(d.kind==="gold"){p.gold+=d.amt; SFX.click(); toast(`+${d.amt} ouro`);}
+        if(d.kind==="pot"){p.pot+=d.amt; SFX.click(); toast(`+${d.amt} Poção`);}
+        S.drops.splice(i,1);
+      }
+    }
+    // relíquias
+    for(const r of RELICS){
+      if(r.got) continue;
+      if(r.x===p.x && r.y===p.y){
+        r.got=true; p.relic++; SFX.win();
+        toast(`Relíquia encontrada! (${p.relic}/3)`);
+        if(p.flags.quest) ui.questLine.textContent=`Objetivo: coletar 3 Relíquias (${p.relic}/3).`;
+      }
+    }
+  }
+
+  function updateUI(){
+    const p=S.p;
+    ui.name.textContent="Herói";
+    ui.lv.textContent=p.lv;
+    ui.hpT.textContent=p.hp; ui.hpM.textContent=p.hpM;
+    ui.hpB.style.width=(p.hp/p.hpM*100).toFixed(1)+"%";
+    ui.stT.textContent=p.st|0;
+    ui.stB.style.width=p.st.toFixed(1)+"%";
+    ui.gold.textContent=p.gold;
+    ui.pot.textContent=p.pot;
+
+    const f=p.flags;
+    if(!f.met) ui.questLine.textContent="Objetivo: fale com a Guardiã (✦) na vila.";
+    else if(!f.quest) ui.questLine.textContent="Objetivo: aceite a missão das Relíquias.";
+    else if(!f.done) ui.questLine.textContent=`Objetivo: coletar 3 Relíquias (${p.relic}/3).`;
+    else ui.questLine.textContent="Objetivo: explore e fique mais forte!";
+  }
+  updateUI(); toast(S.msg||"Explore!");
+
+  function save(){ try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{} }
+  function load(){ try{const s=localStorage.getItem(SAVE); return s?JSON.parse(s):null;}catch{return null;} }
+
+  // loop
+  let cd=0,last=performance.now();
+  function loop(now){
+    const dt=now-last; last=now;
+    if(ui.modal.style.display!=="flex"){
+      if(cd>0) cd-=dt;
+      let dx=0,dy=0;
+      if(keys.has("ArrowUp")||keys.has("w")||keys.has("W")) dy=-1;
+      if(keys.has("ArrowDown")||keys.has("s")||keys.has("S")) dy=1;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) dx=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) dx=1;
+
+      if((dx||dy) && cd<=0){
+        const p=S.p, nx=p.x+dx, ny=p.y+dy;
+        if(nx>=0&&ny>=0&&nx<W&&ny<H && !solid(nx,ny)){
+          p.x=nx; p.y=ny; cd=110;
+          p.st=clamp(p.st+2.5,0,100);
+          SFX.step();
+          pickup();
+          save(); updateUI();
+        }
+      } else {
+        // regen stamina
+        S.p.st=clamp(S.p.st + dt*0.02,0,100);
+      }
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(), w=canvas.width, h=canvas.height;
+    g.clearRect(0,0,w,h);
+    g.save(); g.scale(dpr,dpr);
+    const bw=canvas.getBoundingClientRect().width, bh=canvas.getBoundingClientRect().height;
+    const scale=Math.min(bw/(W*T), bh/(H*T));
+    const ox=(bw-W*T*scale)/2, oy=(bh-H*T*scale)/2;
+    g.translate(ox,oy); g.scale(scale,scale);
+
+    // tiles
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const v=map[x+y*W];
+      if(v===0) g.fillStyle="#0f2a1b";
+      if(v===1) g.fillStyle="#2a2a3a";
+      if(v===2) g.fillStyle="#0b2a4a";
+      if(v===3) g.fillStyle="#2a1f3f";
+      g.fillRect(x*T,y*T,T,T);
+      g.strokeStyle="rgba(255,255,255,.03)";
+      g.strokeRect(x*T,y*T,T,T);
+    }
+
+    // lago brilho
+    for(let y=3;y<8;y++)for(let x=24;x<31;x++){
+      g.fillStyle="rgba(0,224,255,.06)";
+      g.fillRect(x*T+2,y*T+2,T-4,T-4);
+    }
+
+    // NPC
+    drawMarker(NPC.x,NPC.y,NPC.icon,"rgba(123,0,255,.20)","rgba(0,224,255,.35)");
+
+    // relíquias
+    for(const r of RELICS){
+      if(r.got) continue;
+      drawMarker(r.x,r.y,"✶","rgba(255,209,102,.15)","rgba(255,209,102,.35)");
+    }
+
+    // inimigos
+    for(const e of S.enemies){
+      g.fillStyle="rgba(255,77,109,.16)";
+      g.fillRect(e.x*T+5,e.y*T+5,T-10,T-10);
+      g.strokeStyle="rgba(255,77,109,.45)";
+      g.strokeRect(e.x*T+5,e.y*T+5,T-10,T-10);
+      g.fillStyle="#fff"; g.font="12px system-ui";
+      g.fillText("!", e.x*T+12, e.y*T+20);
+      // mini hp
+      g.fillStyle="rgba(0,0,0,.35)";
+      g.fillRect(e.x*T+4,e.y*T+2,T-8,4);
+      g.fillStyle="rgba(255,77,109,.9)";
+      g.fillRect(e.x*T+4,e.y*T+2,(T-8)*(e.hp/e.hpM),4);
+    }
+
+    // drops
+    for(const d of S.drops){
+      if(d.kind==="gold"){ g.fillStyle="rgba(255,209,102,.9)"; g.beginPath(); g.arc(d.x*T+16,d.y*T+16,5,0,Math.PI*2); g.fill(); }
+      if(d.kind==="pot"){ g.fillStyle="rgba(43,227,122,.9)"; g.fillRect(d.x*T+12,d.y*T+12,8,8); }
+    }
+
+    // player
+    const p=S.p;
+    const cx=p.x*T+16, cy=p.y*T+16;
+    const rg=g.createRadialGradient(cx,cy,2,cx,cy,18);
+    rg.addColorStop(0,"rgba(0,224,255,.35)");
+    rg.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=rg; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.fill();
+    g.fillStyle="#00e0ff"; g.fillRect(p.x*T+8,p.y*T+8,T-16,T-16);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(p.x*T+8,p.y*T+8,T-16,T-16);
+    g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText("Você", p.x*T+5, p.y*T-2);
+
+    g.restore();
+  }
+
+  function drawMarker(x,y,icon,fill,stroke){
+    g.fillStyle=fill; g.fillRect(x*T+4,y*T+4,T-8,T-8);
+    g.strokeStyle=stroke; g.strokeRect(x*T+4,y*T+4,T-8,T-8);
+    g.fillStyle="#fff"; g.font="16px system-ui"; g.fillText(icon,x*T+11,y*T+21);
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
