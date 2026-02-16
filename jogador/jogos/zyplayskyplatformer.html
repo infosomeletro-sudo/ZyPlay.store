@@ -1,0 +1,317 @@
+<!doctype html><html lang="pt-br"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyPlay Sky Platformer</title>
+<style>
+:root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#1f2a66,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+#wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+#game{background:linear-gradient(180deg,#0b0b22,#050512);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+canvas{width:100%;height:100%;display:block}
+#side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.small{font-size:12px;color:var(--m);line-height:1.35}
+.bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}.bar>i{display:block;height:100%}
+button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+#toast{position:absolute;left:12px;bottom:12px;max-width:min(760px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--l);background:#0b0b18;color:var(--m);font-size:12px}
+</style></head><body>
+<div id="wrap">
+  <div id="game"><canvas id="c"></canvas>
+    <div id="toast"><b>ZyPlay Sky Platformer</b> — Mover: ← → • Pular: Espaço/↑ • Atacar: Z • Pausar: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyPlay Sky Platformer</b><span class="pill">Fase <b id="lv">1</b>/3</span></div>
+      <div class="small" id="obj">Objetivo: pegue 10 moedas e alcance o portal.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>HP</span><span><b id="hp">5</b></span></div>
+      <div class="row small"><span>Moedas</span><span><b id="coin">0</b></span></div>
+      <div class="row small"><span>Recorde</span><span><b id="best">--</b></span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="save">Salvar</button><button id="reset">Reset</button>
+      <button id="help">Ajuda</button><button id="mute">Som</button>
+    </div>
+    <div class="card small">Dica: ataque (Z) derruba inimigos e abre caminho no boss.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  const SFX=(()=>{let c=null,on=true;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.07,g=.06)=>{if(!on)return; const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,setOn:(v)=>on=v, jump:()=>beep(520,"sine",.09,.06), hit:()=>beep(140,"sawtooth",.10,.06),
+      coin:()=>beep(1046,"sine",.05,.05), atk:()=>beep(880,"square",.05,.05), win:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={lv:$("lv"),obj:$("obj"),hp:$("hp"),coin:$("coin"),best:$("best")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const SAVE="zyplay_sky_platformer_v1";
+
+  const fresh=()=>({muted:false, paused:false, best:null, lv:1, coins:0,
+    p:{x:80,y:60,vx:0,vy:0,hp:5,on:false,ifr:0,atk:0},
+    mobs:[], coinsA:[], tiles:[], portal:{x:0,y:0,w:40,h:64}, msg:"Pegue moedas e avance."});
+  let S=load()||fresh();
+  SFX.setOn(!S.muted); $("mute").textContent=S.muted?"Som: OFF":"Som: ON";
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+  function say(t){toast.innerHTML=`<b>ZyPlay Sky Platformer</b> — ${t}`;}
+
+  const levels=[
+    {tiles:[[0,340,1200,60],[220,260,160,22],[460,210,160,22],[720,250,140,22],[940,190,160,22]],
+     coins:[[260,220],[500,170],[760,210],[980,150],[1040,150],[820,210],[560,170],[300,220],[1020,150],[740,210]],
+     mobs:[[520,180],[820,220],[980,160]], portal:[1120,276], goal:10, boss:false},
+    {tiles:[[0,360,1400,60],[180,290,160,22],[420,240,180,22],[720,210,160,22],[980,250,180,22],[1220,200,120,22]],
+     coins:[[220,250],[470,200],[760,170],[1010,210],[1260,160],[900,210],[520,200],[780,170],[1240,160],[1180,160]],
+     mobs:[[470,210],[760,180],[1010,220],[1260,170]], portal:[1320,296], goal:12, boss:false},
+    {tiles:[[0,360,1500,60],[180,290,160,22],[460,240,180,22],[780,250,160,22],[1060,210,180,22],[1320,170,140,22]],
+     coins:[[220,250],[520,200],[820,210],[1090,170],[1350,130],[1220,170],[960,210],[620,200],[720,210],[1400,130]],
+     mobs:[[520,210],[820,220],[1090,180]], portal:[1440,296], goal:10, boss:true}
+  ];
+
+  function buildLevel(){
+    const L=levels[S.lv-1];
+    S.tiles=L.tiles.map(t=>({x:t[0],y:t[1],w:t[2],h:t[3]}));
+    S.coinsA=L.coins.map(c=>({x:c[0],y:c[1],r:10,got:false}));
+    S.mobs=L.mobs.map(m=>({x:m[0],y:m[1],vx:60*(Math.random()<0.5?-1:1),w:34,h:34,hp: S.lv===3?6:3}));
+    S.portal={x:L.portal[0],y:L.portal[1],w:40,h:64};
+    S.goal=L.goal; S.boss=L.boss;
+    S.p.x=60; S.p.y=60; S.p.vx=0; S.p.vy=0; S.p.on=false;
+    say(`Fase ${S.lv}: pegue ${S.goal} moedas e vá ao portal.`);
+  }
+  buildLevel();
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowLeft","ArrowRight","ArrowUp"," ","z","Z","p","P"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="p"||k==="P"){S.paused=!S.paused; say(S.paused?"Pausado.":"Continuar!"); save();}
+    if(k===" "||k==="ArrowUp") jump();
+    if(k==="z"||k==="Z") attack();
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  $("help").onclick=()=>alert("Mover ← →\nPular Espaço/↑\nAtacar Z\nPegue moedas e entre no portal.\nNa fase 3, derrote o mini-boss (inimigo com mais HP).");
+  $("save").onclick=()=>{save(); say("Salvo!");};
+  $("reset").onclick=()=>{if(confirm("Resetar?")){S=fresh(); buildLevel(); save();}};
+  $("mute").onclick=()=>{S.muted=!S.muted; SFX.setOn(!S.muted); $("mute").textContent=S.muted?"Som: OFF":"Som: ON"; save();};
+
+  function jump(){
+    if(S.paused) return;
+    if(!S.p.on) return;
+    S.p.vy=-520;
+    S.p.on=false;
+    SFX.jump();
+  }
+  function attack(){
+    if(S.paused) return;
+    if(S.p.atk>0) return;
+    S.p.atk=0.22;
+    SFX.atk();
+  }
+
+  function rectHit(a,b){
+    return a.x<a.x+a.w && a.x+b.w>a.x && a.y<b.y+b.h && a.y+a.h>b.y &&
+      (a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y);
+  }
+  function tileCollide(px,py,pw,ph){
+    let on=false;
+    for(const t of S.tiles){
+      // simple AABB
+      if(px<pw+t.x && px+pw>t.x && py< t.y+t.h && py+ph>t.y){
+        // resolve vertical
+        const prevY = S.p.y;
+        if(prevY+ph<=t.y+2){ // landing
+          py=t.y-ph; S.p.vy=0; on=true;
+        } else if(prevY>=t.y+t.h-2){ // hit head
+          py=t.y+t.h; S.p.vy=0;
+        } else {
+          // side
+          if(S.p.x+pw/2 < t.x+t.w/2) px=t.x-pw; else px=t.x+t.w;
+          S.p.vx=0;
+        }
+      }
+    }
+    return {px,py,on};
+  }
+
+  let cam=0,last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+    if(!S.paused){
+      S.p.ifr=Math.max(0,S.p.ifr-dt);
+      S.p.atk=Math.max(0,S.p.atk-dt);
+
+      // input
+      let mv=0;
+      if(keys.has("ArrowLeft")) mv=-1;
+      if(keys.has("ArrowRight")) mv=1;
+      S.p.vx = mv*240;
+
+      // gravity
+      S.p.vy += 1200*dt;
+
+      // integrate
+      let nx=S.p.x + S.p.vx*dt;
+      let ny=S.p.y + S.p.vy*dt;
+      const res=tileCollide(nx,ny,32,42);
+      S.p.x=res.px; S.p.y=res.py; S.p.on=res.on;
+
+      // bounds
+      if(S.p.y>520){ // fall
+        S.p.hp--; SFX.hit(); say("Você caiu! -HP");
+        S.p.x=60; S.p.y=60; S.p.vy=0;
+      }
+
+      // coins
+      for(const c of S.coinsA){
+        if(c.got) continue;
+        const dx=(S.p.x+16)-c.x, dy=(S.p.y+20)-c.y;
+        if(dx*dx+dy*dy < (18*18)){ c.got=true; S.coins++; SFX.coin(); }
+      }
+
+      // mobs move + collide
+      for(const m of S.mobs){
+        m.x += m.vx*dt;
+        // bounce on edges or tiles edges
+        if(m.x<60||m.x>1450) m.vx*=-1;
+        // collision with player
+        const pb={x:S.p.x,y:S.p.y,w:32,h:42}, mb={x:m.x,y:m.y,w:m.w,h:m.h};
+        if(rectHit(pb,mb)){
+          if(S.p.atk>0){ // hit mob
+            m.hp--; SFX.hit();
+            // knockback
+            m.vx = (S.p.x<m.x)? 120 : -120;
+            if(m.hp<=0){ m.dead=true; SFX.win(); }
+          } else if(S.p.ifr<=0){
+            S.p.hp--; S.p.ifr=1.0; SFX.hit(); say("Dano! Use Z para atacar.");
+          }
+        }
+      }
+      S.mobs = S.mobs.filter(m=>!m.dead);
+
+      // portal
+      const got = S.coinsA.filter(c=>c.got).length;
+      if(got>=S.goal){
+        // allow portal
+        const pb={x:S.p.x,y:S.p.y,w:32,h:42};
+        const pr={x:S.portal.x,y:S.portal.y,w:S.portal.w,h:S.portal.h};
+        if(rectHit(pb,pr)){
+          SFX.win();
+          if(S.lv<3){ S.lv++; buildLevel(); }
+          else {
+            const time = (performance.now()/1000);
+            if(S.best==null || S.coins>S.best) S.best=S.coins;
+            alert("Você concluiu ZyPlay Sky Platformer!");
+            const best=S.best, muted=S.muted;
+            S=fresh(); S.best=best; S.muted=muted; SFX.setOn(!muted);
+            buildLevel();
+          }
+        }
+      }
+
+      // UI
+      ui.lv.textContent=S.lv;
+      ui.hp.textContent=S.p.hp;
+      ui.coin.textContent=S.coins;
+      ui.best.textContent=S.best==null?"--":String(S.best);
+      ui.obj.textContent = `Objetivo: pegue ${S.goal} moedas (${S.coins}/${S.goal}) e alcance o portal.`;
+      if(S.p.hp<=0){ alert("Game Over!"); const muted=S.muted; S=fresh(); S.muted=muted; SFX.setOn(!muted); buildLevel(); }
+
+      // camera
+      cam = clamp(S.p.x - W*0.45, 0, 1500 - W*0.1);
+      save();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(), W=r.width, H=r.height;
+
+    // sky
+    const sky=g.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"rgba(0,224,255,.10)"); sky.addColorStop(1,"rgba(123,0,255,.06)");
+    g.fillStyle=sky; g.fillRect(0,0,W,H);
+
+    // parallax clouds
+    for(let i=0;i<8;i++){
+      const x=((i*220 - cam*0.25)%(W+260)) - 120;
+      const y=60+i*28;
+      g.fillStyle="rgba(255,255,255,.05)";
+      g.beginPath(); g.ellipse(x+140,y,90,22,0,0,Math.PI*2); g.fill();
+    }
+
+    // tiles
+    g.translate(-cam,0);
+    for(const t of S.tiles){
+      g.fillStyle="rgba(0,0,0,.25)"; g.fillRect(t.x,t.y,t.w,t.h);
+      g.strokeStyle="rgba(0,224,255,.20)"; g.strokeRect(t.x,t.y,t.w,t.h);
+    }
+
+    // coins
+    for(const c of S.coinsA){
+      if(c.got) continue;
+      g.fillStyle="rgba(255,209,102,.95)";
+      g.beginPath(); g.arc(c.x,c.y,c.r,0,Math.PI*2); g.fill();
+    }
+
+    // portal
+    const got = S.coinsA.filter(c=>c.got).length;
+    g.fillStyle = got>=S.goal ? "rgba(0,224,255,.18)" : "rgba(255,77,109,.12)";
+    g.fillRect(S.portal.x,S.portal.y,S.portal.w,S.portal.h);
+    g.strokeStyle = got>=S.goal ? "rgba(0,224,255,.45)" : "rgba(255,77,109,.45)";
+    g.strokeRect(S.portal.x,S.portal.y,S.portal.w,S.portal.h);
+    g.fillStyle="#fff"; g.font="14px system-ui"; g.fillText(got>=S.goal?"PORTAL":"TRANCADO", S.portal.x-8, S.portal.y-8);
+
+    // mobs
+    for(const m of S.mobs){
+      g.fillStyle="rgba(255,77,109,.85)";
+      g.fillRect(m.x,m.y,m.w,m.h);
+      g.fillStyle="rgba(0,0,0,.35)"; g.fillRect(m.x,m.y-8,m.w,5);
+      g.fillStyle="rgba(255,209,102,.9)"; g.fillRect(m.x,m.y-8,m.w*(m.hp/(S.lv===3?6:3)),5);
+    }
+
+    // player
+    const px=S.p.x, py=S.p.y;
+    const glow=g.createRadialGradient(px+16,py+20,2,px+16,py+20,46);
+    glow.addColorStop(0,"rgba(0,224,255,.30)"); glow.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=glow; g.beginPath(); g.arc(px+16,py+20,46,0,Math.PI*2); g.fill();
+    g.fillStyle="rgba(0,224,255,.95)"; g.fillRect(px,py,32,42);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(px,py,32,42);
+
+    // attack slash
+    if(S.p.atk>0){
+      g.strokeStyle="rgba(255,209,102,.85)"; g.lineWidth=6;
+      g.beginPath(); g.arc(px+16,py+20,32, -0.7, 0.7); g.stroke();
+    }
+
+    g.setTransform(dpr,0,0,dpr,0,0);
+    g.fillStyle="rgba(255,255,255,.9)"; g.font="700 16px system-ui"; g.fillText("ZyPlay", 14, 26);
+
+    g.restore();
+  }
+
+  say(S.msg||"Boa sorte!");
+  requestAnimationFrame(loop);
+})();
+</script></body></html>
