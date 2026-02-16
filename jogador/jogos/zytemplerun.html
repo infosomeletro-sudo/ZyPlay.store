@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyTemple Run Adventure</title>
+<style>
+  :root{--bg:#060614;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2a0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(720px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyTemple Run</b> — Pular: Espaço/↑ • Deslizar: ↓ • Trocar pista: ← → • Pausar: P</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyTemple Run</b><span class="small">Fase <b id="phase">1</b>/3</span></div>
+      <div class="small" id="obj">Objetivo: alcance 1200m para liberar a Fase 2.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Vida</span><span><b id="hp">3</b></span></div>
+      <div class="row small"><span>Distância</span><span><b id="dist">0</b> m</span></div>
+      <div class="row small"><span>Moedas</span><span><b id="coin">0</b></span></div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>Power</span><span><b id="pow">0</b>%</span></div>
+      <div class="bar"><i id="powB" style="width:0%;background:linear-gradient(90deg,#ffd166,#2be37a)"></i></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+      <button id="shop">Loja</button>
+      <button id="help">Ajuda</button>
+    </div>
+    <div class="card small">Pegue <b>orbes</b> para ativar o “Turbo” (Shift) e virar invencível por alguns segundos.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.06,g=.05)=>{const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,click:()=>beep(880,"square",.04,.04),jump:()=>beep(520,"sine",.08,.06),
+      slide:()=>beep(240,"triangle",.06,.04),coin:()=>beep(1046,"sine",.05,.05),
+      hit:()=>beep(120,"sawtooth",.10,.06),power:()=>{beep(523,"sine",.08,.06);beep(659,"sine",.08,.06);beep(784,"sine",.1,.07)}};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={phase:$("phase"),obj:$("obj"),hp:$("hp"),dist:$("dist"),coin:$("coin"),pow:$("pow"),powB:$("powB")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+  const SAVE="zytemple_save_v1";
+  const fresh=()=>({
+    phase:1, paused:false, dist:0, coin:0, hp:3, lane:1, y:0, vy:0, onGround:true, sliding:false, slideT:0,
+    speed:320, objs:[], orbs:[], inv:0, power:0, shop:{magnet:0, shield:0},
+  });
+  let S=load()||fresh();
+
+  function say(t){toast.innerHTML=`<b>ZyTemple Run</b> — ${t}`;}
+
+  // Controls
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Shift","p","P"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k==="p"||k==="P"){S.paused=!S.paused; SFX.click(); say(S.paused?"Pausado.":"Continuar!"); save();}
+    if(k===" "||k==="ArrowUp") jump();
+    if(k==="ArrowDown") slide();
+    if(k==="ArrowLeft") lane(-1);
+    if(k==="ArrowRight") lane(1);
+    if(k==="Shift") turbo();
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); save(); say("Novo jogo.");}};
+  $("help").onclick=()=>{SFX.click(); alert("ZyTemple Run\nSetas: trocar pista\nEspaço/↑: pular\n↓: deslizar\nShift: Turbo (precisa Power)\nObjetivo: alcançar distâncias para liberar fases.");};
+  $("shop").onclick=()=>{SFX.click(); shop();};
+
+  function shop(){
+    const costMag=80 + S.shop.magnet*60;
+    const costShield=120 + S.shop.shield*80;
+    const msg =
+`LOJA
+Moedas: ${S.coin}
+
+1) Ímã (atrai moedas) Nv ${S.shop.magnet} — custo ${costMag}
+2) Escudo extra (reduz dano) Nv ${S.shop.shield} — custo ${costShield}
+
+Digite 1 ou 2 para comprar.`;
+    const x = prompt(msg);
+    if(x==="1"){
+      if(S.coin<costMag){say("Sem moedas."); return;}
+      S.coin-=costMag; S.shop.magnet++; SFX.power(); say("Comprou Ímã!");
+    }
+    if(x==="2"){
+      if(S.coin<costShield){say("Sem moedas."); return;}
+      S.coin-=costShield; S.shop.shield++; SFX.power(); say("Comprou Escudo!");
+    }
+    save(); uiUpdate();
+  }
+
+  function jump(){
+    if(S.paused) return;
+    if(!S.onGround) return;
+    S.vy = -640;
+    S.onGround = false;
+    SFX.jump();
+  }
+  function slide(){
+    if(S.paused) return;
+    if(!S.onGround) return;
+    S.sliding=true; S.slideT=0.55;
+    SFX.slide();
+  }
+  function lane(d){
+    if(S.paused) return;
+    S.lane = clamp(S.lane + d, 0, 2);
+    SFX.click();
+  }
+  function turbo(){
+    if(S.paused) return;
+    if(S.power<100){say("Power insuficiente."); return;}
+    S.power=0;
+    S.inv=3.5;
+    S.speed+=120;
+    SFX.power();
+    say("TURBO: invencível por alguns segundos!");
+  }
+
+  // Spawning
+  function spawn(dt){
+    // obstáculos: alto (precisa deslizar), baixo (precisa pular), buraco (pular)
+    if(Math.random() < dt* (0.9 + S.phase*0.25)){
+      const t = Math.random();
+      const lane=rand(0,2);
+      const kind = t<0.38 ? "low" : (t<0.72 ? "high" : "gap");
+      S.objs.push({x:1.2, lane, kind});
+    }
+    // moedas
+    if(Math.random()<dt*2.2){
+      S.orbs.push({x:1.2, lane:rand(0,2), kind:"coin"});
+    }
+    // power orb
+    if(Math.random()<dt*0.55){
+      S.orbs.push({x:1.2, lane:rand(0,2), kind:"power"});
+    }
+  }
+
+  function uiUpdate(){
+    ui.phase.textContent=S.phase;
+    ui.hp.textContent=S.hp;
+    ui.dist.textContent=Math.floor(S.dist);
+    ui.coin.textContent=S.coin;
+    ui.pow.textContent=Math.floor(S.power);
+    ui.powB.style.width=clamp(S.power,0,100).toFixed(0)+"%";
+    if(S.phase===1) ui.obj.textContent="Objetivo: alcance 1200m para liberar a Fase 2.";
+    if(S.phase===2) ui.obj.textContent="Objetivo: alcance 2600m para liberar a Fase 3.";
+    if(S.phase===3) ui.obj.textContent="Objetivo: alcance 4200m e vença a corrida!";
+  }
+
+  // Loop
+  let last=performance.now();
+  function loop(now){
+    const dt=(now-last)/1000; last=now;
+    if(!S.paused){
+      // physics
+      S.vy += 1500*dt;
+      S.y += S.vy*dt;
+      if(S.y>0){ S.y=0; S.vy=0; S.onGround=true; }
+
+      if(S.slideT>0){ S.slideT-=dt; if(S.slideT<=0) S.sliding=false; }
+
+      // inv
+      if(S.inv>0){ S.inv-=dt; if(S.inv<=0) S.speed=Math.max(320, S.speed-120); }
+
+      // speed scale
+      S.speed = Math.min(520, S.speed + dt*(8+S.phase*2));
+      S.dist += (S.speed*dt)/4;
+
+      // phase changes
+      if(S.dist>=1200 && S.phase===1){S.phase=2; SFX.power(); say("FASE 2 liberada!");}
+      if(S.dist>=2600 && S.phase===2){S.phase=3; SFX.power(); say("FASE 3 liberada!");}
+      if(S.dist>=4200 && S.phase===3){
+        alert("Parabéns! Você concluiu ZyTemple Run Adventure!");
+        S=fresh();
+      }
+
+      // spawn
+      spawn(dt);
+
+      // move objs
+      for(let i=S.objs.length-1;i>=0;i--){
+        const o=S.objs[i]; o.x -= (S.speed*dt)/700;
+        if(o.x<-0.2) S.objs.splice(i,1);
+      }
+      for(let i=S.orbs.length-1;i>=0;i--){
+        const o=S.orbs[i]; o.x -= (S.speed*dt)/700;
+        if(o.x<-0.2) S.orbs.splice(i,1);
+      }
+
+      // collect coins & power
+      const magnetRange = 0.06 + S.shop.magnet*0.02;
+      for(let i=S.orbs.length-1;i>=0;i--){
+        const o=S.orbs[i];
+        // magnet pulls towards center x=0.22
+        if(o.kind==="coin" && S.shop.magnet>0 && Math.abs(o.x-0.22)<magnetRange){
+          o.x -= dt*0.15;
+        }
+        const hitLane = (o.lane===S.lane);
+        const hitX = Math.abs(o.x-0.22)<0.04;
+        if(hitLane && hitX){
+          if(o.kind==="coin"){S.coin+=1; SFX.coin();}
+          if(o.kind==="power"){S.power=clamp(S.power+18,0,100); SFX.click();}
+          S.orbs.splice(i,1);
+        }
+      }
+
+      // obstacle collision
+      for(let i=S.objs.length-1;i>=0;i--){
+        const o=S.objs[i];
+        const hitLane=(o.lane===S.lane);
+        const hitX = Math.abs(o.x-0.22)<0.05;
+        if(hitLane && hitX){
+          let ok=true;
+          if(o.kind==="low"){ // precisa pular
+            ok = (S.y< -22);
+          }
+          if(o.kind==="high"){ // precisa deslizar
+            ok = S.sliding;
+          }
+          if(o.kind==="gap"){ // precisa pular
+            ok = (S.y< -18);
+          }
+          if(!ok && S.inv<=0){
+            // shield reduces
+            const dmg = (S.shop.shield>0) ? 0 : 1;
+            if(dmg>0) S.hp -= 1;
+            SFX.hit();
+            say("Você bateu!");
+            if(S.hp<=0){
+              alert("Game Over!");
+              S=fresh();
+            } else {
+              // pequeno empurrão
+              S.inv=1.2;
+            }
+          }
+          S.objs.splice(i,1);
+        }
+      }
+
+      save();
+      uiUpdate();
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(); g.setTransform(1,0,0,1,0,0);
+    g.clearRect(0,0,canvas.width,canvas.height);
+    g.save(); g.scale(dpr,dpr);
+    const r=canvas.getBoundingClientRect(); const W=r.width,H=r.height;
+
+    // pista
+    g.fillStyle="rgba(0,0,0,.25)";
+    g.fillRect(W*0.12, 0, W*0.76, H);
+    // lanes
+    for(let i=0;i<3;i++){
+      const x=W*(0.25 + i*0.25);
+      g.strokeStyle="rgba(255,255,255,.08)";
+      g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke();
+    }
+
+    // parallax pillars
+    for(let i=0;i<18;i++){
+      const y=(i*90 + (S.dist*1.8)%90);
+      g.fillStyle="rgba(123,0,255,.08)";
+      g.fillRect(W*0.08, H - y - 60, 22, 60);
+      g.fillRect(W*0.90, H - y - 60, 22, 60);
+    }
+
+    // objects
+    function laneX(l){return W*(0.25 + l*0.25);}
+    for(const o of S.objs){
+      const x=laneX(o.lane) - 22;
+      const y=H*0.70;
+      if(o.kind==="low"){
+        g.fillStyle="rgba(255,77,109,.85)";
+        g.fillRect(x, y+40, 44, 18);
+      } else if(o.kind==="high"){
+        g.fillStyle="rgba(255,209,102,.85)";
+        g.fillRect(x, y+4, 44, 18);
+      } else {
+        g.fillStyle="rgba(0,224,255,.18)";
+        g.fillRect(x, y+44, 44, 14);
+      }
+    }
+
+    // orbs
+    for(const o of S.orbs){
+      const x=laneX(o.lane);
+      const y=H*0.70 + 26;
+      if(o.kind==="coin"){
+        g.fillStyle="rgba(255,209,102,.95)";
+        g.beginPath(); g.arc(x, y, 7, 0, Math.PI*2); g.fill();
+      } else {
+        g.fillStyle="rgba(0,224,255,.95)";
+        g.beginPath(); g.arc(x, y, 7, 0, Math.PI*2); g.fill();
+      }
+    }
+
+    // player
+    const px=laneX(S.lane), py=H*0.70 + S.y;
+    const glow=g.createRadialGradient(px,py,2,px,py,34);
+    glow.addColorStop(0, S.inv>0 ? "rgba(255,209,102,.35)" : "rgba(0,224,255,.35)");
+    glow.addColorStop(1, "rgba(123,0,255,0)");
+    g.fillStyle=glow; g.beginPath(); g.arc(px,py,34,0,Math.PI*2); g.fill();
+
+    g.fillStyle="rgba(0,224,255,.95)";
+    const h = S.sliding ? 24 : 42;
+    g.fillRect(px-16, py-h, 32, h);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(px-16, py-h, 32, h);
+
+    // inv indicator
+    if(S.inv>0){
+      g.fillStyle="rgba(255,209,102,.18)";
+      g.fillRect(0,0,W,H);
+    }
+
+    g.restore();
+  }
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+
+  uiUpdate(); say("Corra!");
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
