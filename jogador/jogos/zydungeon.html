@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ZyDungeon: Shadow Depths</title>
+<style>
+  :root{--bg:#070714;--p:#11112a;--l:#2a2a55;--t:#eaf0ff;--m:#aab6e6;--a:#7b00ff;--b:#00e0ff;--g:#2be37a;--r:#ff4d6d;--y:#ffd166;}
+  *{box-sizing:border-box} body{margin:0;background:radial-gradient(1200px 800px at 50% -15%,#2b0f55,var(--bg));color:var(--t);font-family:system-ui,Segoe UI,Arial;overflow:hidden}
+  #wrap{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px;height:100vh}
+  #game{background:linear-gradient(180deg,#0d0d22,#060612);border:1px solid var(--l);border-radius:16px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  canvas{width:100%;height:100%;display:block}
+  #side{background:linear-gradient(180deg,var(--p),#0c0c1b);border:1px solid var(--l);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .card{background:linear-gradient(180deg,#141434,#0c0c1c);border:1px solid var(--l);border-radius:14px;padding:10px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .small{font-size:12px;color:var(--m);line-height:1.35}
+  .bar{height:10px;border-radius:999px;background:#070713;border:1px solid var(--l);overflow:hidden}
+  .bar>i{display:block;height:100%}
+  button{cursor:pointer;border:1px solid var(--l);border-radius:12px;padding:10px;background:linear-gradient(180deg,#171744,#0d0d23);color:var(--t);font-weight:800}
+  button:hover{filter:brightness(1.1)} button:active{transform:translateY(1px)}
+  #toast{position:absolute;left:12px;bottom:12px;max-width:min(640px,calc(100% - 24px));background:rgba(10,10,20,.85);border:1px solid var(--l);border-radius:14px;padding:10px 12px;backdrop-filter:blur(10px)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="game">
+    <canvas id="c"></canvas>
+    <div id="toast"><b>ZyDungeon</b> — Mover: WASD/Setas • Ataque: Espaço • Rolagem: Shift • Abrir baús: E</div>
+  </div>
+  <aside id="side">
+    <div class="card">
+      <div class="row"><b>ZyDungeon</b><span class="small">Andar <b id="floor">1</b>/5</span></div>
+      <div class="small">Objetivo: encontre a <b>escada</b> (⇣). No andar 5 há um <b>Boss</b>.</div>
+      <div style="height:10px"></div>
+      <div class="row small"><span>HP</span><span><b id="hp">60</b>/60</span></div>
+      <div class="bar"><i id="hpB" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8aa0)"></i></div>
+      <div style="height:8px"></div>
+      <div class="row small"><span>Stamina</span><span><b id="st">100</b>%</span></div>
+      <div class="bar"><i id="stB" style="width:100%;background:linear-gradient(90deg,#00e0ff,#7b00ff)"></i></div>
+      <div style="height:10px"></div>
+      <div class="row"><span class="small">Ouro: <b id="gold" style="color:var(--y)">0</b></span><span class="small">Dano: <b id="atk">8</b></span></div>
+      <div class="row"><span class="small">Poções: <b id="pot">1</b></span><span class="small">Chaves: <b id="key">0</b></span></div>
+    </div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button id="usePot">Usar Poção</button>
+      <button id="save">Salvar</button>
+      <button id="reset">Reset</button>
+      <button id="help">Ajuda</button>
+    </div>
+    <div class="card small" id="hint">Dica: baús dão chaves, poções e upgrades.</div>
+  </aside>
+</div>
+
+<script>
+(()=> {
+  // Audio
+  const SFX=(()=>{let c=null;const AC=window.AudioContext||window.webkitAudioContext;
+    const ensure=()=>{if(!c)c=new AC(); if(c.state==="suspended")c.resume(); return c;};
+    const beep=(f,t="sine",d=.08,g=.06)=>{const c=ensure(),o=c.createOscillator(),ga=c.createGain();
+      o.type=t;o.frequency.value=f;ga.gain.value=.0001;o.connect(ga);ga.connect(c.destination);
+      const T=c.currentTime;ga.gain.exponentialRampToValueAtTime(g,T+.01);ga.gain.exponentialRampToValueAtTime(.0001,T+d);
+      o.start(T);o.stop(T+d+.02);};
+    return {ensure,click:()=>beep(880,"square",.04,.04),step:()=>beep(160,"triangle",.03,.02),
+      hit:()=>beep(120,"sawtooth",.08,.06),heal:()=>{beep(520,"sine",.10,.06);beep(780,"sine",.10,.05)},
+      win:()=>{beep(523,"sine",.10,.06);beep(659,"sine",.10,.06);beep(784,"sine",.12,.07)},
+      bad:()=>beep(220,"sine",.12,.05)};
+  })();
+  const prime=()=>{SFX.ensure();removeEventListener("pointerdown",prime);removeEventListener("keydown",prime);}
+  addEventListener("pointerdown",prime,{once:true}); addEventListener("keydown",prime,{once:true});
+
+  const $=id=>document.getElementById(id);
+  const ui={floor:$("floor"),hp:$("hp"),hpB:$("hpB"),st:$("st"),stB:$("stB"),gold:$("gold"),atk:$("atk"),pot:$("pot"),key:$("key"),hint:$("hint")};
+  const toast=$("toast");
+  const canvas=$("c"),g=canvas.getContext("2d");
+  const DPR=()=>devicePixelRatio||1;
+  const resize=()=>{const r=canvas.getBoundingClientRect();canvas.width=(r.width*DPR())|0;canvas.height=(r.height*DPR())|0;};
+  addEventListener("resize",resize); resize();
+
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const pick=a=>a[(Math.random()*a.length)|0];
+
+  const SAVE="zydungeon_save_v1";
+  const fresh=()=>({floor:1, p:{x:3,y:3,hp:60,hpM:60,st:100,atk:8,gold:0,pot:1,key:0,ifr:0,roll:0}, map:null, mobs:[], chests:[], drops:[], stairs:null, boss:false, msg:"Entre na dungeon!"});
+  let S=load()||fresh();
+
+  function say(t){toast.innerHTML=`<b>ZyDungeon</b> — ${t}`;}
+
+  const W=26,H=16,T=36;
+
+  function genFloor(){
+    // dungeon por "carve"
+    const m=new Array(W*H).fill(1);
+    function carve(x,y){m[x+y*W]=0;}
+    // caminhos aleatórios
+    let x=rand(2,W-3), y=rand(2,H-3);
+    for(let i=0;i<900;i++){
+      carve(x,y);
+      const d=pick([[1,0],[-1,0],[0,1],[0,-1]]);
+      x=clamp(x+d[0],1,W-2); y=clamp(y+d[1],1,H-2);
+      if(Math.random()<0.05){ // abrir sala
+        for(let yy=y-2;yy<=y+2;yy++)for(let xx=x-3;xx<=x+3;xx++){
+          if(xx>0&&yy>0&&xx<W-1&&yy<H-1) m[xx+yy*W]=0;
+        }
+      }
+    }
+    // garantir borda
+    for(let xx=0;xx<W;xx++){m[xx]=1;m[xx+(H-1)*W]=1}
+    for(let yy=0;yy<H;yy++){m[0+yy*W]=1;m[(W-1)+yy*W]=1}
+
+    // spawn player em tile vazio
+    let px=2,py=2;
+    for(let i=0;i<999;i++){const tx=rand(1,W-2),ty=rand(1,H-2); if(m[tx+ty*W]===0){px=tx;py=ty;break;}}
+    S.p.x=px; S.p.y=py;
+
+    // stairs longe
+    let sx=px,sy=py;
+    for(let i=0;i<999;i++){
+      const tx=rand(1,W-2),ty=rand(1,H-2);
+      if(m[tx+ty*W]===0 && (Math.abs(tx-px)+Math.abs(ty-py))>18){sx=tx;sy=ty;break;}
+    }
+    S.stairs={x:sx,y:sy};
+
+    // mobs
+    S.mobs=[];
+    const mobCount = S.floor<5 ? 7+S.floor : 1;
+    for(let i=0;i<mobCount;i++){
+      let mx=px,my=py;
+      for(let k=0;k<999;k++){const tx=rand(1,W-2),ty=rand(1,H-2); if(m[tx+ty*W]===0 && (Math.abs(tx-px)+Math.abs(ty-py))>6){mx=tx;my=ty;break;}}
+      const base = S.floor<5 ? pick(["slime","bat","skeleton"]) : "boss";
+      const mob = mkMob(base,mx,my);
+      S.mobs.push(mob);
+    }
+    // chests
+    S.chests=[];
+    for(let i=0;i<4;i++){
+      let cx=px,cy=py;
+      for(let k=0;k<999;k++){const tx=rand(1,W-2),ty=rand(1,H-2); if(m[tx+ty*W]===0 && (Math.abs(tx-px)+Math.abs(ty-py))>8){cx=tx;cy=ty;break;}}
+      S.chests.push({x:cx,y:cy,open:false,locked:Math.random()<0.35});
+    }
+    S.map=m;
+    S.drops=[];
+    S.boss = (S.floor===5);
+    say(`Andar ${S.floor}: encontre a escada (⇣).`);
+  }
+
+  function mkMob(type,x,y){
+    if(type==="slime") return {t:"Slime",x,y,hp:14+S.floor*2,hpM:14+S.floor*2,atk:4+S.floor,spd:0.6,color:"rgba(0,224,255,.85)"};
+    if(type==="bat") return {t:"Morcego",x,y,hp:12+S.floor*2,hpM:12+S.floor*2,atk:5+S.floor,spd:0.9,color:"rgba(255,209,102,.9)"};
+    if(type==="skeleton") return {t:"Esqueleto",x,y,hp:18+S.floor*3,hpM:18+S.floor*3,atk:6+S.floor,color:"rgba(255,77,109,.9)",spd:0.55};
+    return {t:"Boss: Guardião Sombrio",x,y,hp:120,hpM:120,atk:12,color:"rgba(123,0,255,.95)",spd:0.45,boss:true};
+  }
+
+  if(!S.map) genFloor();
+
+  function solid(x,y){return S.map[x+y*W]===1;}
+  function inb(x,y){return x>=0&&y>=0&&x<W&&y<H;}
+
+  const keys=new Set();
+  addEventListener("keydown",(e)=>{
+    const k=e.key;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"," ","e","E","Shift","Escape"].includes(k)) e.preventDefault();
+    keys.add(k);
+    if(k===" ") attack();
+    if(k==="e"||k==="E") interact();
+    if(k==="Escape") helpClose();
+  });
+  addEventListener("keyup",(e)=>keys.delete(e.key));
+
+  $("usePot").onclick=()=>{SFX.click(); usePotion();};
+  $("save").onclick=()=>{SFX.click(); save(); say("Salvo!");};
+  $("reset").onclick=()=>{SFX.click(); if(confirm("Resetar?")){S=fresh(); genFloor(); save();}};
+  $("help").onclick=()=>{SFX.click(); alert("ZyDungeon\nMover: WASD/Setas\nAtaque: Espaço\nRolagem: Shift (gasta stamina)\nInteragir: E (baús/escada)\nObjetivo: chegar ao andar 5 e derrotar o Boss.");};
+
+  function usePotion(){
+    if(S.p.pot<=0){say("Sem poções."); return;}
+    S.p.pot--;
+    const before=S.p.hp;
+    S.p.hp=clamp(S.p.hp+28,0,S.p.hpM);
+    SFX.heal();
+    say(`Poção usada: +${S.p.hp-before} HP.`);
+    save(); uiUpdate();
+  }
+
+  function interact(){
+    const p=S.p;
+    // chest
+    for(const c of S.chests){
+      if(c.open) continue;
+      if(Math.abs(c.x-p.x)+Math.abs(c.y-p.y)<=1){
+        if(c.locked){
+          if(p.key<=0){say("Baú trancado. Precisa de chave."); return;}
+          p.key--; c.locked=false;
+          SFX.click();
+          say("Você usou uma chave!");
+        }
+        c.open=true;
+        // loot
+        const roll=Math.random();
+        if(roll<0.35){p.pot++; say("Encontrou 1 Poção!");}
+        else if(roll<0.65){p.key++; say("Encontrou 1 Chave!");}
+        else if(roll<0.85){p.atk+=1; say("Upgrade! +1 Dano.");}
+        else {p.hpM+=8; p.hp+=8; say("Upgrade! +8 HP Máx.");}
+        SFX.win();
+        save(); uiUpdate();
+        return;
+      }
+    }
+    // stairs
+    if(p.x===S.stairs.x && p.y===S.stairs.y){
+      if(S.floor<5){
+        S.floor++;
+        SFX.win();
+        genFloor();
+        save(); uiUpdate();
+      } else {
+        say("Derrote o Boss antes de sair!");
+      }
+    }
+  }
+
+  function attack(){
+    const p=S.p;
+    if(p.st<12){say("Sem stamina."); return;}
+    // alvo adjacente
+    const idx=S.mobs.findIndex(m=>Math.abs(m.x-p.x)+Math.abs(m.y-p.y)<=1);
+    if(idx<0){say("Sem inimigo perto."); return;}
+    p.st=clamp(p.st-14,0,100);
+    const m=S.mobs[idx];
+    const dmg=Math.max(1,p.atk+rand(-1,2) - (m.boss?2:1));
+    m.hp=clamp(m.hp-dmg,0,m.hpM);
+    SFX.hit();
+    say(`Você atacou ${m.t}: -${dmg} HP.`);
+    // se morreu
+    if(m.hp<=0){
+      // drop
+      const gold=rand(8,16)+S.floor*2;
+      p.gold += gold;
+      if(Math.random()<0.22) p.pot++;
+      if(Math.random()<0.18) p.key++;
+      SFX.win();
+      if(m.boss){
+        say(`BOSS derrotado! Você venceu ZyDungeon! Ouro +${gold}.`);
+        alert("Parabéns! Você venceu ZyDungeon: Shadow Depths!");
+        // reinicia no floor 1 com bônus
+        S=fresh(); S.p.gold=80; genFloor();
+      } else {
+        say(`Inimigo derrotado! +${gold} ouro.`);
+      }
+      S.mobs.splice(idx,1);
+      save(); uiUpdate();
+    }
+  }
+
+  function mobAI(dt){
+    const p=S.p;
+    for(const m of S.mobs){
+      // move leve em direção ao player
+      if(Math.random() > (m.spd||0.6)*dt*0.01) continue;
+      const dx=Math.sign(p.x-m.x), dy=Math.sign(p.y-m.y);
+      const cand = (Math.random()<0.5) ? [[dx,0],[0,dy]] : [[0,dy],[dx,0]];
+      for(const [ax,ay] of cand){
+        const nx=m.x+ax, ny=m.y+ay;
+        if(inb(nx,ny) && !solid(nx,ny) && !(nx===p.x && ny===p.y)){
+          // não colidir com outros mobs
+          if(S.mobs.some(o=>o!==m && o.x===nx && o.y===ny)) continue;
+          m.x=nx; m.y=ny;
+          break;
+        }
+      }
+      // atacar se perto
+      if(Math.abs(m.x-p.x)+Math.abs(m.y-p.y)<=1 && p.ifr<=0){
+        const dmg=Math.max(1,m.atk+rand(-1,2) - (p.floor?0:0));
+        p.hp=clamp(p.hp-dmg,0,p.hpM);
+        p.ifr=350;
+        SFX.hit();
+        say(`${m.t} atacou! Você levou ${dmg} dano.`);
+        if(p.hp<=0){
+          SFX.bad();
+          say("Você caiu... voltou ao início do andar com HP parcial.");
+          p.hp=Math.max(18,Math.floor(p.hpM*0.45));
+          // respawn seguro
+          p.x=3; p.y=3;
+        }
+        save(); uiUpdate();
+      }
+    }
+  }
+
+  function uiUpdate(){
+    ui.floor.textContent=S.floor;
+    ui.hp.textContent=S.p.hp;
+    ui.hpB.style.width=(S.p.hp/S.p.hpM*100).toFixed(1)+"%";
+    ui.st.textContent=S.p.st|0;
+    ui.stB.style.width=(S.p.st).toFixed(1)+"%";
+    ui.gold.textContent=S.p.gold;
+    ui.atk.textContent=S.p.atk;
+    ui.pot.textContent=S.p.pot;
+    ui.key.textContent=S.p.key;
+  }
+  uiUpdate();
+
+  function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch{}}
+  function load(){try{const s=localStorage.getItem(SAVE);return s?JSON.parse(s):null;}catch{return null;}}
+  function helpClose(){/*placeholder*/}
+
+  let last=performance.now(), moveCD=0;
+  function loop(now){
+    const dt=now-last; last=now;
+    moveCD-=dt;
+    S.p.ifr=Math.max(0,S.p.ifr-dt);
+    // regen stamina
+    S.p.st=clamp(S.p.st + dt*0.03,0,100);
+
+    // roll
+    if(keys.has("Shift") && S.p.st>20 && S.p.roll<=0){
+      S.p.roll=180;
+      S.p.st=clamp(S.p.st-18,0,100);
+      SFX.click();
+    }
+    if(S.p.roll>0){ S.p.roll-=dt; }
+
+    // move
+    if(moveCD<=0){
+      let dx=0,dy=0;
+      if(keys.has("ArrowUp")||keys.has("w")||keys.has("W")) dy=-1;
+      if(keys.has("ArrowDown")||keys.has("s")||keys.has("S")) dy=1;
+      if(keys.has("ArrowLeft")||keys.has("a")||keys.has("A")) dx=-1;
+      if(keys.has("ArrowRight")||keys.has("d")||keys.has("D")) dx=1;
+      const sp = (S.p.roll>0) ? 2 : 1;
+      if(dx||dy){
+        const nx=S.p.x+dx*sp, ny=S.p.y+dy*sp;
+        if(inb(nx,ny) && !solid(nx,ny)){
+          S.p.x=nx; S.p.y=ny;
+          moveCD=110;
+          SFX.step();
+          save();
+        } else moveCD=90;
+      }
+    }
+
+    mobAI(dt);
+    draw();
+    uiUpdate();
+    requestAnimationFrame(loop);
+  }
+
+  function draw(){
+    const dpr=DPR(), w=canvas.width, h=canvas.height;
+    g.clearRect(0,0,w,h);
+    g.save(); g.scale(dpr,dpr);
+    const bw=canvas.getBoundingClientRect().width, bh=canvas.getBoundingClientRect().height;
+    const scale=Math.min(bw/(W*T), bh/(H*T));
+    const ox=(bw-W*T*scale)/2, oy=(bh-H*T*scale)/2;
+    g.translate(ox,oy); g.scale(scale,scale);
+
+    // tiles
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const v=S.map[x+y*W];
+      if(v===1) g.fillStyle="#1d1d2f"; else g.fillStyle="#0b0b16";
+      g.fillRect(x*T,y*T,T,T);
+      g.strokeStyle="rgba(255,255,255,.03)"; g.strokeRect(x*T,y*T,T,T);
+    }
+
+    // stairs
+    g.fillStyle="rgba(0,224,255,.15)";
+    g.fillRect(S.stairs.x*T+6,S.stairs.y*T+6,T-12,T-12);
+    g.strokeStyle="rgba(0,224,255,.45)";
+    g.strokeRect(S.stairs.x*T+6,S.stairs.y*T+6,T-12,T-12);
+    g.fillStyle="#fff"; g.font="16px system-ui"; g.fillText("⇣", S.stairs.x*T+14, S.stairs.y*T+22);
+
+    // chests
+    for(const c of S.chests){
+      const fx=c.open ? "rgba(255,209,102,.18)" : "rgba(255,209,102,.10)";
+      const st=c.locked ? "rgba(255,77,109,.55)" : "rgba(255,209,102,.35)";
+      g.fillStyle=fx; g.fillRect(c.x*T+6,c.y*T+8,T-12,T-14);
+      g.strokeStyle=st; g.strokeRect(c.x*T+6,c.y*T+8,T-12,T-14);
+      g.fillStyle="#fff"; g.font="12px system-ui"; g.fillText(c.open?"✓":(c.locked?"🔒":"📦"), c.x*T+12, c.y*T+22);
+    }
+
+    // mobs
+    for(const m of S.mobs){
+      g.fillStyle="rgba(255,255,255,.05)";
+      g.fillRect(m.x*T+4,m.y*T+4,T-8,T-8);
+      g.fillStyle=m.color; g.fillRect(m.x*T+8,m.y*T+8,T-16,T-16);
+      g.strokeStyle="rgba(255,255,255,.25)"; g.strokeRect(m.x*T+8,m.y*T+8,T-16,T-16);
+
+      // hp mini
+      g.fillStyle="rgba(0,0,0,.35)";
+      g.fillRect(m.x*T+6,m.y*T+4,T-12,4);
+      g.fillStyle="rgba(255,77,109,.9)";
+      g.fillRect(m.x*T+6,m.y*T+4,(T-12)*(m.hp/m.hpM),4);
+
+      g.fillStyle="#fff"; g.font="11px system-ui";
+      g.fillText(m.boss?"B":"!", m.x*T+13, m.y*T+22);
+    }
+
+    // player
+    const p=S.p;
+    const cx=p.x*T+T/2, cy=p.y*T+T/2;
+    const rg=g.createRadialGradient(cx,cy,2,cx,cy,18);
+    rg.addColorStop(0,"rgba(0,224,255,.35)"); rg.addColorStop(1,"rgba(123,0,255,0)");
+    g.fillStyle=rg; g.beginPath(); g.arc(cx,cy,18,0,Math.PI*2); g.fill();
+    g.fillStyle="#00e0ff"; g.fillRect(p.x*T+10,p.y*T+10,T-20,T-20);
+    g.strokeStyle="rgba(255,255,255,.35)"; g.strokeRect(p.x*T+10,p.y*T+10,T-20,T-20);
+
+    g.restore();
+  }
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
