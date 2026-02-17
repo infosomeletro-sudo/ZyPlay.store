@@ -1,859 +1,98 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ZYPLAY • Arena v2</title>
-  <meta name="description" content="ZyPlay: Arena de jogos HTML5 com salas, ranking e ZyCoin." />
+<meta charset="UTF-8">
+<title>ZyPlay Arena</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    :root{
-      --bg:#050510;
-      --panel: rgba(18,18,43,.82);
-      --panel2: rgba(8,8,20,.62);
-      --stroke: rgba(255,255,255,.12);
-      --pink:#ff007a;
-      --blue:#00d4ff;
-      --gold:#ffcc00;
-      --ok:#22c55e;
-      --shadow: 0 0 40px rgba(0,212,255,.10), 0 0 60px rgba(255,0,122,.08);
-      --radius: 18px;
-    }
+<style>
+body{
+background:#0f0f1a;
+color:white;
+font-family:Arial;
+margin:0;
+}
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#fff;
-      background:
-        radial-gradient(900px 600px at 20% -10%, rgba(255,0,122,.18), transparent 60%),
-        radial-gradient(900px 600px at 80% 0%, rgba(0,212,255,.18), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.03), transparent 30%),
-        var(--bg);
-      min-height:100vh;
-      overflow-x:hidden;
-    }
+header{
+background:#111827;
+padding:20px;
+text-align:center;
+font-size:28px;
+font-weight:bold;
+color:#00ffff;
+}
 
-    /* Top bar */
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter: blur(12px);
-      background: rgba(10,10,25,.70);
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .topbar-inner{
-      max-width: 1180px; margin:0 auto;
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding: 12px 14px;
-    }
-    .brand{
-      display:flex; align-items:center; gap:12px; min-width: 220px;
-    }
-    .logo{
-      width:42px; height:42px; border-radius:14px;
-      background: linear-gradient(135deg, rgba(0,212,255,.95), rgba(255,0,122,.92));
-      box-shadow: 0 0 24px rgba(0,212,255,.18);
-      position:relative;
-    }
-    .logo:after{
-      content:"";
-      position:absolute; inset:9px;
-      border-radius:12px;
-      border: 2px solid rgba(255,255,255,.55);
-      transform: rotate(10deg);
-      opacity:.6;
-    }
-    .brand h1{
-      margin:0;
-      font-weight: 950;
-      letter-spacing: .5px;
-      font-size: 16px;
-      line-height: 1.1;
-    }
-    .brand small{
-      display:block;
-      opacity:.72;
-      font-weight:700;
-      font-size: 12px;
-      margin-top: 2px;
-    }
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+padding:30px;
+}
 
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius: 999px;
-      background: rgba(0,0,0,.22);
-      font-weight: 850;
-      white-space:nowrap;
-    }
-    .chip b{color: var(--gold)}
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:12px;
+text-align:center;
+transition:0.3s;
+}
 
-    .actions{
-      display:flex; align-items:center; gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-    .btn{
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.25);
-      color:#fff;
-      padding: 10px 12px;
-      border-radius: 14px;
-      cursor:pointer;
-      font-weight: 900;
-      text-decoration:none;
-      display:inline-flex; align-items:center; gap:10px;
-      transition: transform .12s, border-color .12s, box-shadow .12s;
-      user-select:none;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(0,212,255,.55);
-      box-shadow: 0 0 18px rgba(0,212,255,.10);
-    }
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(255,0,122,.95), rgba(0,212,255,.95));
-      border-color: rgba(255,255,255,.18);
-      box-shadow: var(--shadow);
-    }
-    .btn.ghost{
-      background: rgba(255,255,255,.05);
-    }
+.card:hover{
+transform:scale(1.05);
+background:#111827;
+}
 
-    /* Fake login buttons (visual, sem OAuth real) */
-    .login{
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .login a{
-      padding: 10px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color:#fff;
-      text-decoration:none;
-      font-weight:900;
-      display:inline-flex; gap:10px; align-items:center;
-    }
-    .login a:hover{border-color: rgba(255,255,255,.28)}
-    .gmark{
-      width:18px;height:18px;border-radius:4px;
-      background:
-        conic-gradient(from 210deg, #ea4335 0 25%, #fbbc05 0 50%, #34a853 0 75%, #4285f4 0 100%);
-    }
-    .fmark{
-      width:18px;height:18px;border-radius:999px;
-      background:#1877f2;
-      position:relative;
-    }
-    .fmark:after{
-      content:"f";
-      position:absolute; inset:0;
-      display:grid; place-items:center;
-      font-weight:950;
-      font-family: ui-sans-serif, system-ui, Arial;
-    }
-
-    /* Layout */
-    .wrap{max-width:1180px;margin:0 auto;padding: 16px 14px 50px;}
-    .hero{
-      margin-top: 14px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(18,18,43,.78), rgba(5,5,16,.55));
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-    .hero-grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:16px;
-      padding: 18px;
-      align-items:stretch;
-    }
-    @media (max-width: 920px){
-      .hero-grid{grid-template-columns: 1fr;}
-      .brand{min-width:auto}
-    }
-    .hero h2{
-      margin:0 0 8px;
-      font-size: 28px;
-      letter-spacing: .2px;
-      font-weight: 1000;
-    }
-    .hero p{
-      margin:0 0 14px;
-      opacity:.84;
-      line-height:1.35;
-      max-width: 62ch;
-    }
-    .hero-badges{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin: 10px 0 14px;
-    }
-    .badge{
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      font-weight: 850;
-      display:inline-flex; gap:8px; align-items:center;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:999px;background: var(--ok);
-      box-shadow: 0 0 16px rgba(34,197,94,.35);
-    }
-    .arena-card{
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      padding: 14px;
-      display:flex; flex-direction:column; justify-content:space-between;
-      min-height: 210px;
-    }
-    .arena-card h3{
-      margin:0;
-      font-weight: 1000;
-      font-size: 16px;
-      letter-spacing:.2px;
-    }
-    .arena-card .sub{
-      opacity:.78;
-      font-weight:700;
-      font-size: 13px;
-      margin-top: 6px;
-      line-height:1.35;
-    }
-    .arena-rooms{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin-top: 12px;
-    }
-    .room{
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      padding: 10px;
-      text-align:left;
-      cursor:pointer;
-      transition: transform .12s, border-color .12s;
-      min-height: 74px;
-    }
-    .room:hover{transform: translateY(-1px); border-color: rgba(0,212,255,.45)}
-    .room b{display:block; font-weight:1000}
-    .room small{opacity:.75; font-weight:700}
-    @media (max-width: 600px){
-      .arena-rooms{grid-template-columns: 1fr;}
-    }
-
-    /* Controls */
-    .controls{
-      margin-top: 16px;
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      justify-content:space-between;
-    }
-    .search{
-      flex:1;
-      min-width: 240px;
-      display:flex; gap:10px; align-items:center;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      border-radius: 14px;
-      padding: 10px 12px;
-    }
-    .search input{
-      width:100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color:#fff;
-      font-weight: 850;
-      font-size: 14px;
-    }
-    .filters{
-      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
-    select{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color:#fff;
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-weight: 900;
-      outline:none;
-      cursor:pointer;
-    }
-    option{background:#0b0b1a}
-
-    /* Game grid */
-    .grid{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-    @media (max-width: 1020px){ .grid{grid-template-columns: repeat(3, 1fr);} }
-    @media (max-width: 760px){ .grid{grid-template-columns: repeat(2, 1fr);} }
-    @media (max-width: 460px){ .grid{grid-template-columns: 1fr;} }
-
-    .card{
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.20);
-      overflow:hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,.25);
-      transition: transform .12s, border-color .12s, box-shadow .12s;
-      display:flex; flex-direction:column;
-      min-height: 220px;
-      position:relative;
-    }
-    .card:hover{
-      transform: translateY(-2px);
-      border-color: rgba(0,212,255,.45);
-      box-shadow: 0 0 28px rgba(0,212,255,.10), 0 0 28px rgba(255,0,122,.08);
-    }
-    .thumb{
-      height: 120px;
-      background: linear-gradient(135deg, rgba(0,212,255,.10), rgba(255,0,122,.10));
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      display:grid;
-      place-items:center;
-      position:relative;
-      overflow:hidden;
-    }
-    .thumb:before{
-      content:"";
-      position:absolute; inset:-60px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,204,0,.16), transparent 45%),
-        radial-gradient(circle at 70% 20%, rgba(0,212,255,.14), transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(255,0,122,.12), transparent 55%);
-      transform: rotate(8deg);
-    }
-    .thumb svg{position:relative; z-index:1; filter: drop-shadow(0 0 14px rgba(0,212,255,.20));}
-
-    .card-body{padding: 12px; display:flex; flex-direction:column; gap:8px; flex:1}
-    .title{font-weight: 1000; letter-spacing:.2px; font-size: 14px; line-height:1.2}
-    .meta{opacity:.78; font-weight:700; font-size: 12px; display:flex; gap:10px; flex-wrap:wrap}
-    .meta span{display:inline-flex; gap:6px; align-items:center}
-    .tag{
-      padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      font-weight: 900;
-      font-size: 11px;
-      letter-spacing:.2px;
-      text-transform: uppercase;
-    }
-    .actions-row{
-      margin-top:auto;
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-    }
-    .play{
-      width: 100%;
-      justify-content:center;
-      background: rgba(255,255,255,.06);
-    }
-    .play:hover{border-color: rgba(255,0,122,.45)}
-    .fav{
-      width: 44px; height:44px;
-      justify-content:center;
-      border-radius: 14px;
-    }
-
-    /* Arena Modal */
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.66);
-      backdrop-filter: blur(8px);
-      display:none;
-      align-items:center; justify-content:center;
-      padding: 14px;
-      z-index: 999;
-    }
-    .modal{
-      width: min(980px, 96vw);
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(18,18,43,.88), rgba(7,7,18,.78));
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .modal-header{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
-      padding: 14px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .modal-header h3{margin:0;font-weight:1000}
-    .modal-content{padding: 14px}
-    .room-grid{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    @media (max-width: 860px){ .room-grid{grid-template-columns: repeat(2, 1fr);} }
-    @media (max-width: 560px){ .room-grid{grid-template-columns: 1fr;} }
-
-    .room-card{
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      padding: 12px;
-      display:flex; flex-direction:column; gap:10px;
-      min-height: 160px;
-    }
-    .room-card h4{margin:0;font-weight:1000}
-    .room-card p{margin:0;opacity:.82;font-weight:700;font-size:13px;line-height:1.35}
-    .room-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:auto}
-    .mini{
-      padding: 7px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color:#fff;
-      font-weight: 900;
-      text-decoration:none;
-      font-size: 12px;
-    }
-    .mini:hover{border-color: rgba(0,212,255,.5)}
-    footer{
-      margin-top: 18px;
-      opacity:.78;
-      font-size:12px;
-      text-align:center;
-    }
-  </style>
+button{
+margin-top:10px;
+padding:10px 20px;
+border:none;
+background:#00ffff;
+color:black;
+font-weight:bold;
+cursor:pointer;
+border-radius:6px;
+}
+</style>
 </head>
 
 <body>
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>ZYPLAY • Arena v2</h1>
-          <small>Jogos HTML5 + ZyCoin • Brasil</small>
-        </div>
-      </div>
+<header>🎮 ZYPLAY ARENA 🎮</header>
 
-      <div class="actions">
-        <div class="chip">ZyCoin: <b id="zycoin">0</b></div>
-        <a class="btn ghost" href="#jogos">🎮 Jogos</a>
-        <button class="btn primary" id="openArena">🏟️ Entrar na Arena</button>
-        <div class="login">
-          <a href="#" onclick="alert('Login real (OAuth) ainda não está ativo. Por enquanto é visual.'); return false;">
-            <span class="gmark"></span> Entrar com Google
-          </a>
-          <a href="#" onclick="alert('Login real (OAuth) ainda não está ativo. Por enquanto é visual.'); return false;">
-            <span class="fmark"></span> Entrar com Facebook
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="grid">
 
-  <div class="wrap">
+<!-- LISTA COMPLETA -->
 
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-grid">
-        <div>
-          <h2>Bem-vindo ao <span style="color:var(--gold)">ZyPlay</span>.</h2>
-          <p>
-            Sua arena de jogos em HTML5: rápido, leve e pronto para monetização.
-            Escolha uma sala na Arena v2 ou abra qualquer jogo direto no catálogo.
-          </p>
+<div class="card">Blocos<br><a href="jogador/jogos/blocos.html"><button>Jogar</button></a></div>
+<div class="card">Cobrinha<br><a href="jogador/jogos/cobrinha.html"><button>Jogar</button></a></div>
+<div class="card">Flappy<br><a href="jogador/jogos/flappy.html"><button>Jogar</button></a></div>
+<div class="card">Memória<br><a href="jogador/jogos/memoria.html"><button>Jogar</button></a></div>
+<div class="card">2048<br><a href="jogador/jogos/mesclar-2048.html"><button>Jogar</button></a></div>
+<div class="card">Tiro<br><a href="jogador/jogos/tiro.html"><button>Jogar</button></a></div>
 
-          <div class="hero-badges">
-            <div class="badge"><span class="dot"></span> Online • Vercel Ready</div>
-            <div class="badge">⚡ Carregamento instantâneo</div>
-            <div class="badge">🧩 Catálogo com <span id="countGames">0</span> jogos</div>
-          </div>
+<div class="card">Frogger Neon<br><a href="jogador/jogos/frogger-neon.html"><button>Jogar</button></a></div>
+<div class="card">Matemática<br><a href="jogador/jogos/matemática.html"><button>Jogar</button></a></div>
+<div class="card">Sobrevivente Meteoro<br><a href="jogador/jogos/sobrevivente-do-meteoro.html"><button>Jogar</button></a></div>
+<div class="card">Nave<br><a href="jogador/jogos/nave.html"><button>Jogar</button></a></div>
+<div class="card">Pong Neon<br><a href="jogador/jogos/pong-neon.html"><button>Jogar</button></a></div>
+<div class="card">Reflexo<br><a href="jogador/jogos/reflexo.html"><button>Jogar</button></a></div>
 
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn primary" id="ctaArena">🏟️ Jogar ZyPlay Arena v2</button>
-            <a class="btn" href="#jogos">Explorar catálogo →</a>
-            <button class="btn" onclick="resetCoins()">↻ Reset ZyCoin (demo)</button>
-          </div>
-        </div>
+<div class="card">Whaccyber<br><a href="jogador/jogos/whaccyber.html"><button>Jogar</button></a></div>
+<div class="card">Zy Island Survival<br><a href="jogador/jogos/zyIslandsurvival.html"><button>Jogar</button></a></div>
+<div class="card">Zy Blocks<br><a href="jogador/jogos/zyblocks.html"><button>Jogar</button></a></div>
+<div class="card">Zy Dungeon<br><a href="jogador/jogos/zydungeon.html"><button>Jogar</button></a></div>
+<div class="card">Neon Racer<br><a href="jogador/jogos/zyplayneonracer.html"><button>Jogar</button></a></div>
+<div class="card">Puzzle Relic<br><a href="jogador/jogos/zyplaypuzzlerelic.html"><button>Jogar</button></a></div>
 
-        <div class="arena-card">
-          <div>
-            <h3>ZyPlay Arena v2 (Jogo Principal)</h3>
-            <div class="sub">
-              6 salas temáticas. Cada sala leva para uma seleção de jogos.
-              (Inclui <b>RPG Quest</b>).
-            </div>
-          </div>
+<div class="card">Rhythm Dash<br><a href="jogador/jogos/zyplayrhythmdash.html"><button>Jogar</button></a></div>
+<div class="card">Sky Platformer<br><a href="jogador/jogos/zyplayskyplatformer.html"><button>Jogar</button></a></div>
+<div class="card">Tower Guard<br><a href="jogador/jogos/zyplaytowerguard.html"><button>Jogar</button></a></div>
+<div class="card">Zy Quest<br><a href="jogador/jogos/zyquest.html"><button>Jogar</button></a></div>
+<div class="card">Zy RPG<br><a href="jogador/jogos/zyrpg.html"><button>Jogar</button></a></div>
+<div class="card">Space Odyssey<br><a href="jogador/jogos/zyspaceodyssey.html"><button>Jogar</button></a></div>
+<div class="card">Temple Run<br><a href="jogador/jogos/zytemplerun.html"><button>Jogar</button></a></div>
 
-          <div class="arena-rooms" id="roomsQuick"></div>
-
-          <div style="display:flex;gap:10px;margin-top:12px">
-            <button class="btn primary" id="arenaStart">▶ Entrar</button>
-            <button class="btn" id="arenaHow">ℹ️ Como funciona</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONTROLS -->
-    <div class="controls" id="jogos">
-      <div class="search">
-        🔎 <input id="q" placeholder="Buscar jogo… (ex: zy, flappy, rpg, corrida)" autocomplete="off" />
-      </div>
-      <div class="filters">
-        <select id="cat">
-          <option value="all">Todas categorias</option>
-          <option value="Arcade">Arcade</option>
-          <option value="Puzzle">Puzzle</option>
-          <option value="Reflexo">Reflexo</option>
-          <option value="Corrida">Corrida</option>
-          <option value="Aventura">Aventura</option>
-          <option value="RPG">RPG</option>
-          <option value="Edu">Edu</option>
-        </select>
-
-        <select id="sort">
-          <option value="az">Ordenar: A → Z</option>
-          <option value="za">Ordenar: Z → A</option>
-          <option value="new">Ordenar: Destaques primeiro</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- GAME GRID -->
-    <div class="grid" id="grid"></div>
-
-    <footer>
-      ZyPlay • Arena v2 • HTML5 Games • (demo ZyCoin local no navegador)
-    </footer>
-  </div>
-
-  <!-- ARENA MODAL -->
-  <div class="modal-backdrop" id="arenaModal" role="dialog" aria-modal="true" aria-label="ZyPlay Arena v2">
-    <div class="modal">
-      <div class="modal-header">
-        <h3>🏟️ ZyPlay Arena v2</h3>
-        <button class="btn" id="closeArena">✕ Fechar</button>
-      </div>
-      <div class="modal-content">
-        <p style="margin:0 0 12px;opacity:.85;font-weight:750">
-          Escolha uma sala. Cada sala abre um conjunto de jogos. Ganhe ZyCoin (demo) ao clicar em “Jogar”.
-        </p>
-        <div class="room-grid" id="rooms"></div>
-      </div>
-    </div>
-  </div>
-
-<script>
-/* ============================
-   CONFIG
-============================ */
-const GAMES_BASE = "jogos/"; // <-- MUDE se seus jogos estiverem em outra pasta
-
-/* ============================
-   ZYCOIN (DEMO - localStorage)
-============================ */
-const COIN_KEY = "zycoin_balance_v2";
-function getCoins(){ return Number(localStorage.getItem(COIN_KEY) || 0); }
-function setCoins(v){ localStorage.setItem(COIN_KEY, String(v)); renderCoins(); }
-function addCoins(v){ setCoins(getCoins()+v); }
-function resetCoins(){ if(confirm("Resetar ZyCoin (demo)?")) setCoins(0); }
-function renderCoins(){ document.getElementById("zycoin").textContent = getCoins(); }
-renderCoins();
-
-/* ============================
-   GAMES LIST
-   (Usei exatamente os nomes que você mandou)
-============================ */
-const games = [
-  {file:"flappy.html", title:"Flappy", cat:"Arcade", featured:true},
-  {file:"frogger-neon.html", title:"Travessia Neon (Frogger)", cat:"Arcade", featured:true},
-  {file:"matemática.html", title:"Matemática", cat:"Edu", featured:false},
-  {file:"memoria.html", title:"Memória", cat:"Puzzle", featured:false},
-  {file:"mesclar-2048.html", title:"ZYMerge 2048", cat:"Puzzle", featured:true},
-  {file:"sobrevivente-do-meteoro.html", title:"Meteor Survivor", cat:"Arcade", featured:true},
-  {file:"nave.html", title:"Nave", cat:"Arcade", featured:false},
-  {file:"pong-neon.html", title:"Pong Neon", cat:"Arcade", featured:true},
-  {file:"reflexo.html", title:"Reflexo", cat:"Reflexo", featured:true},
-  {file:"tiro.html", title:"Tiro", cat:"Reflexo", featured:true},
-  {file:"whaccyber.html", title:"Whack Cyber", cat:"Reflexo", featured:true},
-  {file:"zyIslandsurvival.html", title:"Zy Island Survival", cat:"Aventura", featured:true},
-  {file:"zyblocks.html", title:"Zy Blocks", cat:"Puzzle", featured:true},
-  {file:"zydungeon.html", title:"Zy Dungeon", cat:"Aventura", featured:true},
-  {file:"zyplayneonracer.html", title:"ZyPlay Neon Racer", cat:"Corrida", featured:true},
-  {file:"zyplaypuzzlerelic.html", title:"ZyPlay Puzzle Relic", cat:"Puzzle", featured:true},
-  {file:"zyplayrhythmdash.html", title:"ZyPlay Rhythm Dash", cat:"Reflexo", featured:true},
-  {file:"zyplayskyplatformer.html", title:"ZyPlay Sky Platformer", cat:"Aventura", featured:true},
-  {file:"zyplaytowerguard.html", title:"ZyPlay Tower Guard", cat:"Aventura", featured:true},
-  {file:"zyquest.html", title:"RPG Quest (ZyQuest)", cat:"RPG", featured:true},
-  {file:"zyrpg.html", title:"ZyRPG", cat:"RPG", featured:true},
-  {file:"zyspaceodyssey.html", title:"Zy Space Odyssey", cat:"Aventura", featured:true},
-  {file:"zytemplerun.html", title:"Zy Temple Run", cat:"Aventura", featured:true},
-];
-
-/* ============================
-   SVG THUMBNAILS (sem imagens externas)
-   Gera um SVG “capa” por jogo
-============================ */
-function svgThumb(seedText){
-  // hash simples
-  let h=0; for(let i=0;i<seedText.length;i++) h=(h*31 + seedText.charCodeAt(i))>>>0;
-  const a = (h % 360);
-  const b = ((h/3) % 360);
-  const c = ((h/7) % 360);
-  const icon = pickIcon(seedText);
-  const label = seedText.replace(/\.html$/i,"").slice(0,16);
-
-  return `
-  <svg width="220" height="120" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label}">
-    <defs>
-      <linearGradient id="g${h}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="hsla(${a},92%,60%,.95)"/>
-        <stop offset="1" stop-color="hsla(${b},92%,55%,.95)"/>
-      </linearGradient>
-      <radialGradient id="r${h}" cx="35%" cy="30%" r="70%">
-        <stop offset="0" stop-color="hsla(${c},92%,70%,.28)"/>
-        <stop offset="1" stop-color="rgba(0,0,0,0)"/>
-      </radialGradient>
-    </defs>
-
-    <rect x="0" y="0" width="220" height="120" rx="18" fill="rgba(0,0,0,.22)"/>
-    <rect x="8" y="8" width="204" height="104" rx="16" fill="url(#g${h})" opacity=".20"/>
-    <rect x="8" y="8" width="204" height="104" rx="16" fill="url(#r${h})"/>
-
-    <!-- grid -->
-    <g opacity=".22" stroke="white">
-      ${Array.from({length:10}).map((_,i)=>`<line x1="${18+i*20}" y1="10" x2="${18+i*20}" y2="110"/>`).join("")}
-      ${Array.from({length:6}).map((_,i)=>`<line x1="10" y1="${18+i*18}" x2="210" y2="${18+i*18}"/>`).join("")}
-    </g>
-
-    <!-- icon -->
-    <g transform="translate(18,18)" opacity=".95">
-      ${icon}
-    </g>
-
-    <!-- label -->
-    <text x="18" y="108" font-size="12" font-weight="900" fill="rgba(255,255,255,.92)" font-family="system-ui,Arial">
-      ${label.toUpperCase()}
-    </text>
-  </svg>`;
-}
-
-function pickIcon(name){
-  const n = name.toLowerCase();
-  if(n.includes("pong")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <rect x="10" y="10" width="8" height="36" rx="4" fill="rgba(255,255,255,.85)"/>
-    <rect x="38" y="14" width="8" height="28" rx="4" fill="rgba(255,255,255,.85)"/>
-    <circle cx="28" cy="28" r="6" fill="rgba(255,255,255,.9)"/>`;
-  if(n.includes("2048") || n.includes("mesclar")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    ${[0,1,2,3].map(r=>[0,1,2,3].map(c=>`<rect x="${8+c*12}" y="${8+r*12}" width="10" height="10" rx="3" fill="rgba(255,255,255,.28)"/>`).join("")).join("")}
-    <rect x="20" y="20" width="22" height="22" rx="6" fill="rgba(255,255,255,.80)"/>`;
-  if(n.includes("racer") || n.includes("corrida")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <path d="M18 48 L26 8 L30 8 L38 48 Z" fill="rgba(255,255,255,.82)"/>
-    <rect x="22" y="30" width="12" height="8" rx="3" fill="rgba(0,0,0,.35)"/>
-    <circle cx="20" cy="46" r="5" fill="rgba(0,0,0,.40)"/><circle cx="36" cy="46" r="5" fill="rgba(0,0,0,.40)"/>`;
-  if(n.includes("rpg") || n.includes("quest") || n.includes("dungeon")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <path d="M28 8 L42 18 L36 44 L20 44 L14 18 Z" fill="rgba(255,255,255,.82)"/>
-    <circle cx="28" cy="26" r="6" fill="rgba(0,0,0,.25)"/>
-    <rect x="26" y="32" width="4" height="10" rx="2" fill="rgba(0,0,0,.28)"/>`;
-  if(n.includes("flappy") || n.includes("sky") || n.includes("nave") || n.includes("space")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <path d="M28 10 L44 46 L28 38 L12 46 Z" fill="rgba(255,255,255,.85)"/>
-    <circle cx="28" cy="26" r="6" fill="rgba(0,0,0,.28)"/>
-    <path d="M28 38 C20 42, 36 42, 28 38 Z" fill="rgba(0,0,0,.22)"/>`;
-  if(n.includes("memoria") || n.includes("puzzle")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <rect x="12" y="12" width="14" height="14" rx="4" fill="rgba(255,255,255,.75)"/>
-    <rect x="30" y="12" width="14" height="14" rx="4" fill="rgba(255,255,255,.35)"/>
-    <rect x="12" y="30" width="14" height="14" rx="4" fill="rgba(255,255,255,.35)"/>
-    <rect x="30" y="30" width="14" height="14" rx="4" fill="rgba(255,255,255,.75)"/>`;
-  if(n.includes("tiro") || n.includes("whacc") || n.includes("reflexo")) return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <path d="M10 40 L26 24 L32 30 L16 46 Z" fill="rgba(255,255,255,.85)"/>
-    <circle cx="40" cy="22" r="10" fill="rgba(255,255,255,.22)"/><circle cx="40" cy="22" r="6" fill="rgba(255,255,255,.45)"/>
-    <circle cx="40" cy="22" r="2.5" fill="rgba(255,255,255,.85)"/>`;
-  // default
-  return `<rect x="0" y="0" width="56" height="56" rx="14" fill="rgba(0,0,0,.25)"/>
-    <path d="M14 18 H42 V38 H14 Z" fill="rgba(255,255,255,.78)"/>
-    <circle cx="22" cy="28" r="3" fill="rgba(0,0,0,.28)"/>
-    <circle cx="34" cy="28" r="3" fill="rgba(0,0,0,.28)"/>`;
-}
-
-/* ============================
-   ARENA ROOMS v2 (6 salas)
-============================ */
-const rooms = [
-  {
-    id:"arcade",
-    title:"Sala Arcade",
-    desc:"Clássicos rápidos e viciantes.",
-    cats:["Arcade"],
-    picks:["pong-neon.html","flappy.html","sobrevivente-do-meteoro.html","frogger-neon.html","nave.html"]
-  },
-  {
-    id:"reflexo",
-    title:"Sala Reflexo",
-    desc:"Reação e precisão (som + ritmo).",
-    cats:["Reflexo"],
-    picks:["reflexo.html","tiro.html","whaccyber.html","zyplayrhythmdash.html"]
-  },
-  {
-    id:"puzzle",
-    title:"Sala Puzzle",
-    desc:"Quebra-cabeças e lógica.",
-    cats:["Puzzle","Edu"],
-    picks:["mesclar-2048.html","memoria.html","zyblocks.html","zyplaypuzzlerelic.html","matemática.html"]
-  },
-  {
-    id:"corrida",
-    title:"Sala Corrida",
-    desc:"Velocidade e neon.",
-    cats:["Corrida"],
-    picks:["zyplayneonracer.html"]
-  },
-  {
-    id:"aventura",
-    title:"Sala Aventura",
-    desc:"Exploração, sobrevivência e plataformas.",
-    cats:["Aventura"],
-    picks:["zyIslandsurvival.html","zyspaceodyssey.html","zytemplerun.html","zyplayskyplatformer.html","zyplaytowerguard.html","zydungeon.html"]
-  },
-  {
-    id:"rpg",
-    title:"Sala RPG Quest",
-    desc:"Missões, masmorras e progressão.",
-    cats:["RPG"],
-    picks:["zyquest.html","zyrpg.html","zydungeon.html"]
-  }
-];
-
-/* ============================
-   RENDER
-============================ */
-document.getElementById("countGames").textContent = games.length;
-
-const gridEl = document.getElementById("grid");
-const qEl = document.getElementById("q");
-const catEl = document.getElementById("cat");
-const sortEl = document.getElementById("sort");
-
-function gameUrl(file){ return GAMES_BASE + file; }
-
-function renderGames(){
-  const q = (qEl.value || "").trim().toLowerCase();
-  const cat = catEl.value;
-  const sort = sortEl.value;
-
-  let list = games.filter(g=>{
-    const matchQ = !q || (g.title+" "+g.file+" "+g.cat).toLowerCase().includes(q);
-    const matchC = (cat==="all") || (g.cat===cat);
-    return matchQ && matchC;
-  });
-
-  if(sort==="az") list.sort((a,b)=>a.title.localeCompare(b.title,"pt-BR"));
-  if(sort==="za") list.sort((a,b)=>b.title.localeCompare(a.title,"pt-BR"));
-  if(sort==="new"){
-    list.sort((a,b)=>(b.featured===true)-(a.featured===true) || a.title.localeCompare(b.title,"pt-BR"));
-  }
-
-  gridEl.innerHTML = list.map(g=>{
-    const badge = g.featured ? `<span class="tag" style="border-color:rgba(255,204,0,.35)">Destaque</span>` : `<span class="tag">${g.cat}</span>`;
-    const thumb = svgThumb(g.file);
-    const url = gameUrl(g.file);
-    return `
-      <article class="card">
-        <div class="thumb">${thumb}</div>
-        <div class="card-body">
-          <div class="title">${g.title}</div>
-          <div class="meta">
-            <span>📁 <span style="opacity:.9">${g.file}</span></span>
-            <span>🏷️ <span style="opacity:.9">${g.cat}</span></span>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">${badge}</div>
-          <div class="actions-row">
-            <a class="btn play" href="${url}" target="_self" onclick="addCoins(3)">
-              ▶ Jogar (+3 ZyCoin)
-            </a>
-            <button class="btn fav" title="Favoritar (demo)" onclick="fav('${g.file}')">★</button>
-          </div>
-        </div>
-      </article>
-    `;
-  }).join("");
-
-  document.getElementById("countGames").textContent = list.length;
-}
-
-function fav(file){
-  addCoins(1);
-  alert("⭐ Favoritado (demo): " + file + "\\n(+1 ZyCoin)");
-}
-
-qEl.addEventListener("input", renderGames);
-catEl.addEventListener("change", renderGames);
-sortEl.addEventListener("change", renderGames);
-renderGames();
-
-/* ============================
-   ARENA MODAL
-============================ */
-const modal = document.getElementById("arenaModal");
-const openArenaBtn = document.getElementById("openArena");
-const ctaArena = document.getElementById("ctaArena");
-const arenaStart = document.getElementById("arenaStart");
-const closeArena = document.getElementById("closeArena");
-const arenaHow = document.getElementById("arenaHow");
-
-function openArena(){ modal.style.display="flex"; }
-function closeArenaFn(){ modal.style.display="none"; }
-openArenaBtn.onclick=openArena;
-ctaArena.onclick=openArena;
-arenaStart.onclick=openArena;
-closeArena.onclick=closeArenaFn;
-modal.addEventListener("click",(e)=>{ if(e.target===modal) closeArenaFn(); });
-
-arenaHow.onclick=()=>{
-  alert("🏟️ ZyPlay Arena v2\\n\\n• Escolha uma sala\\n• Cada sala tem jogos recomendados\\n• Clique em Jogar para abrir\\n• ZyCoin aqui é demo (salvo no navegador)\\n\\nDepois você pode ligar com login real + ranking + banco de dados.");
-};
-
-/* render rooms quick (hero) */
-const rq = document.getElementById("roomsQuick");
-rq.innerHTML = rooms.map(r=>`
-  <div class="room" onclick="openRoom('${r.id}')">
-    <b>${r.title}</b>
-    <small>${r.desc}</small>
-  </div>
-`).join("");
-
-/* render rooms in modal */
-const roomsEl = document.getElementById("rooms");
-roomsEl.innerHTML = rooms.map(r=>{
-  const links = r.picks.map(f=>{
-    const g = games.find(x=>x.file===f);
-    const title = g?g.title:f;
-    return `<a class="mini" href="${gameUrl(f)}" onclick="addCoins(3)">${title}</a>`;
-  }).join("");
-  return `
-    <div class="room-card" id="room-${r.id}">
-      <h4>${r.title}</h4>
-      <p>${r.desc}</p>
-      <div class="room-list">${links}</div>
-    </div>
-  `;
-}).join("");
-
-/* open a room (scroll to it in modal) */
-window.openRoom = function(id){
-  openArena();
-  setTimeout(()=>{
-    const el = document.getElementById("room-"+id);
-    if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
-  }, 50);
-};
-</script>
+</div>
 
 </body>
 </html>
