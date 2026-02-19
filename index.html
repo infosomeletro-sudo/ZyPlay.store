@@ -1,845 +1,244 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ZYPLAY.store — Arena + Carteira</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZYPLAY.store - Arena Oficial</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#050512;
-      --panel:#0d1230;
-      --panel2:#0b1029;
-      --stroke:rgba(255,255,255,.10);
-      --muted:rgba(255,255,255,.72);
-      --muted2:rgba(255,255,255,.55);
-      --pink:#ff2aa6;
-      --cyan:#00f7ff;
-      --gold:#ffd54a;
-      --good:#4dff88;
-      --bad:#ff5577;
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
-      --r:18px;
-      --r2:14px;
-    }
+<style>
+body{
+    margin:0;
+    font-family:'Rajdhani', sans-serif;
+    background:linear-gradient(135deg,#050512,#0b1025);
+    color:white;
+}
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      color:#fff;
-      font-family:"Rajdhani", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(1100px 520px at 15% 0%, rgba(0,247,255,.20), transparent 55%),
-        radial-gradient(900px 520px at 90% 20%, rgba(255,42,166,.22), transparent 60%),
-        linear-gradient(135deg, #050512, #070b1b 55%, #050512);
-      overflow-x:hidden;
-    }
+header{
+    padding:20px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(0,0,0,.4);
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
 
-    /* Grid neon */
-    .grid-bg::before{
-      content:"";
-      position:fixed; inset:0;
-      background-image:
-        linear-gradient(rgba(255,42,166,.12) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,247,255,.10) 1px, transparent 1px);
-      background-size: 56px 56px;
-      opacity:.23;
-      pointer-events:none;
-      z-index:-2;
-    }
+.logo{
+    font-family:'Press Start 2P';
+    font-size:14px;
+}
 
-    /* Floating particles */
-    .grid-bg::after{
-      content:"";
-      position:fixed; inset:-30%;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(0,247,255,.10), transparent 35%),
-        radial-gradient(circle at 70% 55%, rgba(255,42,166,.10), transparent 35%),
-        radial-gradient(circle at 35% 75%, rgba(255,213,74,.08), transparent 40%);
-      filter: blur(20px);
-      animation: floaty 10s ease-in-out infinite alternate;
-      z-index:-3;
-      pointer-events:none;
-    }
-    @keyframes floaty{
-      from{transform: translate3d(-2%, -1%, 0) scale(1)}
-      to{transform: translate3d(2%, 1%, 0) scale(1.05)}
-    }
+nav a{
+    color:white;
+    text-decoration:none;
+    margin-left:15px;
+    font-weight:700;
+}
 
-    .wrap{max-width:1200px;margin:0 auto;padding:26px 16px 80px;}
+nav a:hover{
+    color:#00f7ff;
+}
 
-    /* Top */
-    .top{
-      display:flex; gap:14px; align-items:center; justify-content:space-between;
-      padding:16px 16px;
-      border:1px solid var(--stroke);
-      border-radius: var(--r);
-      background: linear-gradient(180deg, rgba(13,18,48,.90), rgba(11,16,41,.86));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      position:sticky;
-      top:10px;
-      z-index:50;
-    }
+.hero{
+    padding:60px 30px;
+    text-align:center;
+}
 
-    .brand{display:flex;gap:12px;align-items:center;min-width:260px;}
-    .logo{
-      width:46px;height:46px;border-radius:16px;
-      background: radial-gradient(circle at 30% 30%, var(--gold), var(--pink) 55%, #3a0bff);
-      box-shadow: 0 0 24px rgba(255,42,166,.35);
-      display:grid;place-items:center;
-      border:1px solid rgba(255,255,255,.14);
-      position:relative;
-      overflow:hidden;
-    }
-    .logo::after{
-      content:"";
-      position:absolute; inset:-60%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.30), transparent);
-      transform: rotate(20deg);
-      animation: shine 2.6s linear infinite;
-      opacity:.35;
-    }
-    @keyframes shine{
-      from{transform: translateX(-40%) rotate(20deg);}
-      to{transform: translateX(40%) rotate(20deg);}
-    }
-    .logo span{font-family:"Press Start 2P";font-size:12px;color:#0b0b12}
-    .brand h1{margin:0;font-family:"Press Start 2P";font-size:14px;line-height:1.2}
-    .brand small{display:block;margin-top:6px;color:var(--muted2);font-size:12px}
+.hero h1{
+    font-family:'Press Start 2P';
+    font-size:28px;
+    margin-bottom:20px;
+}
 
-    .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.hero p{
+    max-width:700px;
+    margin:auto;
+    opacity:.8;
+}
 
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(0,0,0,.22);
-      border-radius: 999px;
-      padding:10px 12px;
-      display:flex; gap:10px; align-items:center;
-      min-height:42px;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:50%;
-      background:var(--good);
-      box-shadow: 0 0 12px rgba(77,255,136,.55);
-      animation: pulse 1.2s ease-in-out infinite alternate;
-    }
-    @keyframes pulse{
-      from{transform:scale(1)}
-      to{transform:scale(1.2)}
-    }
-    .coinBox{display:flex; gap:8px; align-items:center; font-weight:900}
-    .coinBox .c{
-      width:18px;height:18px;border-radius:7px;
-      background: linear-gradient(180deg, var(--gold), #ff9d00);
-      border:1px solid rgba(255,255,255,.18);
-      box-shadow: 0 0 14px rgba(255,213,74,.25);
-    }
+.wallet{
+    margin:40px auto;
+    max-width:1000px;
+    background:rgba(255,255,255,.05);
+    padding:30px;
+    border-radius:15px;
+}
 
-    .btn{
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.06);
-      color:#fff;
-      padding:10px 12px;
-      border-radius: 12px;
-      font-weight:900;
-      transition:.2s;
-      display:inline-flex;
-      gap:10px; align-items:center;
-      text-decoration:none;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.28);
-      background: rgba(255,255,255,.10);
-    }
-    .btn.primary{
-      background: linear-gradient(90deg, rgba(0,247,255,.95), rgba(255,213,74,.95));
-      color:#0b0b12;
-      border:0;
-      box-shadow: 0 14px 35px rgba(0,247,255,.15);
-    }
-    .btn.pink{
-      background: linear-gradient(90deg, rgba(255,42,166,.95), rgba(0,247,255,.90));
-      color:#0b0b12;border:0;
-    }
-    .btn.danger{
-      background: rgba(255,85,119,.14);
-      border-color: rgba(255,85,119,.35);
-    }
-    .btn.tiny{font-size:12px;padding:9px 10px;border-radius:12px}
+.wallet h2{
+    margin-top:0;
+}
 
-    /* Layout */
-    .row{
-      margin-top:18px;
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:14px;
-      align-items:start;
-    }
-    @media(max-width:980px){ .row{grid-template-columns:1fr;} }
+.wallet-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
 
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      border-radius: var(--r);
-      padding:14px 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-      backdrop-filter: blur(10px);
-    }
+.wallet-box{
+    background:rgba(0,0,0,.4);
+    padding:20px;
+    border-radius:10px;
+}
 
-    .panel h2,.panel h3,.panel h4{margin:0 0 10px 0}
-    .panel h2{font-family:"Press Start 2P";font-size:14px;line-height:1.35}
-    .panel h3{font-family:"Press Start 2P";font-size:12px;line-height:1.35}
-    .panel p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+input{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:none;
+}
 
-    /* Wallet */
-    .walletTop{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .walletNumbers{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      margin:10px 0 14px;
-    }
-    .stat{
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:12px;
-      background: rgba(255,255,255,.06);
-    }
-    .stat small{display:block;color:var(--muted2);font-weight:800}
-    .stat b{display:block;font-size:20px;margin-top:6px}
-    .stat .mini{font-size:12px;color:var(--muted2);font-weight:800;margin-top:6px}
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
 
-    .convert{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media(max-width:520px){ .convert{grid-template-columns:1fr;} }
+.primary{
+    background:#00f7ff;
+}
 
-    .field{
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      border-radius:14px;
-      padding:10px;
-    }
-    .field label{display:block;font-size:12px;color:var(--muted2);font-weight:900;margin-bottom:6px}
-    .field input{
-      width:100%;
-      padding:10px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color:#fff;
-      outline:none;
-      font-size:15px;
-      font-weight:800;
-    }
-    .field input::placeholder{color:rgba(255,255,255,.5)}
+.danger{
+    background:#ff5577;
+    color:white;
+}
 
-    .walletActions{
-      margin-top:12px;
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
+.games{
+    padding:40px 30px;
+    max-width:1200px;
+    margin:auto;
+}
 
-    .tx{
-      margin-top:14px;
-      border-top:1px solid rgba(255,255,255,.10);
-      padding-top:12px;
-      max-height: 220px;
-      overflow:auto;
-    }
-    .txItem{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 0;
-      border-bottom:1px dashed rgba(255,255,255,.12);
-    }
-    .txItem:last-child{border-bottom:0}
-    .txItem b{font-weight:900}
-    .txItem small{color:var(--muted2);font-weight:800}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+}
 
-    /* Arena */
-    .arenaGrid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:10px;
-      margin-top:10px;
-    }
-    @media(max-width:560px){ .arenaGrid{grid-template-columns:1fr;} }
+.card{
+    background:rgba(255,255,255,.05);
+    padding:20px;
+    border-radius:15px;
+    transition:.2s;
+}
 
-    .room{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      border-radius: 14px;
-      padding:12px;
-      transition:.2s;
-      cursor:pointer;
-      position:relative;
-      overflow:hidden;
-    }
-    .room::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: radial-gradient(circle at 40% 40%, rgba(0,247,255,.18), transparent 55%);
-      opacity:.0;
-      transition:.2s;
-    }
-    .room:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.26)}
-    .room:hover::after{opacity:1}
-    .room b{display:block;font-weight:900;position:relative;z-index:1}
-    .room small{color:var(--muted2);position:relative;z-index:1}
-    .room .go{margin-top:10px;width:100%;justify-content:center;position:relative;z-index:1}
+.card:hover{
+    transform:translateY(-5px);
+    background:rgba(255,255,255,.1);
+}
 
-    /* Controls & Cards */
-    .controls{
-      margin-top:16px;
-      padding:14px 16px;
-      border:1px solid var(--stroke);
-      border-radius: var(--r);
-      background: rgba(0,0,0,.18);
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-      display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;
-    }
-    .search{flex:1;min-width:240px;display:flex;gap:10px;align-items:center}
-    .search input{
-      width:100%;
-      padding:12px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-      font-size:15px;
-    }
-    .filters{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .chip{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      transition:.15s;
-      user-select:none;
-    }
-    .chip:hover{border-color: rgba(255,255,255,.28)}
-    .chip.active{
-      background: linear-gradient(90deg, rgba(0,247,255,.95), rgba(255,42,166,.95));
-      color:#0b0b12;
-      border:0;
-    }
-
-    .grid{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap:14px;
-    }
-    .card{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(13,18,48,.65);
-      border-radius: var(--r);
-      overflow:hidden;
-      box-shadow: 0 12px 34px rgba(0,0,0,.25);
-      transition:.2s;
-    }
-    .card:hover{
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.25);
-      box-shadow: 0 18px 45px rgba(0,0,0,.35);
-    }
-    .thumb{
-      height:110px;
-      background:
-        radial-gradient(120px 70px at 20% 25%, rgba(0,247,255,.35), transparent 60%),
-        radial-gradient(160px 90px at 80% 45%, rgba(255,42,166,.28), transparent 60%),
-        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border-bottom:1px solid rgba(255,255,255,.10);
-      display:flex; align-items:center; justify-content:center;
-    }
-    .thumb svg{width:88%; height:70px; opacity:.95}
-    .content{padding:12px 12px 14px}
-    .title{margin:0;font-weight:900;font-size:16px}
-    .meta{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;color:var(--muted2);font-size:13px;font-weight:800}
-    .tag{padding:6px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background: rgba(255,255,255,.05);color:#fff;font-size:12px;font-weight:900}
-    .actions{margin-top:10px;display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .play{flex:1;justify-content:center}
-
-    .toast{
-      position:fixed;
-      bottom:18px; left:50%;
-      transform:translateX(-50%);
-      background: rgba(0,0,0,.78);
-      border:1px solid rgba(255,255,255,.14);
-      padding:12px 14px;
-      border-radius: 14px;
-      color:#fff;
-      font-weight:900;
-      box-shadow: var(--shadow);
-      opacity:0;
-      pointer-events:none;
-      transition:.25s;
-      z-index:999;
-    }
-    .toast.show{opacity:1; transform:translateX(-50%) translateY(-2px);}
-  </style>
+.card a{
+    display:block;
+    margin-top:10px;
+    text-decoration:none;
+    color:#ffd54a;
+    font-weight:bold;
+}
+</style>
 </head>
 
-<body class="grid-bg">
-  <div class="wrap">
+<body>
 
-    <!-- TOP -->
-    <div class="top">
-      <div class="brand">
-        <div class="logo"><span>ZY</span></div>
-        <div>
-          <h1>ZYPLAY.store</h1>
-          <small>Arena • Jogos HTML5 • Carteira ZyCoin</small>
+<header>
+    <div class="logo">ZYPLAY ARENA</div>
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="politica.html">Privacidade</a>
+        <a href="termos.html">Termos</a>
+        <a href="contato.html">Contato</a>
+    </nav>
+</header>
+
+<div class="hero">
+    <h1>Jogos Online HTML5</h1>
+    <p>Entre na ZyPlay Arena, desafie seus limites e acumule ZyCoin enquanto joga seus títulos favoritos diretamente no navegador.</p>
+</div>
+
+<div class="wallet">
+    <h2>Carteira ZyCoin</h2>
+
+    <div class="wallet-grid">
+        <div class="wallet-box">
+            <strong>Saldo ZyCoin:</strong>
+            <h3><span id="zycoin">0</span> ZY</h3>
         </div>
-      </div>
 
-      <div class="right">
-        <div class="pill" title="Status do site">
-          <div class="dot"></div>
-          <span><b>Online</b> • Vercel</span>
+        <div class="wallet-box">
+            <strong>Saldo em R$:</strong>
+            <h3>R$ <span id="brl">0.00</span></h3>
         </div>
-
-        <div class="pill" title="Saldo ZyCoin / R$">
-          <div class="coinBox"><div class="c"></div>
-            <span><b id="zycoin">0</b> ZY • <b id="brl">R$ 0,00</b></span>
-          </div>
-        </div>
-
-        <a class="btn primary" href="#jogos">🎮 Jogar</a>
-        <a class="btn pink" href="#carteira">💳 Carteira</a>
-      </div>
     </div>
 
-    <!-- ROW: Arena + Wallet -->
-    <div class="row">
-
-      <!-- Arena -->
-      <div class="panel">
-        <h2>ZYPLAY ARENA v2 (principal)</h2>
-        <p>Escolha uma sala e entre. O sistema de ZyCoin é “beta” (UI pronta) e você pode ligar o real depois.</p>
-
-        <div class="arenaGrid">
-          <div class="room" onclick="go('zyplayarena.html')">
-            <b>🎛️ Sala 1 — Arena Hub</b>
-            <small>Central de salas</small>
-            <div class="btn go">Entrar</div>
-          </div>
-
-          <div class="room" onclick="go('zyrpg.html')">
-            <b>🧙 Sala 2 — RPG Quest</b>
-            <small>Campanha + exploração</small>
-            <div class="btn go">Entrar</div>
-          </div>
-
-          <div class="room" onclick="go('zydungeon.html')">
-            <b>🗝️ Sala 3 — Dungeon</b>
-            <small>Desafios + loot</small>
-            <div class="btn go">Entrar</div>
-          </div>
-
-          <div class="room" onclick="go('zyspaceodyssey.html')">
-            <b>🚀 Sala 4 — Space Odyssey</b>
-            <small>Sobrevivência espacial</small>
-            <div class="btn go">Entrar</div>
-          </div>
-
-          <div class="room" onclick="go('zyplayneonracer.html')">
-            <b>🏎️ Sala 5 — Neon Racer</b>
-            <small>Corrida neon</small>
-            <div class="btn go">Entrar</div>
-          </div>
-
-          <div class="room" onclick="go('zyplaytowerguard.html')">
-            <b>🛡️ Sala 6 — Tower Guard</b>
-            <small>Defesa e estratégia</small>
-            <div class="btn go">Entrar</div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn" onclick="fakeLogin('Google')">🔐 Entrar (visual)</button>
-          <button class="btn" onclick="fakeLogin('Visitante')">👤 Jogar como visitante</button>
-          <button class="btn" onclick="toast('Indique e ganhe (beta)')">🎁 Indique e ganhe</button>
-        </div>
-      </div>
-
-      <!-- Wallet -->
-      <div class="panel" id="carteira">
-        <div class="walletTop">
-          <h2>CARTEIRA ZYCOIN</h2>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn tiny" onclick="addTest()">+ZY (teste)</button>
-            <button class="btn tiny danger" onclick="resetWallet()">Reset</button>
-          </div>
-        </div>
-
-        <p>Converta ZyCoin para saldo em R$ (simulado). Você pode definir a taxa.</p>
-
-        <div class="walletNumbers">
-          <div class="stat">
-            <small>Saldo ZyCoin</small>
-            <b><span id="w_zy">0</span> ZY</b>
-            <div class="mini">Acumule jogando</div>
-          </div>
-          <div class="stat">
-            <small>Saldo em R$</small>
-            <b><span id="w_brl">R$ 0,00</span></b>
-            <div class="mini">Convertido (beta)</div>
-          </div>
-        </div>
-
-        <div class="convert">
-          <div class="field">
-            <label>Taxa (1 ZY = R$)</label>
-            <input id="rate" type="number" min="0" step="0.01" placeholder="Ex.: 0.05">
-          </div>
-
-          <div class="field">
-            <label>Converter (ZY)</label>
-            <input id="amount" type="number" min="1" step="1" placeholder="Ex.: 50">
-          </div>
-        </div>
-
-        <div class="walletActions">
-          <button class="btn primary" onclick="convert()">💱 Converter</button>
-          <button class="btn" onclick="withdraw()">🏦 Sacar (simulado)</button>
-        </div>
-
-        <div class="tx" id="tx"></div>
-
-        <div style="margin-top:10px;color:var(--muted2);font-size:12px;font-weight:800;line-height:1.4;">
-          * Isso é simulado em <b>localStorage</b>. Quando você quiser real:
-          Pix / carteira / API / painel administrativo.
-        </div>
-      </div>
-
+    <div style="margin-top:20px;">
+        <input type="number" id="amount" placeholder="Quantidade de ZyCoin para converter">
+        <button class="primary" onclick="convert()">Converter</button>
+        <button class="danger" onclick="resetWallet()">Resetar</button>
     </div>
+</div>
 
-    <!-- Controls -->
-    <div class="controls" id="jogos">
-      <div class="search">
-        <input id="search" placeholder="Buscar jogo (ex: tiro, zy, pong, corrida...)">
-      </div>
-      <div class="filters" id="filters"></div>
-    </div>
-
-    <!-- Games Grid -->
-    <div class="grid" id="grid"></div>
-
-  </div>
-
-  <div class="toast" id="toast">Ok</div>
+<div class="games">
+    <h2>Jogos Disponíveis</h2>
+    <div class="grid" id="gameGrid"></div>
+</div>
 
 <script>
-  // ✅ Lista EXATA (como está em jogador/jogos)
-  const files = [
-    "blocos.html","clicker.html","cobrinha.html","corrida.html","flappy.html","frogger-neon.html",
-    "matemática.html","memoria.html","mesclar-2048.html","sobrevivente-do-meteoro.html","nave.html",
-    "pong-neon.html","reflexo.html","tiro.html","whaccyber.html","zyIslandsurvival.html","zyblocks.html",
-    "zydungeon.html","zyplayneonracer.html","zyplaypuzzlerelic.html","zyplayrhythmdash.html",
-    "zyplayskyplatformer.html","zyplaytowerguard.html","zyquest.html","zyrpg.html","zyspaceodyssey.html","zytemplerun.html"
-  ];
+const files = [
+"blocos.html","clicker.html","cobrinha.html","corrida.html","flappy.html","frogger-neon.html",
+"matemática.html","memoria.html","mesclar-2048.html","sobrevivente-do-meteoro.html","nave.html",
+"pong-neon.html","reflexo.html","tiro.html","whaccyber.html","zyIslandsurvival.html","zyblocks.html",
+"zydungeon.html","zyplayneonracer.html","zyplaypuzzlerelic.html","zyplayrhythmdash.html",
+"zyplayskyplatformer.html","zyplaytowerguard.html","zyquest.html","zyrpg.html","zyspaceodyssey.html","zytemplerun.html"
+];
 
-  // Wallet keys
-  const KEY_ZY = "zyplay_zycoin";
-  const KEY_BRL = "zyplay_brl";
-  const KEY_RATE = "zyplay_rate";
-  const KEY_TX = "zyplay_tx";
+const grid = document.getElementById("gameGrid");
 
-  const zyEl = document.getElementById("zycoin");
-  const brlEl = document.getElementById("brl");
-  const wZy = document.getElementById("w_zy");
-  const wBrl = document.getElementById("w_brl");
-  const txBox = document.getElementById("tx");
-  const rateInput = document.getElementById("rate");
-  const amountInput = document.getElementById("amount");
+files.forEach(file=>{
+    const name = file.replace(".html","");
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+        <h3>${name}</h3>
+        <a href="jogador/jogos/${file}">Jogar</a>
+    `;
+    grid.appendChild(card);
+});
 
-  // helpers
-  const money = v => "R$ " + (v || 0).toFixed(2).replace(".", ",");
-  const getInt = (k, d=0) => {
-    const v = parseInt(localStorage.getItem(k) || "", 10);
-    return Number.isFinite(v) ? v : d;
-  };
-  const getNum = (k, d=0) => {
-    const v = parseFloat(localStorage.getItem(k) || "");
-    return Number.isFinite(v) ? v : d;
-  };
+const KEY_ZY="zycoin";
+const KEY_BRL="brl";
 
-  function toast(msg){
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(window.__t);
-    window.__t = setTimeout(()=>t.classList.remove("show"), 1400);
-  }
+function updateUI(){
+    document.getElementById("zycoin").innerText=localStorage.getItem(KEY_ZY)||0;
+    document.getElementById("brl").innerText=parseFloat(localStorage.getItem(KEY_BRL)||0).toFixed(2);
+}
 
-  function pushTx(type, text){
-    const arr = JSON.parse(localStorage.getItem(KEY_TX) || "[]");
-    arr.unshift({ type, text, at: new Date().toLocaleString("pt-BR") });
-    localStorage.setItem(KEY_TX, JSON.stringify(arr.slice(0, 25)));
-    renderTx();
-  }
+function convert(){
+    let zy=parseInt(localStorage.getItem(KEY_ZY)||0);
+    let amount=parseInt(document.getElementById("amount").value||0);
 
-  function renderTx(){
-    const arr = JSON.parse(localStorage.getItem(KEY_TX) || "[]");
-    if(!arr.length){
-      txBox.innerHTML = `<div style="color:rgba(255,255,255,.55);font-weight:800;">Sem transações ainda.</div>`;
-      return;
-    }
-    txBox.innerHTML = arr.map(x=>`
-      <div class="txItem">
-        <div>
-          <b>${x.type}</b><br>
-          <small>${x.text}</small>
-        </div>
-        <small>${x.at}</small>
-      </div>
-    `).join("");
-  }
+    if(amount>zy || amount<=0) return;
 
-  function sync(){
-    const zy = getInt(KEY_ZY, 0);
-    const brl = getNum(KEY_BRL, 0);
-    zyEl.textContent = zy;
-    brlEl.textContent = money(brl);
-    wZy.textContent = zy;
-    wBrl.textContent = money(brl);
+    zy-=amount;
+    let brl=parseFloat(localStorage.getItem(KEY_BRL)||0);
+    brl+=amount*0.05;
 
-    const rate = getNum(KEY_RATE, 0.05);
-    rateInput.value = rate.toFixed(2);
-  }
+    localStorage.setItem(KEY_ZY,zy);
+    localStorage.setItem(KEY_BRL,brl);
+    updateUI();
+}
 
-  // Wallet actions
-  window.addTest = function(){
-    let zy = getInt(KEY_ZY, 0);
-    zy += 25;
-    localStorage.setItem(KEY_ZY, String(zy));
-    pushTx("GAIN", "+25 ZY (teste)");
-    sync();
-    toast("Você ganhou +25 ZY (teste)");
-  }
+function resetWallet(){
+    localStorage.setItem(KEY_ZY,0);
+    localStorage.setItem(KEY_BRL,0);
+    updateUI();
+}
 
-  window.resetWallet = function(){
-    localStorage.setItem(KEY_ZY, "0");
-    localStorage.setItem(KEY_BRL, "0");
-    localStorage.setItem(KEY_TX, "[]");
-    sync();
-    renderTx();
-    toast("Carteira resetada");
-  }
-
-  window.convert = function(){
-    let zy = getInt(KEY_ZY, 0);
-    let brl = getNum(KEY_BRL, 0);
-
-    let rate = parseFloat(rateInput.value);
-    if(!Number.isFinite(rate) || rate <= 0){
-      toast("Defina uma taxa válida (ex: 0.05)");
-      return;
-    }
-    localStorage.setItem(KEY_RATE, String(rate));
-
-    let amt = parseInt(amountInput.value || "0", 10);
-    if(!Number.isFinite(amt) || amt <= 0){
-      toast("Digite quantos ZY deseja converter");
-      return;
-    }
-    if(amt > zy){
-      toast("Saldo ZyCoin insuficiente");
-      return;
-    }
-
-    const add = amt * rate;
-    zy -= amt;
-    brl += add;
-
-    localStorage.setItem(KEY_ZY, String(zy));
-    localStorage.setItem(KEY_BRL, String(brl));
-    pushTx("CONVERT", `Convertido ${amt} ZY → ${money(add)} (taxa ${money(rate)}/ZY)`);
-    sync();
-    toast("Conversão feita!");
-    amountInput.value = "";
-  }
-
-  window.withdraw = function(){
-    let brl = getNum(KEY_BRL, 0);
-    if(brl <= 0){
-      toast("Saldo em R$ zerado");
-      return;
-    }
-    // simulado: zera e registra
-    localStorage.setItem(KEY_BRL, "0");
-    pushTx("WITHDRAW", `Saque solicitado: ${money(brl)} (simulado)`);
-    sync();
-    toast("Saque (simulado) registrado");
-  }
-
-  // Arena go
-  window.go = function(file){
-    location.href = `jogador/jogos/${file}`;
-  }
-  window.fakeLogin = function(provider){
-    toast(`Login: ${provider} (visual)`);
-  }
-
-  // Categorização simples
-  function categoryOf(f){
-    const n = f.toLowerCase();
-    if(n.startsWith("zy")) return "ZyPlay";
-    if(n.includes("rpg") || n.includes("dungeon") || n.includes("quest") || n.includes("templerun")) return "Aventura";
-    if(n.includes("pong") || n.includes("reflexo") || n.includes("whacc") || n.includes("clicker")) return "Arcade";
-    if(n.includes("memoria") || n.includes("mesclar") || n.includes("matem")) return "Puzzle";
-    if(n.includes("nave") || n.includes("space") || n.includes("meteoro")) return "Ação";
-    if(n.includes("corrida") || n.includes("racer")) return "Corrida";
-    if(n.includes("cobrinha") || n.includes("flappy") || n.includes("frogger")) return "Clássicos";
-    return "Outros";
-  }
-  function displayName(f){ return f.replace(/\.html$/i,""); }
-
-  // Thumb SVG
-  function thumbSVG(seed, cat){
-    let h=0; for(let i=0;i<seed.length;i++) h=(h*31 + seed.charCodeAt(i))>>>0;
-    const a = 20 + (h % 60);
-    const b = 20 + ((h>>3) % 60);
-    const label = cat.toUpperCase().slice(0,8);
-    return `
-    <svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${seed}">
-      <defs>
-        <linearGradient id="g${h}" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="rgba(0,247,255,.95)"/>
-          <stop offset=".55" stop-color="rgba(255,42,166,.9)"/>
-          <stop offset="1" stop-color="rgba(255,213,74,.9)"/>
-        </linearGradient>
-        <filter id="glow${h}" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="6" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <g opacity=".22">
-        ${Array.from({length:10}).map((_,i)=>`<rect x="${i*40}" y="0" width="1" height="120" fill="rgba(255,255,255,.35)"/>`).join("")}
-        ${Array.from({length:6}).map((_,i)=>`<rect x="0" y="${i*20}" width="400" height="1" fill="rgba(255,255,255,.28)"/>`).join("")}
-      </g>
-      <circle cx="${a*4}" cy="${b}" r="${18+(h%12)}" fill="url(#g${h})" opacity=".9" filter="url(#glow${h})"/>
-      <path d="M40 92 L90 40 L140 92" stroke="rgba(255,255,255,.35)" stroke-width="6" fill="none"/>
-      <path d="M150 90 C190 20, 240 20, 280 90" stroke="rgba(255,255,255,.22)" stroke-width="6" fill="none"/>
-      <text x="20" y="38" fill="rgba(255,255,255,.92)" font-family="Rajdhani, Arial" font-size="22" font-weight="900">
-        ${seed.replace(".html","")}
-      </text>
-      <text x="20" y="68" fill="rgba(255,255,255,.65)" font-family="Rajdhani, Arial" font-size="16" font-weight="800">
-        ${label}
-      </text>
-      <rect x="295" y="18" rx="12" ry="12" width="88" height="34" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.18)"/>
-      <text x="339" y="40" text-anchor="middle" fill="rgba(255,255,255,.92)" font-family="Rajdhani, Arial" font-size="14" font-weight="900">PLAY</text>
-    </svg>`;
-  }
-
-  const grid = document.getElementById("grid");
-  const search = document.getElementById("search");
-  const filters = document.getElementById("filters");
-
-  const items = files.map(f => ({
-    file: f,
-    name: displayName(f),
-    cat: categoryOf(f),
-    href: `jogador/jogos/${f}`
-  }));
-
-  const cats = ["Todos", ...Array.from(new Set(items.map(i=>i.cat)))];
-  let activeCat = "Todos";
-
-  function renderFilters(){
-    filters.innerHTML = "";
-    cats.forEach(c=>{
-      const chip = document.createElement("div");
-      chip.className = "chip" + (c===activeCat ? " active" : "");
-      chip.textContent = c;
-      chip.onclick = () => { activeCat = c; renderFilters(); renderGrid(); };
-      filters.appendChild(chip);
-    });
-  }
-
-  function renderGrid(){
-    const q = (search.value || "").trim().toLowerCase();
-    grid.innerHTML = "";
-
-    const filtered = items.filter(i=>{
-      const okCat = (activeCat==="Todos") || (i.cat===activeCat);
-      const okQ = !q || i.name.toLowerCase().includes(q) || i.file.toLowerCase().includes(q);
-      return okCat && okQ;
-    });
-
-    filtered.forEach(i=>{
-      const card = document.createElement("div");
-      card.className="card";
-      card.innerHTML = `
-        <div class="thumb">${thumbSVG(i.name, i.cat)}</div>
-        <div class="content">
-          <div class="title">${i.name}</div>
-          <div class="meta">
-            <span class="tag">${i.cat}</span>
-            <span style="color:rgba(255,255,255,.55); font-weight:800;">${i.file}</span>
-          </div>
-          <div class="actions">
-            <a class="btn primary play" href="${i.href}">▶ Jogar</a>
-            <button class="btn tiny" onclick="earn(event, '${i.name}')">+ZY</button>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-
-    if(filtered.length===0){
-      const empty = document.createElement("div");
-      empty.className="panel";
-      empty.style.marginTop="12px";
-      empty.innerHTML = `<h3>Nenhum jogo encontrado</h3><p>Tente outro termo ou selecione “Todos”.</p>`;
-      grid.appendChild(empty);
-    }
-  }
-
-  // Ganhar ZyCoin (beta)
-  window.earn = function(ev, game){
-    ev.preventDefault();
-    ev.stopPropagation();
-    let zy = getInt(KEY_ZY, 0);
-    zy += 1;
-    localStorage.setItem(KEY_ZY, String(zy));
-    pushTx("GAIN", `+1 ZY em ${game}`);
-    sync();
-    toast("+1 ZY");
-  }
-
-  // init
-  (function init(){
-    if(localStorage.getItem(KEY_RATE) === null){
-      localStorage.setItem(KEY_RATE, "0.05"); // padrão: 1 ZY = R$0,05
-    }
-    sync();
-    renderTx();
-    renderFilters();
-    renderGrid();
-    search.addEventListener("input", renderGrid);
-  })();
+updateUI();
 </script>
+
 </body>
 </html>
