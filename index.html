@@ -1,244 +1,882 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZYPLAY.store - Arena Oficial</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ZyPlay — Arena</title>
+  <meta name="description" content="ZyPlay Arena — jogos HTML5 direto no navegador. Ganhe ZyCoin, complete desafios e suba no ranking." />
 
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#070A12;
+      --panel:#0D1222;
+      --panel2:#0A0F1D;
+      --stroke:rgba(255,255,255,.10);
+      --muted:rgba(255,255,255,.72);
+      --soft:rgba(255,255,255,.08);
+      --brand:#6C5CE7;
+      --brand2:#00D2FF;
+      --good:#22C55E;
+      --warn:#F59E0B;
+      --bad:#EF4444;
 
-<style>
-body{
-    margin:0;
-    font-family:'Rajdhani', sans-serif;
-    background:linear-gradient(135deg,#050512,#0b1025);
-    color:white;
-}
+      --r12:12px;
+      --r16:16px;
+      --r20:20px;
 
-header{
-    padding:20px 30px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:rgba(0,0,0,.4);
-    border-bottom:1px solid rgba(255,255,255,.1);
-}
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+      --shadow2: 0 8px 20px rgba(0,0,0,.35);
 
-.logo{
-    font-family:'Press Start 2P';
-    font-size:14px;
-}
+      --max:1200px;
+    }
 
-nav a{
-    color:white;
-    text-decoration:none;
-    margin-left:15px;
-    font-weight:700;
-}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(108,92,231,.35), transparent 60%),
+        radial-gradient(900px 500px at 80% 0%, rgba(0,210,255,.22), transparent 60%),
+        radial-gradient(800px 500px at 50% 120%, rgba(34,197,94,.10), transparent 60%),
+        var(--bg);
+      color:#fff;
+    }
 
-nav a:hover{
-    color:#00f7ff;
-}
+    a{color:inherit; text-decoration:none}
+    button,input{font:inherit}
 
-.hero{
-    padding:60px 30px;
-    text-align:center;
-}
+    .wrap{max-width:var(--max); margin:0 auto; padding:0 16px}
+    .row{display:flex; align-items:center; gap:12px}
+    .spacer{flex:1}
 
-.hero h1{
-    font-family:'Press Start 2P';
-    font-size:28px;
-    margin-bottom:20px;
-}
+    /* ===== Top mini bar (estilo “selos”) ===== */
+    .topbar{
+      border-bottom:1px solid var(--stroke);
+      background:rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+    .topbar .wrap{
+      padding:10px 16px;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:7px 10px;
+      border:1px solid var(--stroke);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+    .dot{width:7px;height:7px;border-radius:999px;background:var(--brand2)}
+    .dot.g{background:var(--good)}
+    .dot.p{background:var(--brand)}
 
-.hero p{
-    max-width:700px;
-    margin:auto;
-    opacity:.8;
-}
+    /* ===== Header principal (fixo) ===== */
+    header{
+      position:sticky; top:0; z-index:50;
+      border-bottom:1px solid var(--stroke);
+      background:rgba(7,10,18,.72);
+      backdrop-filter: blur(14px);
+    }
+    .header{
+      padding:14px 0;
+      display:flex; align-items:center; gap:14px;
+    }
+    .logo{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; letter-spacing:.2px;
+    }
+    .logo-badge{
+      width:34px;height:34px;border-radius:12px;
+      background: linear-gradient(135deg, var(--brand), var(--brand2));
+      box-shadow: 0 8px 20px rgba(0,210,255,.18);
+      display:grid; place-items:center;
+      font-weight:900;
+    }
+    .logo span{opacity:.92}
+    .nav{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .nav a{
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid transparent;
+      color:rgba(255,255,255,.86);
+      font-weight:700;
+      font-size:13px;
+    }
+    .nav a:hover{
+      border-color: var(--stroke);
+      background:rgba(255,255,255,.04);
+    }
+    .search{
+      min-width:260px;
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+    }
+    .search svg{opacity:.8}
+    .search input{
+      width:100%;
+      background:transparent; border:0; outline:0;
+      color:#fff;
+    }
 
-.wallet{
-    margin:40px auto;
-    max-width:1000px;
-    background:rgba(255,255,255,.05);
-    padding:30px;
-    border-radius:15px;
-}
+    .btn{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btn:hover{background:rgba(255,255,255,.06)}
+    .btn.primary{
+      border-color: rgba(0,210,255,.35);
+      background: linear-gradient(135deg, rgba(108,92,231,.40), rgba(0,210,255,.22));
+      box-shadow: 0 10px 26px rgba(0,210,255,.10);
+    }
+    .btn.primary:hover{filter:brightness(1.05)}
+    .btn.small{padding:8px 10px; border-radius:12px; font-size:13px}
 
-.wallet h2{
-    margin-top:0;
-}
+    /* ===== Hero + banners ===== */
+    .hero{
+      padding:22px 0 10px;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:14px;
+    }
+    .card{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border-radius: var(--r20);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
 
-.wallet-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-}
+    .hero-main{
+      padding:22px;
+      position:relative;
+      min-height:260px;
+    }
+    .hero-main::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(500px 260px at 25% 20%, rgba(108,92,231,.40), transparent 70%),
+        radial-gradient(500px 260px at 70% 30%, rgba(0,210,255,.22), transparent 70%);
+      pointer-events:none;
+    }
+    .hero-main > *{position:relative}
+    h1{
+      margin:0 0 8px;
+      font-size:34px;
+      letter-spacing:-.8px;
+      line-height:1.1;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      max-width:60ch;
+      line-height:1.5;
+      font-weight:600;
+    }
+    .hero-actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+    .hero-meta{
+      margin-top:16px;
+      display:flex; gap:10px; flex-wrap:wrap;
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+    }
+    .hero-meta .pill{background:rgba(0,0,0,.18)}
+    .hero-aside{
+      padding:14px;
+      display:grid; gap:12px;
+    }
+    .mini-banner{
+      padding:14px;
+      border-radius:var(--r16);
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+    }
+    .mini-title{font-weight:900; margin:0 0 6px}
+    .mini-text{margin:0; color:var(--muted); font-weight:600; line-height:1.4; font-size:13px}
+    .mini-cta{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap}
 
-.wallet-box{
-    background:rgba(0,0,0,.4);
-    padding:20px;
-    border-radius:10px;
-}
+    /* ===== Categorias (chips com ícones) ===== */
+    .cats{
+      margin:16px 0 4px;
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .cat{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      font-weight:800;
+      color:rgba(255,255,255,.90);
+      cursor:pointer;
+      user-select:none;
+    }
+    .cat:hover{background:rgba(255,255,255,.06)}
+    .cat svg{opacity:.9}
 
-input{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    border-radius:8px;
-    border:none;
-}
+    /* ===== Seções ===== */
+    .section{
+      padding:18px 0 6px;
+    }
+    .section-head{
+      display:flex; align-items:end; gap:10px; flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-.2px;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      font-weight:600;
+      font-size:13px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
 
-button{
-    padding:10px 15px;
-    border:none;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:10px;
-}
+    /* ===== Game cards ===== */
+    .gcard{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.035);
+      border-radius:var(--r16);
+      overflow:hidden;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .gcard:hover{
+      transform: translateY(-3px);
+      background:rgba(255,255,255,.05);
+      border-color: rgba(0,210,255,.24);
+    }
+    .thumb{
+      height:120px;
+      background: rgba(0,0,0,.25);
+      border-bottom:1px solid var(--stroke);
+      display:grid; place-items:center;
+    }
+    .gbody{
+      padding:12px;
+      display:grid; gap:8px;
+    }
+    .gtop{
+      display:flex; align-items:center; gap:8px;
+    }
+    .gtitle{
+      font-weight:900;
+      letter-spacing:-.2px;
+      line-height:1.2;
+      font-size:14px;
+      margin:0;
+      flex:1;
+    }
+    .tag{
+      font-size:11px;
+      font-weight:900;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.85);
+      white-space:nowrap;
+    }
+    .gmeta{
+      display:flex; gap:8px; flex-wrap:wrap;
+      color:rgba(255,255,255,.74);
+      font-size:12px;
+      font-weight:700;
+    }
+    .gmeta span{
+      padding:6px 8px;
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .gactions{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+    .link{
+      display:inline-flex; gap:8px; align-items:center;
+      font-weight:900;
+      color:#fff;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(0,210,255,.30);
+      background: rgba(0,210,255,.12);
+      cursor:pointer;
+      width:100%;
+      justify-content:center;
+    }
+    .link:hover{filter:brightness(1.05)}
+    .ghost{
+      width:100%;
+      justify-content:center;
+      display:inline-flex; gap:8px; align-items:center;
+      font-weight:900;
+      color:rgba(255,255,255,.92);
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      cursor:pointer;
+    }
+    .ghost:hover{background:rgba(255,255,255,.06)}
 
-.primary{
-    background:#00f7ff;
-}
+    /* ===== Wallet ===== */
+    .wallet{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .wallet .box{
+      padding:14px;
+      border-radius:var(--r16);
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+    }
+    .k{font-size:12px; color:rgba(255,255,255,.76); font-weight:800}
+    .v{font-size:22px; font-weight:1000; letter-spacing:-.4px; margin-top:4px}
+    .convert{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+    }
+    .convert input{
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      outline:0;
+    }
 
-.danger{
-    background:#ff5577;
-    color:white;
-}
+    /* ===== Footer ===== */
+    footer{
+      margin-top:26px;
+      border-top:1px solid var(--stroke);
+      background:rgba(0,0,0,.25);
+    }
+    .foot{
+      padding:22px 0;
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap:14px;
+      color:rgba(255,255,255,.80);
+    }
+    .foot h3{margin:0 0 10px; font-size:13px; letter-spacing:.2px}
+    .foot a{display:block; padding:8px 0; color:rgba(255,255,255,.75); font-weight:650}
+    .foot a:hover{color:#fff}
+    .fine{
+      padding:14px 0 20px;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
 
-.games{
-    padding:40px 30px;
-    max-width:1200px;
-    margin:auto;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:20px;
-}
-
-.card{
-    background:rgba(255,255,255,.05);
-    padding:20px;
-    border-radius:15px;
-    transition:.2s;
-}
-
-.card:hover{
-    transform:translateY(-5px);
-    background:rgba(255,255,255,.1);
-}
-
-.card a{
-    display:block;
-    margin-top:10px;
-    text-decoration:none;
-    color:#ffd54a;
-    font-weight:bold;
-}
-</style>
+    /* ===== Responsivo ===== */
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns:1fr}
+      .grid{grid-template-columns: repeat(2, 1fr)}
+      .foot{grid-template-columns:1fr 1fr}
+      .search{min-width:0; flex:1}
+    }
+    @media (max-width: 560px){
+      .grid{grid-template-columns: 1fr}
+      h1{font-size:28px}
+      .wallet{grid-template-columns:1fr}
+      .nav{display:none}
+    }
+  </style>
 </head>
 
 <body>
+  <!-- Mini bar “selos” (estilo topo) -->
+  <div class="topbar">
+    <div class="wrap">
+      <span class="pill"><span class="dot"></span> Jogos HTML5</span>
+      <span class="pill"><span class="dot g"></span> Leve e rápido</span>
+      <span class="pill"><span class="dot p"></span> ZyCoin + Ranking</span>
+      <span class="spacer"></span>
+      <span style="opacity:.85;font-weight:700">Brasil • GMT-3</span>
+    </div>
+  </div>
 
-<header>
-    <div class="logo">ZYPLAY ARENA</div>
-    <nav>
-        <a href="index.html">Início</a>
-        <a href="sobre.html">Sobre</a>
-        <a href="politica.html">Privacidade</a>
+  <!-- Header fixo -->
+  <header>
+    <div class="wrap header">
+      <a class="logo" href="index.html" aria-label="ZyPlay">
+        <div class="logo-badge">Z</div>
+        <span>ZyPlay</span>
+      </a>
+
+      <div class="nav" role="navigation" aria-label="Navegação principal">
+        <a href="#destaques">Destaques</a>
+        <a href="#arena">Arena</a>
+        <a href="#carteira">Carteira</a>
+        <a href="#ranking">Ranking</a>
+        <a href="#ajuda">Suporte</a>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="search" role="search" aria-label="Buscar jogos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="q" placeholder="Buscar: flappy, rpg, tiro..." autocomplete="off" />
+      </div>
+
+      <button class="btn small" id="btnLogin" title="Entrar">Entrar</button>
+      <button class="btn primary small" id="btnRegister" title="Criar conta">Registrar</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Categorias (chips estilo Hype) -->
+    <div class="cats" aria-label="Categorias">
+      <div class="cat" data-cat="Tudo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Tudo
+      </div>
+      <div class="cat" data-cat="Arcade">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 16h10l2-6H5l2 6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 10V7h6v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Arcade
+      </div>
+      <div class="cat" data-cat="Puzzle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 8h8v8H8V8Z" stroke="currentColor" stroke-width="2"/><path d="M8 12h8" stroke="currentColor" stroke-width="2"/></svg>
+        Puzzle
+      </div>
+      <div class="cat" data-cat="Corrida">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 16l2-6h6l2 6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        Corrida
+      </div>
+      <div class="cat" data-cat="RPG">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20" stroke="currentColor" stroke-width="2"/><path d="M7 6h10l-1 4H8L7 6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        RPG
+      </div>
+      <div class="cat" data-cat="Ação">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s7-4.5 7-10a7 7 0 0 0-14 0c0 5.5 7 10 7 10Z" stroke="currentColor" stroke-width="2"/></svg>
+        Ação
+      </div>
+    </div>
+
+    <!-- HERO (banner grande + 2 banners menores) -->
+    <section class="hero" id="destaques">
+      <div class="hero-grid">
+        <div class="card hero-main">
+          <h1>ZyPlay Arena</h1>
+          <p class="sub">Jogue direto no navegador, complete desafios e acumule ZyCoin. A arena reúne seus jogos em um portal rápido, moderno e pronto pra crescer.</p>
+
+          <div class="hero-actions">
+            <a class="btn primary" href="#arena">Entrar na Arena</a>
+            <button class="btn" id="btnDaily">Resgatar Missão do Dia</button>
+          </div>
+
+          <div class="hero-meta">
+            <span class="pill"><span class="dot"></span> HTML5</span>
+            <span class="pill"><span class="dot p"></span> ZyCoin</span>
+            <span class="pill"><span class="dot g"></span> Ranking</span>
+          </div>
+        </div>
+
+        <div class="card hero-aside">
+          <div class="mini-banner">
+            <p class="mini-title">Destaque do dia</p>
+            <p class="mini-text">Entre no <b>RPG Quest</b> e complete a missão inicial para ganhar ZyCoin.</p>
+            <div class="mini-cta">
+              <a class="btn primary small" href="jogador/jogos/zyquest.html">Jogar agora</a>
+              <a class="btn small" href="#carteira">Ver carteira</a>
+            </div>
+          </div>
+          <div class="mini-banner">
+            <p class="mini-title">Arena v2</p>
+            <p class="mini-text">Lista completa de jogos + capas em SVG (sem imagens externas) + busca instantânea.</p>
+            <div class="mini-cta">
+              <a class="btn small" href="#arena">Abrir jogos</a>
+              <a class="btn small" href="#ajuda">Preciso de ajuda</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Carteira -->
+    <section class="section" id="carteira">
+      <div class="section-head">
+        <h2>Carteira ZyCoin</h2>
+        <p>Gerencie seu saldo e prepare a conversão para R$ (estrutura pronta).</p>
+      </div>
+
+      <div class="wallet">
+        <div class="box">
+          <div class="k">Saldo ZyCoin</div>
+          <div class="v"><span id="zy">0</span> ZY</div>
+          <div class="gmeta" style="margin-top:10px">
+            <span>Missão diária</span>
+            <span>Conquistas</span>
+          </div>
+        </div>
+        <div class="box">
+          <div class="k">Saldo em R$</div>
+          <div class="v">R$ <span id="brl">0,00</span></div>
+          <div class="convert">
+            <input id="toConvert" type="number" min="0" step="1" placeholder="ZyCoin para converter" />
+            <button class="btn primary" id="btnConvert">Converter</button>
+          </div>
+          <button class="btn" id="btnReset" style="margin-top:10px;width:100%">Resetar carteira</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Arena (grid de jogos) -->
+    <section class="section" id="arena">
+      <div class="section-head">
+        <h2>Arena</h2>
+        <p>Selecione um jogo — abre em nova aba para manter o portal carregado.</p>
+        <div class="spacer"></div>
+        <button class="btn small" id="btnShuffle">Embaralhar</button>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <!-- Ranking (placeholder bonito e limpo) -->
+    <section class="section" id="ranking">
+      <div class="section-head">
+        <h2>Ranking</h2>
+        <p>Estrutura pronta para quando você quiser ligar com banco/planilha/API.</p>
+      </div>
+
+      <div class="card" style="padding:16px">
+        <div class="gmeta">
+          <span>Temporada 1</span>
+          <span>Top 10</span>
+          <span>Atualiza semanalmente</span>
+        </div>
+        <div style="margin-top:10px;display:grid;gap:8px">
+          <div class="pill" style="border-radius:14px">1º — Jogador_001 — 9.420 ZY</div>
+          <div class="pill" style="border-radius:14px">2º — Jogador_017 — 8.110 ZY</div>
+          <div class="pill" style="border-radius:14px">3º — Jogador_032 — 7.950 ZY</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ajuda -->
+    <section class="section" id="ajuda">
+      <div class="section-head">
+        <h2>Suporte</h2>
+        <p>Se algum jogo “não aparece”, geralmente é nome do arquivo/diretório diferente.</p>
+      </div>
+
+      <div class="card" style="padding:16px">
+        <p style="margin:0;color:var(--muted);font-weight:650;line-height:1.6">
+          Padrão esperado: <b>jogador/jogos/arquivo.html</b>. Se o jogo não abrir, confirme se o nome do arquivo no GitHub está
+          <b>exatamente</b> igual (inclusive acento em <code>matemática.html</code>).
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div>
+        <div class="logo" style="margin-bottom:10px">
+          <div class="logo-badge">Z</div>
+          <span>ZyPlay</span>
+        </div>
+        <div style="color:rgba(255,255,255,.70);font-weight:650;line-height:1.5">
+          Portal de jogos HTML5. Arena, ZyCoin e ranking.
+        </div>
+      </div>
+
+      <div>
+        <h3>Sobre</h3>
+        <a href="#destaques">Destaques</a>
+        <a href="#arena">Arena</a>
+        <a href="#ranking">Ranking</a>
+      </div>
+
+      <div>
+        <h3>Legal</h3>
         <a href="termos.html">Termos</a>
+        <a href="politica.html">Privacidade</a>
         <a href="contato.html">Contato</a>
-    </nav>
-</header>
+      </div>
 
-<div class="hero">
-    <h1>Jogos Online HTML5</h1>
-    <p>Entre na ZyPlay Arena, desafie seus limites e acumule ZyCoin enquanto joga seus títulos favoritos diretamente no navegador.</p>
-</div>
-
-<div class="wallet">
-    <h2>Carteira ZyCoin</h2>
-
-    <div class="wallet-grid">
-        <div class="wallet-box">
-            <strong>Saldo ZyCoin:</strong>
-            <h3><span id="zycoin">0</span> ZY</h3>
-        </div>
-
-        <div class="wallet-box">
-            <strong>Saldo em R$:</strong>
-            <h3>R$ <span id="brl">0.00</span></h3>
-        </div>
+      <div>
+        <h3>Conta</h3>
+        <a href="#" id="footerLogin">Entrar</a>
+        <a href="#" id="footerRegister">Registrar</a>
+      </div>
     </div>
 
-    <div style="margin-top:20px;">
-        <input type="number" id="amount" placeholder="Quantidade de ZyCoin para converter">
-        <button class="primary" onclick="convert()">Converter</button>
-        <button class="danger" onclick="resetWallet()">Resetar</button>
+    <div class="wrap fine">
+      © <span id="year"></span> ZyPlay. Todos os direitos reservados.
     </div>
-</div>
+  </footer>
 
-<div class="games">
-    <h2>Jogos Disponíveis</h2>
-    <div class="grid" id="gameGrid"></div>
-</div>
+  <script>
+    // ===== Lista dos seus arquivos (como você escreveu) =====
+    const GAMES = [
+      "blocos.html",
+      "clicker.html",
+      "cobrinha.html",
+      "corrida.html",
+      "flappy.html",
+      "frogger-neon.html",
+      "matemática.html",
+      "memoria.html",
+      "mesclar-2048.html",
+      "sobrevivente-do-meteoro.html",
+      "nave.html",
+      "pong-neon.html",
+      "reflexo.html",
+      "tiro.html",
+      "whaccyber.html",
+      "zyIslandsurvival.html",
+      "zyblocks.html",
+      "zydungeon.html",
+      "zyplayneonracer.html",
+      "zyplaypuzzlerelic.html",
+      "zyplayrhythmdash.html",
+      "zyplayskyplatformer.html",
+      "zyplaytowerguard.html",
+      "zyquest.html",
+      "zyrpg.html",
+      "zyspaceodyssey.html",
+      "zytemplerun.html"
+    ];
 
-<script>
-const files = [
-"blocos.html","clicker.html","cobrinha.html","corrida.html","flappy.html","frogger-neon.html",
-"matemática.html","memoria.html","mesclar-2048.html","sobrevivente-do-meteoro.html","nave.html",
-"pong-neon.html","reflexo.html","tiro.html","whaccyber.html","zyIslandsurvival.html","zyblocks.html",
-"zydungeon.html","zyplayneonracer.html","zyplaypuzzlerelic.html","zyplayrhythmdash.html",
-"zyplayskyplatformer.html","zyplaytowerguard.html","zyquest.html","zyrpg.html","zyspaceodyssey.html","zytemplerun.html"
-];
+    const PATH = "jogador/jogos/";
 
-const grid = document.getElementById("gameGrid");
+    // ===== “Categorias” simples por heurística do nome =====
+    function categoryFor(file){
+      const f = file.toLowerCase();
+      if (f.includes("rpg") || f.includes("zyquest") || f.includes("zydungeon")) return "RPG";
+      if (f.includes("2048") || f.includes("mesclar") || f.includes("memoria") || f.includes("puzzle") || f.includes("matem")) return "Puzzle";
+      if (f.includes("racer") || f.includes("corrida") || f.includes("templerun")) return "Corrida";
+      if (f.includes("tiro") || f.includes("nave") || f.includes("whaccyber") || f.includes("reflexo")) return "Ação";
+      return "Arcade";
+    }
 
-files.forEach(file=>{
-    const name = file.replace(".html","");
-    const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-        <h3>${name}</h3>
-        <a href="jogador/jogos/${file}">Jogar</a>
-    `;
-    grid.appendChild(card);
-});
+    function titleFor(file){
+      const name = file.replace(".html","");
+      // mantém acentos e camelCase, só ajeita hífen
+      return name.replace(/-/g, " ");
+    }
 
-const KEY_ZY="zycoin";
-const KEY_BRL="brl";
+    // ===== Thumbnail SVG “pack” (sem imagens externas) =====
+    function makeThumbSVG(seedText){
+      // hash simples pra variar cor
+      let h = 0;
+      for (let i=0;i<seedText.length;i++) h = (h*31 + seedText.charCodeAt(i)) >>> 0;
 
-function updateUI(){
-    document.getElementById("zycoin").innerText=localStorage.getItem(KEY_ZY)||0;
-    document.getElementById("brl").innerText=parseFloat(localStorage.getItem(KEY_BRL)||0).toFixed(2);
-}
+      const a = (h % 360);
+      const b = (a + 55) % 360;
+      const c = (a + 110) % 360;
 
-function convert(){
-    let zy=parseInt(localStorage.getItem(KEY_ZY)||0);
-    let amount=parseInt(document.getElementById("amount").value||0);
+      const icon = (h % 5);
+      const icons = [
+        `<path d="M16 8h-2V6h-4v2H8v4h2v2h4v-2h2V8Z" fill="rgba(255,255,255,.92)"/>`,
+        `<path d="M8 16h8l2-6H6l2 6Z" fill="rgba(255,255,255,.92)"/><path d="M9 10V7h6v3" stroke="rgba(255,255,255,.9)" stroke-width="1.6" stroke-linecap="round"/>`,
+        `<path d="M12 4l7 8-7 8-7-8 7-8Z" fill="rgba(255,255,255,.92)"/>`,
+        `<path d="M7 7h10v10H7V7Z" fill="rgba(255,255,255,.92)"/><path d="M7 12h10" stroke="rgba(0,0,0,.35)" stroke-width="2"/>`,
+        `<path d="M12 22s7-4.5 7-10a7 7 0 0 0-14 0c0 5.5 7 10 7 10Z" fill="rgba(255,255,255,.92)"/>`
+      ];
 
-    if(amount>zy || amount<=0) return;
+      return `
+        <svg width="220" height="120" viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Capa">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="hsl(${a} 85% 55%)" stop-opacity=".95"/>
+              <stop offset="1" stop-color="hsl(${b} 90% 55%)" stop-opacity=".85"/>
+            </linearGradient>
+            <radialGradient id="r" cx="30%" cy="25%" r="70%">
+              <stop offset="0" stop-color="hsl(${c} 95% 60%)" stop-opacity=".55"/>
+              <stop offset="1" stop-color="#000" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect x="0" y="0" width="220" height="120" rx="14" fill="url(#g)"/>
+          <rect x="0" y="0" width="220" height="120" rx="14" fill="url(#r)"/>
+          <g transform="translate(16,16)">
+            <rect x="0" y="0" width="56" height="56" rx="16" fill="rgba(0,0,0,.28)" stroke="rgba(255,255,255,.22)"/>
+            <g transform="translate(12,12)">${icons[icon]}</g>
+          </g>
+          <g opacity=".20">
+            <circle cx="170" cy="35" r="22" fill="rgba(255,255,255,.40)"/>
+            <circle cx="190" cy="60" r="14" fill="rgba(255,255,255,.40)"/>
+            <circle cx="160" cy="78" r="10" fill="rgba(255,255,255,.40)"/>
+          </g>
+          <path d="M20 98h180" stroke="rgba(0,0,0,.22)" stroke-width="8" stroke-linecap="round" opacity=".22"/>
+        </svg>
+      `;
+    }
 
-    zy-=amount;
-    let brl=parseFloat(localStorage.getItem(KEY_BRL)||0);
-    brl+=amount*0.05;
+    // ===== Render =====
+    const grid = document.getElementById("grid");
+    const q = document.getElementById("q");
+    const year = document.getElementById("year");
+    year.textContent = new Date().getFullYear();
 
-    localStorage.setItem(KEY_ZY,zy);
-    localStorage.setItem(KEY_BRL,brl);
-    updateUI();
-}
+    let activeCat = "Tudo";
+    let list = GAMES.map(file => ({
+      file,
+      title: titleFor(file),
+      cat: categoryFor(file),
+      path: PATH + file
+    }));
 
-function resetWallet(){
-    localStorage.setItem(KEY_ZY,0);
-    localStorage.setItem(KEY_BRL,0);
-    updateUI();
-}
+    function render(){
+      const term = (q.value || "").trim().toLowerCase();
+      const filtered = list.filter(g => {
+        const okCat = (activeCat === "Tudo") || (g.cat === activeCat);
+        const okTerm = !term || g.title.toLowerCase().includes(term) || g.file.toLowerCase().includes(term) || g.cat.toLowerCase().includes(term);
+        return okCat && okTerm;
+      });
 
-updateUI();
-</script>
+      grid.innerHTML = filtered.map(g => `
+        <article class="gcard">
+          <div class="thumb">${makeThumbSVG(g.file)}</div>
+          <div class="gbody">
+            <div class="gtop">
+              <h3 class="gtitle">${escapeHtml(g.title)}</h3>
+              <span class="tag">${g.cat}</span>
+            </div>
+            <div class="gmeta">
+              <span>HTML5</span>
+              <span>ZyCoin</span>
+              <span>Browser</span>
+            </div>
+            <div class="gactions">
+              <a class="link" href="${g.path}" target="_blank" rel="noopener">Jogar</a>
+            </div>
+            <button class="ghost" data-earn="${g.file}">+10 ZY (teste)</button>
+          </div>
+        </article>
+      `).join("");
 
+      // botões “ganhar zycoin” (só pra UX agora)
+      document.querySelectorAll("[data-earn]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          addZy(10);
+          btn.textContent = "ZyCoin creditado ✓";
+          btn.disabled = true;
+          setTimeout(()=>{
+            btn.disabled = false;
+            btn.textContent = "+10 ZY (teste)";
+          }, 1200);
+        });
+      });
+    }
+
+    // ===== Carteira (localStorage) =====
+    const KEY_ZY = "zy_wallet_zy";
+    const KEY_BRL = "zy_wallet_brl";
+    const RATE = 0.05; // exemplo: 1 ZY = R$0,05 (você ajusta depois)
+
+    const zyEl = document.getElementById("zy");
+    const brlEl = document.getElementById("brl");
+    const toConvert = document.getElementById("toConvert");
+
+    function getZy(){ return parseInt(localStorage.getItem(KEY_ZY) || "0", 10); }
+    function getBrl(){ return parseFloat(localStorage.getItem(KEY_BRL) || "0"); }
+    function setZy(v){ localStorage.setItem(KEY_ZY, String(Math.max(0, v|0))); }
+    function setBrl(v){ localStorage.setItem(KEY_BRL, String(Math.max(0, +v))); }
+
+    function fmtBRL(v){
+      return (v||0).toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    function syncWallet(){
+      zyEl.textContent = getZy();
+      brlEl.textContent = fmtBRL(getBrl());
+    }
+
+    function addZy(n){
+      setZy(getZy() + n);
+      syncWallet();
+    }
+
+    document.getElementById("btnConvert").addEventListener("click", ()=>{
+      const n = parseInt(toConvert.value || "0", 10);
+      if (!n || n <= 0) return;
+      const cur = getZy();
+      if (n > cur) return;
+      setZy(cur - n);
+      setBrl(getBrl() + (n * RATE));
+      toConvert.value = "";
+      syncWallet();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", ()=>{
+      setZy(0); setBrl(0); syncWallet();
+    });
+
+    document.getElementById("btnDaily").addEventListener("click", ()=>{
+      addZy(25);
+      alert("Missão do dia resgatada: +25 ZY");
+    });
+
+    // ===== Interações =====
+    document.querySelectorAll(".cat").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        activeCat = el.getAttribute("data-cat");
+        document.querySelectorAll(".cat").forEach(c=>c.style.outline="none");
+        el.style.outline = "2px solid rgba(0,210,255,.25)";
+        render();
+      });
+    });
+
+    q.addEventListener("input", render);
+
+    document.getElementById("btnShuffle").addEventListener("click", ()=>{
+      list = list.slice().sort(()=>Math.random()-0.5);
+      render();
+    });
+
+    // “Entrar/Registrar” (placeholder UI)
+    function openAuth(kind){
+      alert(kind === "login"
+        ? "Login será ligado depois (Google/Facebook/conta)."
+        : "Registro será ligado depois (Google/Facebook/conta)."
+      );
+    }
+    document.getElementById("btnLogin").onclick = ()=>openAuth("login");
+    document.getElementById("btnRegister").onclick = ()=>openAuth("register");
+    document.getElementById("footerLogin").onclick = (e)=>{e.preventDefault(); openAuth("login");};
+    document.getElementById("footerRegister").onclick = (e)=>{e.preventDefault(); openAuth("register");};
+
+    // ===== Utils =====
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // init
+    syncWallet();
+    render();
+  </script>
 </body>
 </html>
