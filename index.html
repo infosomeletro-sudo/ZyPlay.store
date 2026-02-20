@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ZyPlay.Store — Jogos</title>
-  <meta name="description" content="ZyPlay.Store — Plataforma de jogos casuais com sistema de recompensas e integração EletroTeo." />
+  <meta name="description" content="ZyPlay.Store — Portal de jogos." />
   <meta name="theme-color" content="#0b0f19" />
 
   <style>
@@ -19,30 +19,27 @@
       --brand:#7c5cff;
       --brand2:#23d5ab;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius:18px;
-      --radius2:14px;
+      --r:18px;
+      --r2:14px;
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
       background:
         radial-gradient(1000px 700px at 10% 0%, rgba(124,92,255,.25), transparent 55%),
         radial-gradient(1000px 700px at 90% 10%, rgba(35,213,171,.18), transparent 55%),
         radial-gradient(900px 600px at 50% 100%, rgba(255,200,0,.08), transparent 55%),
         var(--bg);
-      color:var(--text);
       overflow-x:hidden;
     }
-
-    a{color:inherit; text-decoration:none}
-    button,input{font:inherit}
+    a{color:inherit;text-decoration:none}
 
     /* Topbar */
     .topbar{
-      position:sticky; top:0; z-index:30;
+      position:sticky; top:0; z-index:50;
       backdrop-filter: blur(14px);
       background: rgba(11,15,25,.65);
       border-bottom:1px solid var(--line);
@@ -50,149 +47,79 @@
     .topbar-inner{
       max-width:1200px; margin:0 auto;
       padding:14px 16px;
-      display:flex; align-items:center; gap:14px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
     }
     .logo{
       display:flex; align-items:center; gap:10px;
-      font-weight:800; letter-spacing:.2px;
-      user-select:none;
+      font-weight:900; user-select:none;
     }
     .logo-badge{
       width:36px; height:36px; border-radius:12px;
       background: linear-gradient(135deg, var(--brand), var(--brand2));
-      box-shadow: 0 10px 30px rgba(124,92,255,.25);
       display:grid; place-items:center;
-      font-weight:900;
+      box-shadow: 0 10px 30px rgba(124,92,255,.25);
     }
-    .logo span small{display:block; color:var(--muted); font-weight:600; letter-spacing:0}
+    .logo small{display:block; color:var(--muted); font-weight:600}
     .search{
-      flex:1;
+      flex:1; min-width:240px;
       display:flex; align-items:center; gap:10px;
       background: rgba(255,255,255,.06);
       border:1px solid var(--line);
       border-radius: 999px;
       padding:10px 12px;
-      min-width:200px;
     }
-    .search svg{opacity:.8}
     .search input{
       width:100%;
       background:transparent; border:0; outline:0;
       color:var(--text);
     }
     .pill{
-      padding:9px 12px;
+      padding:10px 12px;
       border-radius:999px;
       border:1px solid var(--line);
       background: rgba(255,255,255,.04);
       color:var(--muted);
-      display:flex; align-items:center; gap:8px;
       cursor:pointer;
       transition:.15s ease;
+      display:inline-flex; align-items:center; gap:8px;
     }
     .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06); color:var(--text)}
     .pill.primary{
       border-color: rgba(124,92,255,.45);
       background: rgba(124,92,255,.16);
       color: var(--text);
+      font-weight:800;
     }
 
     /* Layout */
     .wrap{
       max-width:1200px;
       margin:0 auto;
-      padding:18px 16px 60px;
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      gap:16px;
+      padding:16px;
     }
-
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-      .sidebar{order:2}
-    }
-
-    /* Sidebar */
-    .sidebar{
-      position:sticky;
-      top:76px;
-      align-self:start;
-      background: rgba(16,24,43,.55);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .side-head{
-      padding:14px 14px 12px;
-      border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(124,92,255,.16), transparent);
-    }
-    .side-head h3{margin:0; font-size:14px; letter-spacing:.4px; text-transform:uppercase; color:var(--muted)}
-    .side-body{padding:12px 10px 12px}
-    .chip-row{display:flex; flex-wrap:wrap; gap:8px}
-    .chip{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-      cursor:pointer;
-      transition:.15s ease;
-      font-size:13px;
-      user-select:none;
-    }
-    .chip:hover{background: rgba(255,255,255,.06); color:var(--text)}
-    .chip.active{
-      background: rgba(35,213,171,.14);
-      border-color: rgba(35,213,171,.45);
-      color: var(--text);
-    }
-    .side-footer{
-      padding:12px 14px 14px;
-      border-top:1px solid var(--line);
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
-    }
-
-    /* Hero */
     .hero{
       border:1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--r);
       background:
         radial-gradient(900px 300px at 10% 0%, rgba(124,92,255,.22), transparent 60%),
         radial-gradient(900px 300px at 90% 0%, rgba(35,213,171,.16), transparent 60%),
         rgba(16,24,43,.45);
       box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .hero-inner{
-      padding:18px 18px 16px;
+      padding:16px;
       display:flex;
-      gap:14px;
       align-items:flex-start;
       justify-content:space-between;
+      gap:14px;
       flex-wrap:wrap;
     }
-    .hero h1{
-      margin:0 0 6px 0;
-      font-size:26px;
-      letter-spacing:.2px;
-    }
-    .hero p{
-      margin:0;
-      color:var(--muted);
-      max-width:780px;
-      line-height:1.5;
-    }
-    .hero-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .hero h1{margin:0 0 6px 0; font-size:26px}
+    .hero p{margin:0; color:var(--muted); line-height:1.5; max-width:800px}
+    .hero-actions{display:flex; gap:10px; flex-wrap:wrap}
 
-    /* Section header */
     .section{
       margin-top:14px;
       border:1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: var(--r);
       background: rgba(16,24,43,.35);
       box-shadow: var(--shadow);
       overflow:hidden;
@@ -215,25 +142,11 @@
       color:var(--muted);
     }
     .meta{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
       color:var(--muted);
       font-size:13px;
     }
     .meta strong{color:var(--text)}
-    .sort{
-      display:flex; gap:8px; align-items:center;
-    }
-    select{
-      background: rgba(255,255,255,.05);
-      color: var(--text);
-      border:1px solid var(--line);
-      border-radius: 12px;
-      padding:8px 10px;
-      outline:none;
-      cursor:pointer;
-    }
-
-    /* Grid cards */
     .grid{
       padding:14px;
       display:grid;
@@ -245,13 +158,13 @@
     @media (max-width: 470px){ .grid{grid-template-columns: 1fr;} }
 
     .card{
-      position:relative;
       border:1px solid var(--line);
-      border-radius: var(--radius2);
+      border-radius: var(--r2);
       background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       overflow:hidden;
       transition: transform .15s ease, border-color .15s ease, background .15s ease;
-      min-height: 152px;
+      min-height: 156px;
+      position:relative;
     }
     .card:hover{
       transform: translateY(-2px);
@@ -276,13 +189,14 @@
       border: 1px solid var(--line);
       color: var(--muted);
       backdrop-filter: blur(10px);
+      user-select:none;
     }
     .card-body{
       padding:10px 10px 12px;
       display:flex; flex-direction:column; gap:6px;
     }
     .title{
-      font-weight:800;
+      font-weight:900;
       font-size:14px;
       line-height:1.2;
       overflow:hidden;
@@ -305,7 +219,7 @@
       border:1px solid rgba(124,92,255,.35);
       background: rgba(124,92,255,.14);
       color: var(--text);
-      font-weight:800;
+      font-weight:900;
       cursor:pointer;
       transition:.15s ease;
       user-select:none;
@@ -314,9 +228,8 @@
     .empty{
       padding:18px 14px;
       color:var(--muted);
+      display:none;
     }
-
-    /* Footer */
     footer{
       max-width:1200px;
       margin:22px auto 30px;
@@ -327,16 +240,6 @@
     }
     footer a{color:var(--text); opacity:.9}
     footer a:hover{opacity:1}
-
-    /* Small helper */
-    .kbd{
-      font-size:12px;
-      padding:4px 7px;
-      border-radius:8px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-    }
   </style>
 </head>
 
@@ -345,131 +248,85 @@
     <div class="topbar-inner">
       <a class="logo" href="./">
         <div class="logo-badge">Z</div>
-        <span>
+        <div>
           ZyPlay.Store
-          <small>jogos • portal</small>
-        </span>
+          <small>portal de jogos</small>
+        </div>
       </a>
 
       <div class="search" title="Pesquisar jogos">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M21 21l-4.3-4.3m1.3-5.2a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <input id="q" type="search" placeholder="Pesquisar (ex: neon, zy, corrida...)" autocomplete="off" />
-        <span class="kbd">Ctrl K</span>
+        <input id="q" type="search" placeholder="Pesquisar (ex: zy, neon, corrida...)" autocomplete="off" />
       </div>
 
-      <a class="pill primary" href="https://zy-play-store.vercel.app" target="_blank" rel="noopener">
-        Vercel
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a class="pill" href="./termos.html" title="Termos">
-        Termos
-      </a>
+      <button class="pill" id="btnRandom" title="Abrir um jogo aleatório">Aleatório</button>
+      <button class="pill primary" id="btnAll" title="Limpar busca">Mostrar tudo</button>
     </div>
   </header>
 
   <main class="wrap">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="side-head">
-        <h3>Filtros</h3>
+    <section class="hero">
+      <div>
+        <h1>Jogos do ZyPlay.Store</h1>
+        <p>
+          Todos os jogos estão em <strong>jogador/jogos/</strong>. Clique em <strong>Jogar</strong> para abrir.
+          (Se algum não abrir, o arquivo não está exatamente com esse nome na pasta.)
+        </p>
       </div>
+      <div class="hero-actions">
+        <span class="pill" style="cursor:default">
+          Total de jogos: <strong id="total" style="color:var(--text)">0</strong>
+        </span>
+        <span class="pill" style="cursor:default">
+          Mostrando: <strong id="shown" style="color:var(--text)">0</strong>
+        </span>
+      </div>
+    </section>
 
-      <div class="side-body">
-        <div class="chip-row" id="chips">
-          <!-- chips via JS -->
+    <section class="section">
+      <div class="section-head">
+        <h2>Lista</h2>
+        <div class="meta">
+          Caminho: <strong>jogador/jogos/</strong>
         </div>
       </div>
 
-      <div class="side-footer">
-        <div><strong style="color:var(--text)">Pasta dos jogos:</strong> <span style="opacity:.95">jogador/jogos/</span></div>
-        <div style="margin-top:8px">
-          Dica: use <span class="kbd">Ctrl</span> + <span class="kbd">K</span> para focar na busca.
-        </div>
-      </div>
-    </aside>
-
-    <!-- Content -->
-    <section>
-      <div class="hero">
-        <div class="hero-inner">
-          <div>
-            <h1>Bem-vindo ao ZyPlay.Store</h1>
-            <p>
-              Portal de jogos do seu site. Clique em <strong>Jogar</strong> para abrir cada jogo
-              diretamente do GitHub Pages/Vercel usando os arquivos da pasta <strong>jogador/jogos/</strong>.
-            </p>
-          </div>
-
-          <div class="hero-actions">
-            <button class="pill" id="btnAll">
-              Mostrar tudo
-            </button>
-            <button class="pill" id="btnRandom" title="Abrir um jogo aleatório">
-              Aleatório
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-head">
-          <h2>Jogos</h2>
-          <div class="meta">
-            <span>Total: <strong id="countTotal">0</strong></span>
-            <span>Mostrando: <strong id="countShown">0</strong></span>
-
-            <div class="sort">
-              <span style="opacity:.9">Ordenar:</span>
-              <select id="sort">
-                <option value="az">A → Z</option>
-                <option value="za">Z → A</option>
-                <option value="zyFirst">Zy* primeiro</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid" id="grid"></div>
-        <div class="empty" id="empty" style="display:none">Nenhum jogo encontrado com esse filtro/pesquisa.</div>
-      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty">Nenhum jogo encontrado na busca.</div>
     </section>
   </main>
 
   <footer>
-    <div>© <span id="year"></span> ZyPlay.Store — feito para rodar em GitHub + Vercel</div>
+    <div>© <span id="year"></span> ZyPlay.Store — GitHub + Vercel</div>
     <div>
-      <a href="./.html">Privacidade</a> •
       <a href="./termos.html">Termos</a>
     </div>
   </footer>
 
   <script>
-    // ====== CONFIG (NÃO MUDE OS NOMES DOS ARQUIVOS) ======
-    const BASE_PATH = "jogador/jogos/"; // pasta onde estão seus jogos
+    // ===== CONFIG =====
+    const BASE_PATH = "jogador/jogos/";
     const GAMES = [
-      "ZyPlayD&D.html",
       "blocos.html",
       "clicker.html",
       "cobrinha.html",
       "corrida.html",
       "flappy.html",
-      "frogger-neon.html",
-      "matemática.html",
+      "froggerneon.html",
+      "math.html",
       "memoria.html",
-      "mesclar-2048.html",
-      "sobrevivente-do-meteoro.html",
+      "merge2048.html",
+      "meteor-survivor.html",
       "nave.html",
-      "pong-neon.html",
+      "pongneon.html",
       "reflexo.html",
       "tiro.html",
-      "whaccyber.html",
+      "whackcyber.html",
       "zyIslandsurvival.html",
       "zyblocks.html",
+      "zydragondegers.html",
       "zydungeon.html",
       "zyplayarena.html",
       "zyplayneonracer.html",
@@ -483,96 +340,43 @@
       "zytemplerun.html"
     ];
 
-    // ====== Helpers ======
     const $ = (id) => document.getElementById(id);
 
-    function displayName(fileName){
-      // Remove .html e melhora leitura (mantém acentos)
-      const name = fileName.replace(/\.html$/i, "");
-      // Troca hífen por espaço, mas mantém "Zy" etc.
-      return name.replace(/-/g, " ");
+    // Nome bonito (só pra exibir)
+    function displayName(file){
+      return file
+        .replace(/\.html$/i, "")
+        .replace(/[-_]/g, " ")
+        .replace(/\bzy\b/ig, "Zy")
+        .trim();
     }
 
-    function getTag(fileName){
-      const n = fileName.toLowerCase();
+    // Tag simples
+    function tagOf(file){
+      const n = file.toLowerCase();
       if (n.startsWith("zy")) return "Zy";
       if (n.includes("neon")) return "Neon";
       if (n.includes("2048")) return "2048";
       if (n.includes("corrida") || n.includes("racer") || n.includes("run")) return "Corrida";
       if (n.includes("rpg") || n.includes("dungeon") || n.includes("quest") || n.includes("temple")) return "Aventura";
-      if (n.includes("memoria") || n.includes("matem") || n.includes("reflex")) return "Edu/Reflexo";
+      if (n.includes("math")) return "Math";
       if (n.includes("tiro") || n.includes("nave") || n.includes("space")) return "Ação";
-      return "Clássicos";
+      return "Jogo";
     }
 
-    function hrefFor(fileName){
-      // encodeURI para não quebrar acentos (matemática.html)
-      return encodeURI(BASE_PATH + fileName);
+    // Link SUPER seguro:
+    // - codifica só o nome do arquivo (resolve caracteres especiais)
+    function hrefFor(file){
+      return BASE_PATH + encodeURIComponent(file);
     }
 
-    function openGame(fileName){
-      window.location.href = hrefFor(fileName);
-    }
-
-    // ====== State ======
-    let activeTag = "Tudo";
-    let query = "";
-    let sortMode = "az";
-
-    // ====== Render ======
-    const grid = $("grid");
-    const empty = $("empty");
-
-    function buildChips(){
-      const tags = ["Tudo", ...Array.from(new Set(GAMES.map(getTag))).sort()];
-      const chips = $("chips");
-      chips.innerHTML = "";
-      tags.forEach(t => {
-        const el = document.createElement("div");
-        el.className = "chip" + (t === activeTag ? " active" : "");
-        el.textContent = t;
-        el.onclick = () => { activeTag = t; render(); };
-        chips.appendChild(el);
-      });
-    }
-
-    function applySort(arr){
-      const a = [...arr];
-      if (sortMode === "az") {
-        a.sort((x,y) => displayName(x).localeCompare(displayName(y), "pt-BR"));
-      } else if (sortMode === "za") {
-        a.sort((x,y) => displayName(y).localeCompare(displayName(x), "pt-BR"));
-      } else if (sortMode === "zyFirst") {
-        a.sort((x,y) => {
-          const ax = x.toLowerCase().startsWith("zy") ? 0 : 1;
-          const ay = y.toLowerCase().startsWith("zy") ? 0 : 1;
-          if (ax !== ay) return ax - ay;
-          return displayName(x).localeCompare(displayName(y), "pt-BR");
-        });
-      }
-      return a;
-    }
-
-    function matches(fileName){
-      const t = getTag(fileName);
-      if (activeTag !== "Tudo" && t !== activeTag) return false;
-
-      if (query.trim()){
-        const hay = (fileName + " " + displayName(fileName) + " " + t).toLowerCase();
-        const q = query.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    }
-
-    function cardTemplate(fileName){
-      const name = displayName(fileName);
-      const tag = getTag(fileName);
+    function card(file){
+      const name = displayName(file);
+      const tag = tagOf(file);
 
       const a = document.createElement("a");
       a.className = "card";
-      a.href = hrefFor(fileName);
-      a.setAttribute("aria-label", "Abrir " + name);
+      a.href = hrefFor(file);
 
       a.innerHTML = `
         <div class="thumb">
@@ -582,7 +386,7 @@
           <div class="title" title="${name}">${name}</div>
           <div class="sub">
             <span>Arquivo:</span>
-            <span style="opacity:.95">${fileName}</span>
+            <span style="opacity:.95">${file}</span>
           </div>
           <div class="play">
             Jogar
@@ -592,61 +396,46 @@
           </div>
         </div>
       `;
-
       return a;
     }
 
     function render(){
-      buildChips();
+      const q = ($("q").value || "").trim().toLowerCase();
 
-      const filtered = GAMES.filter(matches);
-      const sorted = applySort(filtered);
+      const filtered = GAMES.filter(f => {
+        if (!q) return true;
+        const hay = (f + " " + displayName(f) + " " + tagOf(f)).toLowerCase();
+        return hay.includes(q);
+      });
 
-      grid.innerHTML = "";
-      sorted.forEach(f => grid.appendChild(cardTemplate(f)));
+      $("grid").innerHTML = "";
+      filtered.forEach(f => $("grid").appendChild(card(f)));
 
-      $("countTotal").textContent = GAMES.length;
-      $("countShown").textContent = sorted.length;
-
-      empty.style.display = sorted.length ? "none" : "block";
+      $("total").textContent = GAMES.length;
+      $("shown").textContent = filtered.length;
+      $("empty").style.display = filtered.length ? "none" : "block";
     }
 
-    // ====== Events ======
-    $("q").addEventListener("input", (e) => {
-      query = e.target.value || "";
-      render();
-    });
-
-    $("sort").addEventListener("change", (e) => {
-      sortMode = e.target.value;
-      render();
-    });
-
     $("btnAll").addEventListener("click", () => {
-      activeTag = "Tudo";
-      query = "";
       $("q").value = "";
       render();
     });
 
     $("btnRandom").addEventListener("click", () => {
-      const list = GAMES.filter(matches);
-      const pick = (list.length ? list : GAMES)[Math.floor(Math.random() * (list.length ? list.length : GAMES.length))];
-      openGame(pick);
+      const q = ($("q").value || "").trim().toLowerCase();
+      const list = GAMES.filter(f => {
+        if (!q) return true;
+        const hay = (f + " " + displayName(f) + " " + tagOf(f)).toLowerCase();
+        return hay.includes(q);
+      });
+      const arr = list.length ? list : GAMES;
+      const pick = arr[Math.floor(Math.random() * arr.length)];
+      window.location.href = hrefFor(pick);
     });
 
-    // Ctrl+K foca na busca
-    document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        $("q").focus();
-      }
-    });
+    $("q").addEventListener("input", render);
 
-    // Year
     $("year").textContent = new Date().getFullYear();
-
-    // Init
     render();
   </script>
 </body>
