@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZyTyping — Jogo de Digitação</title>
+  <style>
+    :root{
+      --bg:#0b0f19;
+      --panel:#10182b;
+      --card:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.10);
+      --text:#eaf0ff;
+      --muted:#a9b7d0;
+      --ok:#23d5ab;
+      --bad:#ff4d6d;
+      --brand:#7c5cff;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1000px 700px at 10% 0%, rgba(124,92,255,.25), transparent 55%),
+        radial-gradient(1000px 700px at 90% 10%, rgba(35,213,171,.18), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .app{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media (max-width: 900px){ .app{grid-template-columns:1fr} }
+
+    .panel{
+      border:1px solid var(--line);
+      background: rgba(16,24,43,.45);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      background: rgba(255,255,255,.03);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900;
+    }
+    .badge{
+      width:36px;height:36px;border-radius:12px;
+      background: linear-gradient(135deg, var(--brand), var(--ok));
+      display:grid;place-items:center;
+    }
+    .brand small{display:block;color:var(--muted);font-weight:600}
+    .controls{display:flex; gap:8px; flex-wrap:wrap}
+    button{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight:800;
+      transition:.15s ease;
+    }
+    button:hover{transform:translateY(-1px); background: rgba(255,255,255,.06)}
+    button.primary{
+      border-color: rgba(124,92,255,.45);
+      background: rgba(124,92,255,.16);
+    }
+    button.danger{
+      border-color: rgba(255,77,109,.45);
+      background: rgba(255,77,109,.12);
+    }
+
+    .stage{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    @media (max-width: 560px){ .stats{grid-template-columns: repeat(2, 1fr)} }
+    .stat{
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+    }
+    .stat .k{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+    .stat .v{font-weight:900; font-size:18px; margin-top:4px}
+
+    .wordbox{
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.03);
+      padding:16px;
+    }
+    .prompt{
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+    .word{
+      font-size:34px;
+      font-weight:1000;
+      letter-spacing:.3px;
+      line-height:1.1;
+      word-break:break-word;
+    }
+    .word .typed{color: var(--ok)}
+    .word .rest{color: var(--text)}
+    .word .wrong{color: var(--bad); text-decoration: underline}
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+
+    .inputbox{
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.03);
+      padding:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    input{
+      flex:1;
+      padding:12px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+      font-size:16px;
+    }
+    .msg{
+      min-height:20px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .msg.ok{color:var(--ok)}
+    .msg.bad{color:var(--bad)}
+
+    /* Right panel */
+    .side{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(255,255,255,.03);
+      padding:14px;
+    }
+    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    textarea{
+      width:100%;
+      min-height:140px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+      resize:vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.5px;
+      line-height:1.35;
+    }
+    .small{color:var(--muted); font-size:12px; line-height:1.4}
+    .bar{
+      height:10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;
+      width:50%;
+      background: linear-gradient(90deg, var(--ok), var(--brand));
+      transition: width .2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <section class="panel">
+      <div class="head">
+        <div class="brand">
+          <div class="badge">Z</div>
+          <div>
+            ZyTyping
+            <small>jogo educativo de digitação</small>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="btnStart" class="primary">Iniciar</button>
+          <button id="btnPause">Pausar</button>
+          <button id="btnReset" class="danger">Reset</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stats">
+          <div class="stat"><div class="k">Pontuação</div><div class="v" id="score">0</div></div>
+          <div class="stat"><div class="k">Acertos</div><div class="v" id="hits">0</div></div>
+          <div class="stat"><div class="k">Erros</div><div class="v" id="miss">0</div></div>
+          <div class="stat"><div class="k">Nível</div><div class="v" id="lvl">1</div></div>
+        </div>
+
+        <div class="wordbox">
+          <div class="prompt">Digite exatamente a palavra/frase abaixo e aperte <b>Enter</b>:</div>
+          <div class="word" id="word"></div>
+          <div class="hint">
+            <span>⏱ Tempo: <b id="time">60</b>s</span>
+            <span>⚡ Velocidade: <b id="speed">1.00</b>x</span>
+          </div>
+          <div class="bar" title="tempo restante"><div id="timebar"></div></div>
+        </div>
+
+        <div class="inputbox">
+          <input id="input" type="text" placeholder="Digite aqui..." autocomplete="off" spellcheck="false" />
+          <button id="btnSkip" title="pular (penalidade)">Pular</button>
+        </div>
+
+        <div class="msg" id="msg"></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="head">
+        <div style="font-weight:900">Modo Professor</div>
+        <div class="controls">
+          <button id="btnApply" class="primary">Aplicar lista</button>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <label for="words">Cole uma palavra/frase por linha (você pode usar conteúdo da aula):</label>
+          <textarea id="words"></textarea>
+          <div class="small" style="margin-top:10px">
+            Dica: frases curtas ajudam alunos com dificuldade de leitura. Você pode usar:
+            sílabas, palavras do conteúdo, tabuadas (“7x8”), comandos (“salvar arquivo”), etc.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="small">
+            Se você quiser, eu adapto esse jogo para:
+            <b>5º ano</b> (sílabas + leitura), <b>Português</b> (acentuação), ou <b>Matemática</b> (tabuada e contas).
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+<script>
+  // ===== CONFIG =====
+  const DEFAULT_LIST = [
+    "casa","bola","gato","amigo","escola","professor","aluno",
+    "teclado","mouse","internet","arquivo","pasta","salvar",
+    "matemática","português","atenção","respeito","trabalho"
+  ];
+
+  // ===== STATE =====
+  let list = [...DEFAULT_LIST];
+  let current = "";
+  let running = false;
+  let paused = false;
+
+  let score = 0, hits = 0, miss = 0, level = 1;
+
+  let totalTime = 60;
+  let timeLeft = totalTime;
+  let tick = null;
+
+  // velocidade cresce com o nível
+  function speedForLevel(lvl){
+    return Math.min(2.25, 1 + (lvl - 1) * 0.12);
+  }
+
+  // ===== DOM =====
+  const $ = (id) => document.getElementById(id);
+  const elWord = $("word");
+  const elInput = $("input");
+  const elMsg = $("msg");
+  const elScore = $("score");
+  const elHits = $("hits");
+  const elMiss = $("miss");
+  const elLvl = $("lvl");
+  const elTime = $("time");
+  const elSpeed = $("speed");
+  const elTimebar = $("timebar");
+
+  // ===== HELPERS =====
+  function pickNew(){
+    current = list[Math.floor(Math.random() * list.length)] || "digite";
+    renderWordPreview("");
+    elInput.value = "";
+    elInput.focus();
+  }
+
+  function renderWordPreview(typed){
+    // renderiza com cores (certo/errado)
+    const target = current;
+    let html = "";
+    for (let i = 0; i < target.length; i++){
+      const t = typed[i];
+      const c = target[i];
+      if (t === undefined){
+        html += `<span class="rest">${escapeHtml(c)}</span>`;
+      } else if (t === c){
+        html += `<span class="typed">${escapeHtml(c)}</span>`;
+      } else {
+        html += `<span class="wrong">${escapeHtml(c)}</span>`;
+      }
+    }
+    elWord.innerHTML = html;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function setMsg(text, type){
+    elMsg.className = "msg" + (type ? " " + type : "");
+    elMsg.textContent = text || "";
+  }
+
+  function updateHUD(){
+    elScore.textContent = score;
+    elHits.textContent = hits;
+    elMiss.textContent = miss;
+    elLvl.textContent = level;
+
+    elTime.textContent = Math.max(0, Math.ceil(timeLeft));
+    const sp = speedForLevel(level);
+    elSpeed.textContent = sp.toFixed(2);
+
+    const pct = Math.max(0, Math.min(100, (timeLeft / totalTime) * 100));
+    elTimebar.style.width = pct + "%";
+  }
+
+  function levelUpIfNeeded(){
+    // sobe nível a cada 6 acertos
+    level = 1 + Math.floor(hits / 6);
+  }
+
+  // ===== GAME LOOP =====
+  function start(){
+    if (running) return;
+    running = true;
+    paused = false;
+    setMsg("Valendo! Digite e pressione Enter.", "");
+    pickNew();
+    if (tick) clearInterval(tick);
+    tick = setInterval(() => {
+      if (!running || paused) return;
+      // velocidade aumenta com nível, então tempo cai mais rápido
+      const sp = speedForLevel(level);
+      timeLeft -= 0.25 * sp;
+      if (timeLeft <= 0){
+        timeLeft = 0;
+        gameOver();
+      }
+      updateHUD();
+    }, 250);
+    updateHUD();
+  }
+
+  function pause(){
+    if (!running) return;
+    paused = !paused;
+    setMsg(paused ? "Pausado." : "Continuando...", paused ? "" : "");
+    if (!paused) elInput.focus();
+  }
+
+  function reset(){
+    running = false; paused = false;
+    score = 0; hits = 0; miss = 0; level = 1;
+    timeLeft = totalTime;
+    current = "";
+    if (tick) clearInterval(tick);
+    tick = null;
+    elWord.textContent = "Clique em Iniciar";
+    elInput.value = "";
+    setMsg("Pronto. Clique em Iniciar.", "");
+    updateHUD();
+  }
+
+  function gameOver(){
+    running = false;
+    paused = false;
+    if (tick) clearInterval(tick);
+    tick = null;
+    setMsg(`Fim de jogo! Pontos: ${score} | Acertos: ${hits} | Erros: ${miss}`, "bad");
+    elInput.blur();
+  }
+
+  function submit(){
+    if (!running || paused) return;
+    const typed = elInput.value;
+    if (typed === current){
+      hits++;
+      score += Math.round(10 * speedForLevel(level));
+      timeLeft = Math.min(totalTime, timeLeft + 2.5); // bônus
+      setMsg("✅ Certo!", "ok");
+      levelUpIfNeeded();
+      pickNew();
+    } else {
+      miss++;
+      score = Math.max(0, score - 5);
+      timeLeft = Math.max(0, timeLeft - 3.5);
+      setMsg("❌ Errado. Tente novamente ou pule.", "bad");
+      renderWordPreview(typed);
+      // não troca a palavra, o aluno tenta corrigir
+      if (timeLeft <= 0) gameOver();
+    }
+    updateHUD();
+  }
+
+  function skip(){
+    if (!running || paused) return;
+    miss++;
+    score = Math.max(0, score - 3);
+    timeLeft = Math.max(0, timeLeft - 2.5);
+    setMsg("⏭ Pulou (com penalidade).", "");
+    pickNew();
+    if (timeLeft <= 0) gameOver();
+    updateHUD();
+  }
+
+  // ===== EVENTS =====
+  $("btnStart").addEventListener("click", start);
+  $("btnPause").addEventListener("click", pause);
+  $("btnReset").addEventListener("click", reset);
+  $("btnSkip").addEventListener("click", skip);
+
+  elInput.addEventListener("input", () => {
+    if (!running) return;
+    renderWordPreview(elInput.value);
+  });
+
+  elInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submit();
+    if (e.key === "Escape") pause();
+  });
+
+  $("btnApply").addEventListener("click", () => {
+    const raw = $("words").value || "";
+    const lines = raw
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (lines.length >= 3){
+      list = lines;
+      setMsg(`Lista aplicada! (${list.length} itens)`, "ok");
+      if (running && !paused) pickNew();
+    } else {
+      setMsg("Cole pelo menos 3 palavras/frases (uma por linha).", "bad");
+    }
+  });
+
+  // Preenche textarea com exemplo
+  $("words").value = DEFAULT_LIST.join("\n");
+  reset();
+</script>
+</body>
+</html>
