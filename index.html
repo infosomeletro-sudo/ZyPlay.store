@@ -1,444 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ZyPlay.Store — Jogos</title>
-  <meta name="description" content="ZyPlay.Store — Portal de jogos." />
-  <meta name="theme-color" content="#0b0f19" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZyPlay Educacional | Itinerários Técnicos AL</title>
+<meta name="theme-color" content="#006837">
 
-  <style>
-    :root{
-      --bg:#0b0f19;
-      --panel:#10182b;
-      --panel2:#0f1627;
-      --card:#0f1a2f;
-      --text:#eaf0ff;
-      --muted:#a9b7d0;
-      --line:rgba(255,255,255,.08);
-      --brand:#7c5cff;
-      --brand2:#23d5ab;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:18px;
-      --r2:14px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1000px 700px at 10% 0%, rgba(124,92,255,.25), transparent 55%),
-        radial-gradient(1000px 700px at 90% 10%, rgba(35,213,171,.18), transparent 55%),
-        radial-gradient(900px 600px at 50% 100%, rgba(255,200,0,.08), transparent 55%),
-        var(--bg);
-      overflow-x:hidden;
-    }
-    a{color:inherit;text-decoration:none}
+<style>
+:root{
+  --verde:#006837;
+  --verde-claro:#009245;
+  --amarelo:#fdb913;
+  --azul:#003366;
+  --branco:#ffffff;
+  --cinza:#f4f6f9;
+}
 
-    /* Topbar */
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter: blur(14px);
-      background: rgba(11,15,25,.65);
-      border-bottom:1px solid var(--line);
-    }
-    .topbar-inner{
-      max-width:1200px; margin:0 auto;
-      padding:14px 16px;
-      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    }
-    .logo{
-      display:flex; align-items:center; gap:10px;
-      font-weight:900; user-select:none;
-    }
-    .logo-badge{
-      width:36px; height:36px; border-radius:12px;
-      background: linear-gradient(135deg, var(--brand), var(--brand2));
-      display:grid; place-items:center;
-      box-shadow: 0 10px 30px rgba(124,92,255,.25);
-    }
-    .logo small{display:block; color:var(--muted); font-weight:600}
-    .search{
-      flex:1; min-width:240px;
-      display:flex; align-items:center; gap:10px;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      border-radius: 999px;
-      padding:10px 12px;
-    }
-    .search input{
-      width:100%;
-      background:transparent; border:0; outline:0;
-      color:var(--text);
-    }
-    .pill{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--muted);
-      cursor:pointer;
-      transition:.15s ease;
-      display:inline-flex; align-items:center; gap:8px;
-    }
-    .pill:hover{transform: translateY(-1px); background: rgba(255,255,255,.06); color:var(--text)}
-    .pill.primary{
-      border-color: rgba(124,92,255,.45);
-      background: rgba(124,92,255,.16);
-      color: var(--text);
-      font-weight:800;
-    }
+*{box-sizing:border-box;margin:0;padding:0}
 
-    /* Layout */
-    .wrap{
-      max-width:1200px;
-      margin:0 auto;
-      padding:16px;
-    }
-    .hero{
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      background:
-        radial-gradient(900px 300px at 10% 0%, rgba(124,92,255,.22), transparent 60%),
-        radial-gradient(900px 300px at 90% 0%, rgba(35,213,171,.16), transparent 60%),
-        rgba(16,24,43,.45);
-      box-shadow: var(--shadow);
-      padding:16px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-    .hero h1{margin:0 0 6px 0; font-size:26px}
-    .hero p{margin:0; color:var(--muted); line-height:1.5; max-width:800px}
-    .hero-actions{display:flex; gap:10px; flex-wrap:wrap}
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cinza);
+  color:#222;
+}
 
-    .section{
-      margin-top:14px;
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(16,24,43,.35);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-bottom:1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      flex-wrap:wrap;
-    }
-    .section-head h2{
-      margin:0;
-      font-size:15px;
-      letter-spacing:.4px;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
-    .meta{
-      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .meta strong{color:var(--text)}
-    .grid{
-      padding:14px;
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:12px;
-    }
-    @media (max-width: 1180px){ .grid{grid-template-columns: repeat(3, 1fr);} }
-    @media (max-width: 760px){ .grid{grid-template-columns: repeat(2, 1fr);} }
-    @media (max-width: 470px){ .grid{grid-template-columns: 1fr;} }
+header{
+  background: linear-gradient(90deg,var(--verde),var(--verde-claro));
+  color: var(--branco);
+  padding: 20px;
+}
 
-    .card{
-      border:1px solid var(--line);
-      border-radius: var(--r2);
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      overflow:hidden;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
-      min-height: 156px;
-      position:relative;
-    }
-    .card:hover{
-      transform: translateY(-2px);
-      border-color: rgba(124,92,255,.35);
-      background: linear-gradient(180deg, rgba(124,92,255,.12), rgba(255,255,255,.02));
-    }
-    .thumb{
-      height:74px;
-      background:
-        radial-gradient(420px 140px at 20% 0%, rgba(124,92,255,.35), transparent 55%),
-        radial-gradient(420px 140px at 80% 0%, rgba(35,213,171,.25), transparent 55%),
-        rgba(10,14,25,.35);
-      border-bottom: 1px solid var(--line);
-      position:relative;
-    }
-    .badge{
-      position:absolute; left:10px; top:10px;
-      font-size:12px;
-      padding:6px 9px;
-      border-radius:999px;
-      background: rgba(0,0,0,.25);
-      border: 1px solid var(--line);
-      color: var(--muted);
-      backdrop-filter: blur(10px);
-      user-select:none;
-    }
-    .card-body{
-      padding:10px 10px 12px;
-      display:flex; flex-direction:column; gap:6px;
-    }
-    .title{
-      font-weight:900;
-      font-size:14px;
-      line-height:1.2;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .sub{
-      font-size:12px;
-      color:var(--muted);
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-    }
-    .play{
-      margin-top:auto;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:10px 10px;
-      border-radius: 12px;
-      border:1px solid rgba(124,92,255,.35);
-      background: rgba(124,92,255,.14);
-      color: var(--text);
-      font-weight:900;
-      cursor:pointer;
-      transition:.15s ease;
-      user-select:none;
-    }
-    .play:hover{transform: translateY(-1px); background: rgba(124,92,255,.18)}
-    .empty{
-      padding:18px 14px;
-      color:var(--muted);
-      display:none;
-    }
-    footer{
-      max-width:1200px;
-      margin:22px auto 30px;
-      padding:0 16px;
-      color:var(--muted);
-      font-size:13px;
-      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
-    }
-    footer a{color:var(--text); opacity:.9}
-    footer a:hover{opacity:1}
-  </style>
+.header-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.logo{
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing:1px;
+}
+
+.slogan{
+  font-size:14px;
+  margin-top:5px;
+  opacity:.9;
+}
+
+nav{
+  margin-top:15px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+nav a{
+  color:var(--branco);
+  text-decoration:none;
+  font-weight:bold;
+  padding:6px 10px;
+  border-radius:4px;
+  transition:.2s;
+}
+
+nav a:hover{
+  background:rgba(255,255,255,.2);
+}
+
+.banner{
+  background: linear-gradient(135deg,var(--azul),var(--verde));
+  color:white;
+  padding:60px 20px;
+  text-align:center;
+}
+
+.banner h1{
+  font-size:36px;
+  margin-bottom:15px;
+}
+
+.banner p{
+  font-size:18px;
+  max-width:800px;
+  margin:0 auto 20px;
+  line-height:1.6;
+}
+
+.btn{
+  display:inline-block;
+  padding:12px 20px;
+  background:var(--amarelo);
+  color:#000;
+  font-weight:bold;
+  border-radius:6px;
+  text-decoration:none;
+  transition:.2s;
+}
+
+.btn:hover{
+  background:#e0a800;
+}
+
+.section{
+  padding:50px 20px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.section h2{
+  color:var(--verde);
+  margin-bottom:20px;
+  font-size:26px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:8px;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+.card h3{
+  margin-bottom:10px;
+  color:var(--azul);
+}
+
+.footer{
+  background:var(--azul);
+  color:white;
+  text-align:center;
+  padding:20px;
+  font-size:14px;
+  margin-top:40px;
+}
+</style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a class="logo" href="./">
-        <div class="logo-badge">Z</div>
-        <div>
-          ZyPlay.Store
-          <small>portal de jogos</small>
-        </div>
-      </a>
 
-      <div class="search" title="Pesquisar jogos">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 21l-4.3-4.3m1.3-5.2a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input id="q" type="search" placeholder="Pesquisar (ex: zy, neon, corrida...)" autocomplete="off" />
-      </div>
-
-      <button class="pill" id="btnRandom" title="Abrir um jogo aleatório">Aleatório</button>
-      <button class="pill primary" id="btnAll" title="Limpar busca">Mostrar tudo</button>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <section class="hero">
-      <div>
-        <h1>Jogos do ZyPlay.Store</h1>
-        <p>
-          Todos os jogos estão em <strong>jogador/jogos/</strong>. Clique em <strong>Jogar</strong> para abrir.
-          (Se algum não abrir, o arquivo não está exatamente com esse nome na pasta.)
-        </p>
-      </div>
-      <div class="hero-actions">
-        <span class="pill" style="cursor:default">
-          Total de jogos: <strong id="total" style="color:var(--text)">0</strong>
-        </span>
-        <span class="pill" style="cursor:default">
-          Mostrando: <strong id="shown" style="color:var(--text)">0</strong>
-        </span>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Lista</h2>
-        <div class="meta">
-          Caminho: <strong>jogador/jogos/</strong>
-        </div>
-      </div>
-
-      <div class="grid" id="grid"></div>
-      <div class="empty" id="empty">Nenhum jogo encontrado na busca.</div>
-    </section>
-  </main>
-
-  <footer>
-    <div>© <span id="year"></span> ZyPlay.Store — GitHub + Vercel</div>
+<header>
+  <div class="header-top">
     <div>
-      <a href="./termos.html">Termos</a>
+      <div class="logo">ZyPlay Educacional</div>
+      <div class="slogan">Plataforma Digital para os Itinerários Técnicos de Alagoas</div>
     </div>
-  </footer>
+  </div>
 
-  <script>
-    // ===== CONFIG =====
-    const BASE_PATH = "jogador/jogos/";
-    const GAMES = [
-      "blocos.html",
-      "clicker.html",
-      "cobrinha.html",
-      "corrida.html",
-      "flappy.html",
-      "froggerneon.html",
-      "math.html",
-      "memoria.html",
-      "merge2048.html",
-      "meteor-survivor.html",
-      "nave.html",
-      "pongneon.html",
-      "reflexo.html",
-      "tiro.html",
-      "whackcyber.html",
-      "zytyping-admin.html",
-      "zyIslandsurvival.html",
-      "zyblocks.html",
-      "zytyping.html",
-      "zydragondegers.html",
-      "zydungeon.html",
-      "zyplayarena.html",
-      "zyplayneonracer.html",
-      "zyplaypuzzlerelic.html",
-      "zyplayrhythmdash.html",
-      "zyplayskyplatformer.html",
-      "zyplaytowerguard.html",
-      "zyquest.html",
-      "zyrpg.html",
-      "zyspaceodyssey.html",
-      "zytemplerun.html"
-    ];
+  <nav>
+    <a href="#">Início</a>
+    <a href="#">Itinerários Técnicos</a>
+    <a href="#">FGB</a>
+    <a href="#">Laboratório de Jogos</a>
+    <a href="#">Cursos Online</a>
+    <a href="#">Sobre</a>
+  </nav>
+</header>
 
-    const $ = (id) => document.getElementById(id);
+<section class="banner">
+  <h1>Educação Técnica Inovadora</h1>
+  <p>
+    O ZyPlay Educacional é uma plataforma voltada para o fortalecimento dos 
+    Itinerários Formativos Técnicos no Estado de Alagoas, integrando metodologias 
+    digitais, jogos educacionais e práticas alinhadas ao PRONATEC, Escola 10 e às 
+    diretrizes da Formação Geral Básica.
+  </p>
+  <a href="jogador/jogos/" class="btn">Acessar Laboratório de Jogos</a>
+</section>
 
-    // Nome bonito (só pra exibir)
-    function displayName(file){
-      return file
-        .replace(/\.html$/i, "")
-        .replace(/[-_]/g, " ")
-        .replace(/\bzy\b/ig, "Zy")
-        .trim();
-    }
+<section class="section">
+  <h2>Itinerários Formativos Técnicos</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>1º Ano</h3>
+      <p>Fundamentos da Logística Empresarial e introdução à organização administrativa.</p>
+    </div>
 
-    // Tag simples
-    function tagOf(file){
-      const n = file.toLowerCase();
-      if (n.startsWith("zy")) return "Zy";
-      if (n.includes("neon")) return "Neon";
-      if (n.includes("2048")) return "2048";
-      if (n.includes("corrida") || n.includes("racer") || n.includes("run")) return "Corrida";
-      if (n.includes("rpg") || n.includes("dungeon") || n.includes("quest") || n.includes("temple")) return "Aventura";
-      if (n.includes("math")) return "Math";
-      if (n.includes("tiro") || n.includes("nave") || n.includes("space")) return "Ação";
-      return "Jogo";
-    }
+    <div class="card">
+      <h3>2º Ano</h3>
+      <p>Saúde ocupacional, princípios contábeis, organização de inventários e ferramentas digitais.</p>
+    </div>
 
-    // Link SUPER seguro:
-    // - codifica só o nome do arquivo (resolve caracteres especiais)
-    function hrefFor(file){
-      return BASE_PATH + encodeURIComponent(file);
-    }
+    <div class="card">
+      <h3>3º Ano</h3>
+      <p>Legislação fiscal tributária, gestão de riscos, finanças digitais e manipulação de mercadorias.</p>
+    </div>
+  </div>
+</section>
 
-    function card(file){
-      const name = displayName(file);
-      const tag = tagOf(file);
+<section class="section">
+  <h2>Metodologia Digital</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Laboratório Gamificado</h3>
+      <p>Aprendizagem baseada em jogos interativos desenvolvidos para o contexto técnico-profissional.</p>
+    </div>
 
-      const a = document.createElement("a");
-      a.className = "card";
-      a.href = hrefFor(file);
+    <div class="card">
+      <h3>Integração com Escola 10</h3>
+      <p>Alinhamento às políticas públicas de fortalecimento do ensino médio em tempo integral.</p>
+    </div>
 
-      a.innerHTML = `
-        <div class="thumb">
-          <div class="badge">${tag}</div>
-        </div>
-        <div class="card-body">
-          <div class="title" title="${name}">${name}</div>
-          <div class="sub">
-            <span>Arquivo:</span>
-            <span style="opacity:.95">${file}</span>
-          </div>
-          <div class="play">
-            Jogar
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M8 5v14l11-7L8 5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-      `;
-      return a;
-    }
+    <div class="card">
+      <h3>Preparação para o Mercado</h3>
+      <p>Simulações práticas, tomada de decisão e desenvolvimento de competências técnicas.</p>
+    </div>
+  </div>
+</section>
 
-    function render(){
-      const q = ($("q").value || "").trim().toLowerCase();
+<div class="footer">
+  © 2026 ZyPlay Educacional | Plataforma Digital para Itinerários Técnicos de Alagoas  
+  <br>
+  Inspirado nas diretrizes do PRONATEC, Escola 10 e Formação Geral Básica.
+</div>
 
-      const filtered = GAMES.filter(f => {
-        if (!q) return true;
-        const hay = (f + " " + displayName(f) + " " + tagOf(f)).toLowerCase();
-        return hay.includes(q);
-      });
-
-      $("grid").innerHTML = "";
-      filtered.forEach(f => $("grid").appendChild(card(f)));
-
-      $("total").textContent = GAMES.length;
-      $("shown").textContent = filtered.length;
-      $("empty").style.display = filtered.length ? "none" : "block";
-    }
-
-    $("btnAll").addEventListener("click", () => {
-      $("q").value = "";
-      render();
-    });
-
-    $("btnRandom").addEventListener("click", () => {
-      const q = ($("q").value || "").trim().toLowerCase();
-      const list = GAMES.filter(f => {
-        if (!q) return true;
-        const hay = (f + " " + displayName(f) + " " + tagOf(f)).toLowerCase();
-        return hay.includes(q);
-      });
-      const arr = list.length ? list : GAMES;
-      const pick = arr[Math.floor(Math.random() * arr.length)];
-      window.location.href = hrefFor(pick);
-    });
-
-    $("q").addEventListener("input", render);
-
-    $("year").textContent = new Date().getFullYear();
-    render();
-  </script>
 </body>
 </html>
