@@ -1,0 +1,1900 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Arena Zyplay — RPG de Empreendedorismo & Tecnologia</title>
+  <style>
+    :root{
+      --bg:#070812; --text:#e8ecff; --muted:#aab4ff;
+      --accent:#7c5cff; --good:#34d399; --bad:#fb7185; --warn:#fbbf24;
+      --panel: rgba(0,0,0,.35);
+      --line: rgba(255,255,255,.12);
+      --radius: 18px;
+      --shadow: 0 18px 50px rgba(0,0,0,.55);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1100px 800px at 70% 15%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(900px 700px at 20% 70%, rgba(52,211,153,.14), transparent 55%),
+        var(--bg);
+      overflow:hidden;
+    }
+    .layout{
+      height:100%;
+      display:grid;
+      grid-template-columns: 380px 1fr 430px;
+      gap:14px;
+      padding:14px;
+    }
+    .card{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex; flex-direction:column;
+      min-height:0;
+      backdrop-filter: blur(8px);
+    }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+    }
+    h1{margin:0; font-size:16px; letter-spacing:.2px;}
+    .badge{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background: rgba(124,92,255,.12);
+      white-space:nowrap;
+    }
+    .content{padding:12px 14px; overflow:auto; min-height:0;}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .sep{height:1px; background: var(--line); margin:10px 0}
+    .small{font-size:12px; color:var(--muted)}
+    .btn{
+      cursor:pointer; user-select:none;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(124,92,255,.18);
+      color:var(--text);
+      font-weight:900;
+      transition: transform .05s ease, background .15s ease;
+      white-space:nowrap;
+    }
+    .btn:hover{background: rgba(124,92,255,.26)}
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{background: rgba(0,0,0,.18)}
+    .btn.good{background: rgba(52,211,153,.18)}
+    .btn.bad{background: rgba(251,113,133,.18)}
+    .btn.warn{background: rgba(251,191,36,.18)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      font-size:12px; color:var(--muted);
+    }
+    .dot{width:8px;height:8px;border-radius:999px;background:rgba(52,211,153,.9);box-shadow:0 0 0 3px rgba(52,211,153,.15)}
+    .dot.off{background:rgba(251,113,133,.9);box-shadow:0 0 0 3px rgba(251,113,133,.15)}
+    .log{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px; line-height:1.35;
+      white-space:pre-wrap;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(0,0,0,.20);
+      min-height:170px;
+    }
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+      background:
+        radial-gradient(900px 600px at 50% 60%, rgba(124,92,255,.16), transparent 60%),
+        rgba(0,0,0,.18);
+    }
+    .center .content{padding:0; position:relative;}
+    .hud{
+      position:absolute; left:12px; top:12px;
+      background: var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:10px 12px;
+      max-width:min(560px, calc(100% - 24px));
+      box-shadow: var(--shadow);
+      pointer-events:none;
+    }
+    .hud .t{font-weight:900}
+    .hud .d{font-size:12px; color:var(--muted); margin-top:2px}
+    .toast{
+      position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+      background: rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:10px 12px;
+      box-shadow: var(--shadow);
+      max-width:min(720px, calc(100% - 24px));
+      text-align:center;
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px)}
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:14px;
+      z-index:50;
+    }
+    .modal{
+      width:min(1240px, 100%);
+      height:min(88vh, 920px);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(10,10,20,.80);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex; flex-direction:column;
+      backdrop-filter: blur(10px);
+    }
+    .modal header{background: rgba(0,0,0,.28)}
+    .modal .body{
+      flex:1; min-height:0;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+    }
+    .modal .left{
+      border-right:1px solid var(--line);
+      padding:12px 14px;
+      overflow:auto;
+    }
+    .modal .right{
+      padding:12px 14px;
+      overflow:auto;
+      min-height:0;
+    }
+    textarea, input, select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+      font-weight:700;
+    }
+    textarea{min-height:120px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; line-height:1.35}
+    .hint{font-size:12px; color:var(--muted); margin-top:6px}
+    .kv{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+    .listItem{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      border-radius:14px;
+      padding:10px 12px;
+      margin-top:10px;
+    }
+    .tag{
+      display:inline-block;
+      font-size:12px; padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color:var(--muted);
+      margin-right:6px;
+      margin-top:6px;
+    }
+    @media (max-width: 1220px){
+      body{overflow:auto}
+      .layout{grid-template-columns:1fr; height:auto}
+      canvas{height:62vh}
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="card">
+      <header>
+        <div>
+          <h1>Arena Zyplay</h1>
+          <div class="small">RPG de empreendedorismo/tecnologia • d20 + narrativa social</div>
+        </div>
+        <span class="badge" id="modeBadge">MUNDO</span>
+      </header>
+      <div class="content">
+        <div class="row" style="justify-content:space-between">
+          <span class="pill"><span id="audioDot" class="dot off"></span> Áudio: <b id="audioState">OFF</b></span>
+          <button class="btn good" id="btnAudio">Ativar Áudio</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <button class="btn secondary" id="btnWorld">🌍 Mundo</button>
+          <button class="btn secondary" id="btnArena">⚔️ Arena</button>
+          <button class="btn secondary" id="btnQuests">🧩 Quests</button>
+          <button class="btn secondary" id="btnPseudoOnline">🛰️ “Online” (Sim)</button>
+          <button class="btn warn" id="btnEditor">🛠️ Editor do Narrador</button>
+          <button class="btn secondary" id="btnHelp">⌨️ Controles</button>
+        </div>
+
+        <div class="sep"></div>
+        <div id="leftView"></div>
+
+        <div class="sep"></div>
+        <div class="log" id="log"></div>
+      </div>
+    </section>
+
+    <section class="card center">
+      <header>
+        <h1 id="centerTitle">Mundo</h1>
+        <span class="badge" id="worldBadge">—</span>
+      </header>
+      <div class="content">
+        <canvas id="cv"></canvas>
+        <div class="hud" id="hud">
+          <div class="t" id="hudTitle">—</div>
+          <div class="d" id="hudDesc">—</div>
+        </div>
+        <div class="toast" id="toast">—</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header>
+        <h1>Status</h1>
+        <span class="badge" id="rightBadge">—</span>
+      </header>
+      <div class="content" id="rightView"></div>
+    </section>
+  </div>
+
+  <div class="modalBack" id="editorBack">
+    <div class="modal">
+      <header>
+        <div>
+          <h1>Editor Visual do Narrador</h1>
+          <div class="small">Pinte camadas, crie NPC/Portal/Diálogo por botões. Export/Import para “vários mundos”.</div>
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="edClose">Fechar</button>
+          <button class="btn secondary" id="edExport">Exportar</button>
+          <button class="btn secondary" id="edImport">Importar</button>
+          <button class="btn" id="edReset">Reset</button>
+          <button class="btn good" id="edSave">Salvar</button>
+        </div>
+      </header>
+
+      <div class="body">
+        <div class="left">
+          <div class="small"><b>Pintura</b></div>
+          <div class="kv" style="margin-top:10px">
+            <div>
+              <label class="small">Camada</label>
+              <select id="edLayer">
+                <option value="ground">Chão</option>
+                <option value="obst">Obstáculo (colisão)</option>
+                <option value="deco">Deco (abaixo player)</option>
+                <option value="over">Overlay (acima player)</option>
+              </select>
+            </div>
+            <div>
+              <label class="small">Pincel</label>
+              <select id="edBrush">
+                <option value="0">0 = vazio</option>
+                <option value="1">1 = tile A</option>
+                <option value="2">2 = tile B</option>
+                <option value="3">3 = tile C</option>
+                <option value="4">4 = tile D</option>
+                <option value="5">5 = portal marker</option>
+                <option value="6">6 = npc marker</option>
+                <option value="7">7 = quest marker</option>
+              </select>
+            </div>
+          </div>
+          <div class="kv" style="margin-top:10px">
+            <div>
+              <label class="small">Tamanho</label>
+              <select id="edSize">
+                <option value="1">1x1</option>
+                <option value="2">2x2</option>
+                <option value="3">3x3</option>
+              </select>
+            </div>
+            <div>
+              <label class="small">Modo</label>
+              <select id="edPaint">
+                <option value="on">ON (clique pinta)</option>
+                <option value="off">OFF</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint">Editor aberto: clique no mapa para pintar. Feche para jogar.</div>
+
+          <div class="sep"></div>
+
+          <div class="small"><b>Mundo</b></div>
+          <div class="kv" style="margin-top:10px">
+            <div>
+              <label class="small">Nome</label>
+              <input id="edWorldName" />
+            </div>
+            <div>
+              <label class="small">Tagline</label>
+              <input id="edWorldTagline" />
+            </div>
+          </div>
+
+          <div class="sep"></div>
+          <div class="small"><b>NPCs</b></div>
+          <button class="btn good" id="edAddNpc" style="margin-top:10px">+ NPC</button>
+          <div id="edNpcList"></div>
+
+          <div class="sep"></div>
+          <div class="small"><b>Portais</b></div>
+          <button class="btn good" id="edAddPortal" style="margin-top:10px">+ Portal</button>
+          <div id="edPortalList"></div>
+
+          <div class="sep"></div>
+          <div class="small"><b>Backup</b></div>
+          <textarea id="edBox" placeholder="Export aparece aqui. Para importar, cole e clique Importar."></textarea>
+          <div class="hint">Você consegue criar “vários mundos” exportando e guardando backups.</div>
+        </div>
+
+        <div class="right">
+          <div class="row" style="justify-content:space-between">
+            <div class="small"><b>Diálogo do NPC</b> <span class="tag" id="edNpcTag">nenhum</span></div>
+            <button class="btn secondary" id="edAddNode">+ Nó</button>
+          </div>
+          <div class="hint">Cada nó tem texto e opções com ações: skillcheck (SOC/TECH/ATK), dar ouro/XP, gerar quests, ir pro portal, etc.</div>
+          <div class="sep"></div>
+          <div id="edDialogArea"></div>
+
+          <div class="sep"></div>
+          <div class="small"><b>Atalhos:</b> Espaço = interagir • Editor: clique pinta • WASD move</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ========== Utils ==========
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  const irnd = (a,b) => Math.floor(rnd(a,b+1));
+  const now = () => performance.now();
+  const d20 = () => 1 + Math.floor(Math.random()*20);
+  const uid = (p="id") => p + "_" + Math.random().toString(36).slice(2,9);
+
+  const LS = { save:"az.save.v1", world:"az.world.v1" };
+
+  function toast(msg){
+    ui.toast.textContent = msg;
+    ui.toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>ui.toast.classList.remove("show"), 1400);
+  }
+  function log(msg){
+    const t = new Date().toLocaleTimeString();
+    ui.log.textContent += `[${t}] ${msg}\n`;
+    ui.log.scrollTop = ui.log.scrollHeight;
+  }
+
+  // ========== Audio (HQ minimal) ==========
+  const audio = (() => {
+    let ctx=null, master=null;
+    const state={on:false, muted:false};
+    function ensure(){
+      if(ctx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC({ latencyHint:"interactive" });
+      master = ctx.createGain(); master.gain.value=0.85;
+      master.connect(ctx.destination);
+    }
+    function env(g,t,a=0.003,d=0.08,s=0.0003,r=0.08,peak=0.18){
+      g.gain.cancelScheduledValues(t);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(peak,t+a);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,s), t+a+d);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+a+d+r);
+    }
+    function tone(freq, dur=0.12, type="sine", gain=0.18){
+      if(!ctx || state.muted) return;
+      const t=ctx.currentTime;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type=type; o.frequency.setValueAtTime(freq,t);
+      env(g,t,0.003,dur*0.6,0.0003,dur*0.4,gain);
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t+dur+0.06);
+    }
+    async function start(){
+      ensure();
+      await ctx.resume();
+      state.on=true; state.muted=false;
+    }
+    function toggleMute(){
+      if(!state.on) return;
+      state.muted=!state.muted;
+      master.gain.setTargetAtTime(state.muted?0.0:0.85, ctx.currentTime, 0.01);
+    }
+    const sfx={
+      click(){ tone(560,0.07,"triangle",0.14); },
+      step(){ tone(160+rnd(-10,10),0.04,"sine",0.05); },
+      roll(){ tone(240,0.08,"sawtooth",0.10); tone(480,0.06,"sine",0.08); },
+      hit(crit=false){ tone(220,0.10,"square",crit?0.18:0.12); tone(680,0.08,"triangle",crit?0.12:0.08); },
+      miss(){ tone(160,0.10,"sine",0.10); },
+      portal(){ tone(420,0.14,"sawtooth",0.10); tone(720,0.12,"triangle",0.10); },
+      fail(){ tone(120,0.12,"square",0.10); }
+    };
+    return {state,start,toggleMute,sfx};
+  })();
+
+  // ========== Procedural Spritesheet ==========
+  function makeSpritesheet(seed=1){
+    const W=32, H=32, cols=4, rows=8;
+    const cv=document.createElement("canvas");
+    cv.width=W*cols; cv.height=H*rows;
+    const c=cv.getContext("2d");
+    function drawDude(x,y,dir,frame,mode){
+      const baseHue=(seed*47)%360;
+      const hue2=(baseHue+120)%360;
+      const neon=`hsla(${baseHue},90%,60%,0.95)`;
+      const neon2=`hsla(${hue2},90%,60%,0.90)`;
+      const shadow="rgba(0,0,0,0.35)";
+      c.save(); c.translate(x,y);
+
+      c.fillStyle=shadow;
+      c.beginPath(); c.ellipse(W/2, H*0.78, W*0.22, H*0.10, 0, 0, Math.PI*2); c.fill();
+
+      const bob = mode==="walk" ? Math.sin(frame/4*Math.PI*2)*1.6 : 0;
+      const sway= mode==="walk" ? Math.cos(frame/4*Math.PI*2)*1.2 : 0;
+      c.translate(0,bob);
+
+      c.fillStyle="rgba(255,255,255,0.08)";
+      c.beginPath(); c.roundRect(W*0.28, H*0.30, W*0.44, H*0.44, 8); c.fill();
+
+      c.fillStyle=neon;
+      c.beginPath(); c.roundRect(W*0.32, H*0.34, W*0.36, H*0.34, 8); c.fill();
+
+      c.fillStyle="rgba(255,255,255,0.12)";
+      c.beginPath(); c.arc(W*0.50, H*0.26, W*0.14, 0, Math.PI*2); c.fill();
+      c.fillStyle=neon2;
+      c.beginPath(); c.arc(W*0.50, H*0.26, W*0.10, 0, Math.PI*2); c.fill();
+
+      c.fillStyle="rgba(0,0,0,0.25)";
+      c.beginPath(); c.roundRect(W*0.42, H*0.22, W*0.16, H*0.07, 6); c.fill();
+
+      const atk=(mode==="atk");
+      const atkP=atk?(frame/2):0;
+      const armOut=atk?(6+atkP*3):(2+Math.abs(sway));
+      const leg = mode==="walk" ? (2+Math.abs(sway)) : 1;
+
+      c.strokeStyle="rgba(255,255,255,0.16)";
+      c.lineWidth=4; c.lineCap="round";
+
+      c.beginPath();
+      if(dir===1){ c.moveTo(W*0.36,H*0.40); c.lineTo(W*0.36-armOut,H*0.46); }
+      else if(dir===2){ c.moveTo(W*0.36,H*0.40); c.lineTo(W*0.30,H*0.46); }
+      else { c.moveTo(W*0.36,H*0.40); c.lineTo(W*0.30,H*0.46+sway); }
+      c.stroke();
+
+      c.beginPath();
+      if(dir===2){ c.moveTo(W*0.64,H*0.40); c.lineTo(W*0.64+armOut,H*0.46); }
+      else if(dir===1){ c.moveTo(W*0.64,H*0.40); c.lineTo(W*0.70,H*0.46); }
+      else { c.moveTo(W*0.64,H*0.40); c.lineTo(W*0.70,H*0.46-sway); }
+      c.stroke();
+
+      c.beginPath(); c.moveTo(W*0.45,H*0.64); c.lineTo(W*0.42-sway,H*0.78+leg); c.stroke();
+      c.beginPath(); c.moveTo(W*0.55,H*0.64); c.lineTo(W*0.58+sway,H*0.78-leg); c.stroke();
+
+      if(atk){
+        c.strokeStyle=`hsla(${(baseHue+40)%360},90%,60%,0.65)`;
+        c.lineWidth=3;
+        c.beginPath();
+        if(dir===2) c.arc(W*0.74,H*0.46,10+atkP*6,-0.6,0.6);
+        else if(dir===1) c.arc(W*0.26,H*0.46,10+atkP*6,Math.PI-0.6,Math.PI+0.6);
+        else if(dir===0) c.arc(W*0.50,H*0.60,10+atkP*6,0.2,2.9);
+        else c.arc(W*0.50,H*0.30,10+atkP*6,3.5,5.8);
+        c.stroke();
+      }
+      c.restore();
+    }
+    for(let dir=0; dir<4; dir++) for(let f=0; f<4; f++) drawDude(f*W, dir*H, dir, f, "walk");
+    for(let dir=0; dir<4; dir++) for(let f=0; f<4; f++) drawDude(f*W, (4+dir)*H, dir, Math.min(2,f), "atk");
+    return {cv,W,H,cols,rows};
+  }
+
+  // ========== World multi-layer ==========
+  function mkGrid(w,h,fill=0){ return Array.from({length:h},()=>Array.from({length:w},()=>fill)); }
+
+  function makeWorld(){
+    const W=36,H=22,tile=24;
+    const ground=mkGrid(W,H,1), obst=mkGrid(W,H,0), deco=mkGrid(W,H,0), over=mkGrid(W,H,0);
+
+    for(let x=0;x<W;x++){ obst[0][x]=1; obst[H-1][x]=1; }
+    for(let y=0;y<H;y++){ obst[y][0]=1; obst[y][W-1]=1; }
+
+    for(let y=2;y<H-2;y++){
+      if(y%4===0) for(let x=4;x<W-4;x++) if(Math.random()<0.12) obst[y][x]=1;
+    }
+    for(let x=2;x<W-2;x++){
+      if(x%7===0) for(let y=3;y<H-3;y++) if(Math.random()<0.10) obst[y][x]=1;
+    }
+    for(let y=8;y<=14;y++) for(let x=12;x<=24;x++) obst[y][x]=0;
+
+    for(let i=0;i<120;i++){
+      const x=irnd(2,W-3), y=irnd(2,H-3);
+      if(obst[y][x]===0) deco[y][x]= (Math.random()<0.5?2:3);
+    }
+    for(let i=0;i<40;i++){
+      const x=irnd(2,W-3), y=irnd(2,H-3);
+      if(obst[y][x]===0) over[y][x]=4;
+    }
+
+    ground[5][6]=5;
+    ground[16][30]=5;
+    ground[11][18]=6;
+    ground[12][20]=6;
+    ground[10][22]=6;
+    ground[6][30]=7;
+
+    return {
+      id:"neon_port",
+      name:"Neon Port — Arena Zyplay",
+      tagline:"Pitch • Hack • Negociação • Arena Clandestina",
+      size:{w:W,h:H,tile},
+      spawn:{x:14,y:12},
+      layers:{ground,obst,deco,over},
+      npcs:[
+        {
+          id:"npc_investor",
+          name:"Investidor Clandestino",
+          x:18,y:11,
+          root:"n0",
+          nodes:{
+            n0:{
+              text:"Você tem coragem ou só fala bonito?",
+              options:[
+                { label:"🗣️ Negociar (SOC DC14)", action:{type:"skill", stat:"soc", dc:14, ok:{gold:+12, xp:+3}, fail:{xp:+1}} },
+                { label:"⚔️ Me leve pra Arena (Portal A)", action:{type:"gotoPortal", portalIndex:0} },
+                { label:"🧠 Tenho informações (TECH DC14)", action:{type:"skill", stat:"tech", dc:14, ok:{xp:+6}, fail:{gold:-2}} }
+              ]
+            }
+          }
+        },
+        {
+          id:"npc_mechanic",
+          name:"Mecânica de Infra",
+          x:20,y:12,
+          root:"m0",
+          nodes:{
+            m0:{
+              text:"Quer upgrade? Eu vendo kit de reparo.",
+              options:[
+                { label:"🛒 Comprar Repair Kit (10 ouro)", action:{type:"buy", item:"repairKit", price:10} },
+                { label:"⬅️ Fechar", action:{type:"close"} }
+              ]
+            }
+          }
+        },
+        {
+          id:"npc_broker",
+          name:"Corretor de Dados",
+          x:22,y:10,
+          root:"b0",
+          nodes:{
+            b0:{
+              text:"Eu vendo rumor… ou te mando pra uma arena mais pesada.",
+              options:[
+                { label:"📌 Rumor (flag)", action:{type:"flag", flag:"intel"} },
+                { label:"⚔️ Arena pesada (Portal B)", action:{type:"gotoPortal", portalIndex:1} },
+                { label:"🧩 Gerar 2 quests", action:{type:"genQuests", count:2} }
+              ]
+            }
+          }
+        }
+      ],
+      portals:[
+        { id:"pA", x:6, y:5, arena:{ id:"arena_backalley", name:"Arena — Beco Neon", difficulty:1 } },
+        { id:"pB", x:30,y:16, arena:{ id:"arena_tower", name:"Arena — Torre de Dados", difficulty:2 } }
+      ]
+    };
+  }
+
+  function defaultSave(){
+    return {
+      mode:"world",
+      nickname:"Jogador",
+      gold:20,
+      xp:0,
+      inv:{ repairKit:0 },
+      flags:{},
+      stats:{ atk:6, soc:5, tech:5, def:14, hpMax:30, enMax:12 },
+      quests:[],
+      activeQuest:null,
+      editor:{ open:false, paint:true, layer:"ground", brush:1, size:1, selectedNpc:null },
+      dialog:{ open:false, npcId:null, node:null },
+
+      // “Pseudo online” = simulado localmente: cria 2 avatares e alterna turnos
+      pseudo:{ on:false, room:"local_room", role:"p1", state:null, turn:"p1", log:[] }
+    };
+  }
+
+  function loadJSON(key, fallback){
+    try{
+      const raw=localStorage.getItem(key);
+      if(!raw) return fallback;
+      return JSON.parse(raw);
+    }catch(_){ return fallback; }
+  }
+  function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  let world = loadJSON(LS.world, makeWorld());
+  let save  = { ...defaultSave(), ...loadJSON(LS.save, {}) };
+
+  function persist(){ saveJSON(LS.world, world); saveJSON(LS.save, save); }
+
+  // ========== UI ==========
+  const ui = {
+    modeBadge: $("modeBadge"),
+    centerTitle: $("centerTitle"),
+    worldBadge: $("worldBadge"),
+    rightBadge: $("rightBadge"),
+    leftView: $("leftView"),
+    rightView: $("rightView"),
+    log: $("log"),
+    toast: $("toast"),
+    hudTitle: $("hudTitle"),
+    hudDesc: $("hudDesc"),
+    cv: $("cv"),
+    audioDot: $("audioDot"),
+    audioState: $("audioState"),
+    btnAudio: $("btnAudio"),
+    btnWorld: $("btnWorld"),
+    btnArena: $("btnArena"),
+    btnQuests: $("btnQuests"),
+    btnPseudoOnline: $("btnPseudoOnline"),
+    btnEditor: $("btnEditor"),
+    btnHelp: $("btnHelp"),
+    editorBack:$("editorBack"),
+    edClose:$("edClose"),
+    edExport:$("edExport"),
+    edImport:$("edImport"),
+    edReset:$("edReset"),
+    edSave:$("edSave"),
+    edLayer:$("edLayer"),
+    edBrush:$("edBrush"),
+    edSize:$("edSize"),
+    edPaint:$("edPaint"),
+    edWorldName:$("edWorldName"),
+    edWorldTagline:$("edWorldTagline"),
+    edNpcList:$("edNpcList"),
+    edPortalList:$("edPortalList"),
+    edBox:$("edBox"),
+    edNpcTag:$("edNpcTag"),
+    edAddNpc:$("edAddNpc"),
+    edAddPortal:$("edAddPortal"),
+    edAddNode:$("edAddNode"),
+    edDialogArea:$("edDialogArea"),
+  };
+
+  // ========== Canvas ==========
+  const canvas = ui.cv;
+  const g = canvas.getContext("2d");
+  let DPR=1, CW=0, CH=0;
+  function resize(){
+    DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const r = canvas.getBoundingClientRect();
+    CW = Math.max(1, Math.floor(r.width*DPR));
+    CH = Math.max(1, Math.floor(r.height*DPR));
+    canvas.width=CW; canvas.height=CH;
+  }
+  window.addEventListener("resize", resize);
+
+  // ========== Player ==========
+  const player = {
+    x: world.spawn.x, y: world.spawn.y,
+    speed: 5.2,
+    facing:0,
+    frame:0,
+    frameT:0,
+    nearNpc:null,
+    nearPortal:null,
+    nearQuest:false
+  };
+  const cam = {x:0,y:0};
+  const keys={};
+  window.addEventListener("keydown",(e)=>{
+    keys[e.key.toLowerCase()] = true;
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+    if(e.key===" "){ interact(); }
+  }, {passive:false});
+  window.addEventListener("keyup",(e)=>{ keys[e.key.toLowerCase()] = false; });
+
+  // ========== Tiles ==========
+  function inBounds(x,y){ return x>=0 && y>=0 && x<world.size.w && y<world.size.h; }
+  function tile(layer,x,y){ if(!inBounds(x,y)) return 0; return world.layers[layer][y][x]||0; }
+  function solidAt(x,y){
+    if(!inBounds(x,y)) return true;
+    return (world.layers.obst[y][x]||0) > 0;
+  }
+
+  // ========== Quests ==========
+  function genQuest(){
+    let tx=-1, ty=-1;
+    for(let y=0;y<world.size.h;y++){
+      for(let x=0;x<world.size.w;x++){
+        if(tile("ground",x,y)===7){ tx=x; ty=y; break; }
+      }
+      if(tx!==-1) break;
+    }
+    if(tx===-1){
+      for(let i=0;i<250;i++){
+        const x=irnd(2,world.size.w-3), y=irnd(2,world.size.h-3);
+        if(!solidAt(x,y)){ tx=x; ty=y; break; }
+      }
+    }
+    const q = { id:uid("q"), kind:"reach", title:"Sprint de Exploração", desc:`Chegue ao alvo (${tx},${ty}) e colete dados.`, target:{x:tx,y:ty}, done:false, reward:{gold:8,xp:6} };
+    save.quests.push(q);
+    save.activeQuest = q.id;
+    persist();
+    toast("Quest gerada e ativada!");
+    log("Quest criada: " + q.title);
+  }
+  function activeQuest(){ return save.quests.find(q=>q.id===save.activeQuest) || null; }
+  function tryCompleteQuest(){
+    const q=activeQuest();
+    if(!q || q.done) return false;
+    const d = Math.abs(q.target.x - player.x) + Math.abs(q.target.y - player.y);
+    if(d<=1.0){
+      q.done=true;
+      save.gold += q.reward.gold;
+      save.xp   += q.reward.xp;
+      persist();
+      toast("Quest concluída! +ouro/XP");
+      log("Quest concluída: " + q.title);
+      return true;
+    }
+    return false;
+  }
+
+  // ========== Dialog ==========
+  function openDialog(npc){
+    save.dialog.open=true;
+    save.dialog.npcId=npc.id;
+    save.dialog.node=npc.root;
+    persist();
+    audio.sfx.click();
+    renderAll();
+  }
+  function closeDialog(){
+    save.dialog.open=false;
+    save.dialog.npcId=null;
+    save.dialog.node=null;
+    persist();
+    renderAll();
+  }
+  function currentNpc(){
+    if(!save.dialog.open) return null;
+    return world.npcs.find(n=>n.id===save.dialog.npcId) || null;
+  }
+  function applyAction(action){
+    if(!action) return;
+    const r=d20();
+    if(action.type==="close"){ closeDialog(); return; }
+    if(action.type==="flag"){
+      save.flags[action.flag]=true;
+      persist();
+      toast("Flag: "+action.flag);
+      log("Flag: "+action.flag);
+      return;
+    }
+    if(action.type==="buy"){
+      if(save.gold < action.price){ toast("Ouro insuficiente!"); audio.sfx.fail(); return; }
+      save.gold -= action.price;
+      save.inv[action.item] = (save.inv[action.item]||0) + 1;
+      persist();
+      toast("Comprado!");
+      log("Compra: "+action.item);
+      return;
+    }
+    if(action.type==="genQuests"){
+      const c=clamp(action.count||1,1,5);
+      for(let i=0;i<c;i++) genQuest();
+      return;
+    }
+    if(action.type==="gotoPortal"){
+      const p=world.portals[action.portalIndex];
+      if(!p){ toast("Portal inválido."); return; }
+      player.x=p.x; player.y=p.y;
+      persist();
+      enterPortal(p);
+      return;
+    }
+    if(action.type==="skill"){
+      audio.sfx.roll();
+      const mod = (action.stat==="soc")?save.stats.soc : (action.stat==="tech")?save.stats.tech : save.stats.atk;
+      const total=r+mod;
+      const crit=r===20, fcrit=r===1;
+      log(`Skill ${action.stat.toUpperCase()}: d20=${r} +${mod} => ${total} vs DC ${action.dc} ${crit?"(CRIT)":fcrit?"(FALHA CRÍTICA)":""}`);
+      if(crit || (!fcrit && total>=action.dc)){
+        if(action.ok?.gold) save.gold += action.ok.gold;
+        if(action.ok?.xp) save.xp += action.ok.xp;
+        persist();
+        toast("Sucesso!");
+      }else{
+        if(action.fail?.gold) save.gold += action.fail.gold;
+        if(action.fail?.xp) save.xp += action.fail.xp;
+        save.gold = Math.max(0, save.gold);
+        persist();
+        toast("Falha!");
+      }
+      return;
+    }
+  }
+
+  // ========== Arena (local) ==========
+  const arena = { on:false, me:null, enemy:null, round:1, lock:false };
+
+  function startArena(arenaInfo){
+    arena.on=true;
+    arena.round=1;
+    arena.lock=false;
+    const d=clamp(arenaInfo.difficulty||1,1,5);
+    arena.me = { name: save.nickname, hpMax:save.stats.hpMax, hp:save.stats.hpMax, enMax:save.stats.enMax, en:save.stats.enMax, atk:save.stats.atk, soc:save.stats.soc, tech:save.stats.tech, def:save.stats.def };
+    arena.enemy = { name: (d>=2?"Boss":"Rival")+" "+(irnd(10,99)), hpMax: 24 + (d-1)*6, hp: 24 + (d-1)*6, enMax: 10 + (d-1)*2, en: 10 + (d-1)*2, atk: 5 + (d-1), soc: 4 + (d-1), def: 12 + (d-1) };
+    save.mode="arena";
+    persist();
+    audio.sfx.portal();
+    toast("Entrou na Arena!");
+    log(`Arena: ${arena.me.name} vs ${arena.enemy.name} (D${d})`);
+    renderAll();
+  }
+  function endArena(win){
+    arena.on=false;
+    save.mode="world";
+    if(win){
+      const gold=8+arena.round, xp=6+arena.round;
+      save.gold += gold; save.xp += xp;
+      toast(`Vitória! +${gold} ouro +${xp} XP`);
+      log("Vitória na arena.");
+    } else {
+      toast("Derrota…");
+      log("Derrota na arena.");
+    }
+    persist();
+    renderAll();
+  }
+  function rollCheck(mod,target){
+    const r=d20(); audio.sfx.roll();
+    const crit=r===20, fcrit=r===1;
+    const total=r+mod;
+    const hit=crit || (!fcrit && total>=target);
+    return {r,crit,fcrit,total,hit};
+  }
+  async function act(kind){
+    if(!arena.on || arena.lock) return;
+    arena.lock=true;
+    const p=arena.me, e=arena.enemy;
+
+    if(kind==="exploit"){
+      if(p.en<1){ toast("Sem EN!"); audio.sfx.fail(); arena.lock=false; return; }
+      p.en-=1;
+      const chk=rollCheck(p.atk, e.def);
+      if(chk.fcrit){
+        p.hp = clamp(p.hp-3,0,p.hpMax);
+        toast("Falha crítica! (-3 HP)");
+        log("FALHA CRÍTICA no Exploit.");
+      } else if(chk.hit){
+        let dmg=irnd(5,10);
+        if(chk.crit) dmg=Math.floor(dmg*1.8)+2;
+        e.hp=clamp(e.hp-dmg,0,e.hpMax);
+        toast(chk.crit?`CRIT! -${dmg} HP`:`Acertou! -${dmg} HP`);
+        audio.sfx.hit(chk.crit);
+        log(`Exploit: HIT dano ${dmg}${chk.crit?" (CRIT)":""}`);
+      } else {
+        toast("Errou!");
+        audio.sfx.miss();
+        log("Exploit: MISS");
+      }
+    }
+
+    if(kind==="pitch"){
+      if(p.en<2){ toast("Sem EN!"); audio.sfx.fail(); arena.lock=false; return; }
+      p.en-=2;
+      const chk=rollCheck(p.soc, 14);
+      if(chk.fcrit){
+        p.en=clamp(p.en-2,0,p.enMax);
+        toast("Falha crítica no Pitch! (-EN)");
+        log("FALHA CRÍTICA no Pitch.");
+      } else if(chk.hit){
+        let drain=irnd(2,5)+(chk.crit?2:0);
+        e.en=clamp(e.en-drain,0,e.enMax);
+        toast(chk.crit?`CRIT Pitch! -${drain} EN`:`Pitch! -${drain} EN`);
+        audio.sfx.hit(chk.crit);
+        log(`Pitch: drenou ${drain} EN${chk.crit?" (CRIT)":""}`);
+      } else {
+        toast("Pitch falhou.");
+        audio.sfx.fail();
+        log("Pitch falhou.");
+      }
+    }
+
+    renderAll();
+    if(e.hp<=0){ endArena(true); arena.lock=false; return; }
+    if(p.hp<=0){ endArena(false); arena.lock=false; return; }
+
+    await new Promise(r=>setTimeout(r, 380));
+    enemyTurn();
+    arena.lock=false;
+  }
+  function enemyTurn(){
+    if(!arena.on) return;
+    const p=arena.me, e=arena.enemy;
+    const usePitch = (e.en>=2) && Math.random()<0.45;
+
+    if(usePitch){
+      e.en-=2;
+      const chk=rollCheck(e.soc, 14);
+      if(chk.fcrit){
+        e.en=clamp(e.en-2,0,e.enMax);
+        toast("Inimigo falhou criticamente (Pitch)!");
+        log("Inimigo FALHA CRÍTICA (Pitch).");
+      } else if(chk.hit){
+        let drain=irnd(2,5)+(chk.crit?2:0);
+        p.en=clamp(p.en-drain,0,p.enMax);
+        toast(chk.crit?`CRIT inimigo! -${drain} EN`:`Inimigo drenou -${drain} EN`);
+        audio.sfx.hit(chk.crit);
+        log("Inimigo Pitch drenou EN.");
+      } else {
+        toast("Inimigo falhou no Pitch.");
+        audio.sfx.fail();
+        log("Inimigo Pitch falhou.");
+      }
+    } else {
+      if(e.en>=1) e.en-=1;
+      const chk=rollCheck(e.atk, p.def);
+      if(chk.fcrit){
+        e.hp=clamp(e.hp-2,0,e.hpMax);
+        toast("Inimigo falhou criticamente! (-2 HP nele)");
+        log("Inimigo FALHA CRÍTICA (Ataque).");
+      } else if(chk.hit){
+        let dmg=irnd(4,9);
+        if(chk.crit) dmg=Math.floor(dmg*1.8)+2;
+        p.hp=clamp(p.hp-dmg,0,p.hpMax);
+        toast(chk.crit?`CRIT inimigo! -${dmg} HP`:`Inimigo acertou -${dmg} HP`);
+        audio.sfx.hit(chk.crit);
+        log("Inimigo acertou.");
+      } else {
+        toast("Inimigo errou!");
+        audio.sfx.miss();
+        log("Inimigo errou.");
+      }
+    }
+    arena.round++;
+    if(p.hp<=0){ endArena(false); return; }
+    if(e.hp<=0){ endArena(true); return; }
+    renderAll();
+  }
+
+  // ========== Pseudo-Online (simulação local) ==========
+  function startPseudoOnline(){
+    save.mode="pseudo";
+    save.pseudo.on=true;
+    save.pseudo.role="p1";
+    save.pseudo.turn="p1";
+    save.pseudo.log=[`ROOM: ${save.pseudo.room} (local sim)`];
+    save.pseudo.state={
+      p1:{nick:save.nickname,hp:30,hpMax:30,en:12,enMax:12,atk:6,soc:5,def:14},
+      p2:{nick:"OutroJogador",hp:30,hpMax:30,en:12,enMax:12,atk:6,soc:5,def:14}
+    };
+    persist();
+    toast("“Online” simulado iniciado.");
+    log("Pseudo-Online local iniciado.");
+    renderAll();
+  }
+
+  function pseudoApply(role, type){
+    const st=save.pseudo.state;
+    const me = role==="p1"?st.p1:st.p2;
+    const en = role==="p1"?st.p2:st.p1;
+    const r=d20(); audio.sfx.roll();
+    const crit=r===20, fcrit=r===1;
+
+    if(type==="exploit"){
+      if(me.en<1){ toast("Sem EN"); audio.sfx.fail(); return; }
+      me.en-=1;
+      const total=r+me.atk;
+      const hit=crit || (!fcrit && total>=en.def);
+      if(fcrit){
+        me.hp=clamp(me.hp-3,0,me.hpMax);
+        save.pseudo.log.push(`${role}: FALHA CRÍTICA exploit (-3 HP) d20=${r}`);
+      } else if(hit){
+        let dmg=irnd(5,10); if(crit) dmg=Math.floor(dmg*1.8)+2;
+        en.hp=clamp(en.hp-dmg,0,en.hpMax);
+        audio.sfx.hit(crit);
+        save.pseudo.log.push(`${role}: HIT exploit dmg=${dmg} d20=${r}${crit?" CRIT":""}`);
+      } else {
+        audio.sfx.miss();
+        save.pseudo.log.push(`${role}: MISS exploit d20=${r}`);
+      }
+    }
+
+    if(type==="pitch"){
+      if(me.en<2){ toast("Sem EN"); audio.sfx.fail(); return; }
+      me.en-=2;
+      const total=r+me.soc;
+      const hit=crit || (!fcrit && total>=14);
+      if(fcrit){
+        me.en=clamp(me.en-2,0,me.enMax);
+        save.pseudo.log.push(`${role}: FALHA CRÍTICA pitch (-2 EN extra) d20=${r}`);
+      } else if(hit){
+        let drain=irnd(2,5)+(crit?2:0);
+        en.en=clamp(en.en-drain,0,en.enMax);
+        audio.sfx.hit(crit);
+        save.pseudo.log.push(`${role}: SUCESSO pitch drain=${drain} d20=${r}${crit?" CRIT":""}`);
+      } else {
+        audio.sfx.fail();
+        save.pseudo.log.push(`${role}: FALHOU pitch d20=${r}`);
+      }
+    }
+
+    // win?
+    if(st.p1.hp<=0 || st.p2.hp<=0){
+      const winner = st.p1.hp>0 ? "p1":"p2";
+      save.pseudo.log.push(`WINNER: ${winner}`);
+      toast(`Fim! Vencedor: ${winner}`);
+      log(`Pseudo-Online terminou: ${winner}`);
+      save.pseudo.on=false;
+    } else {
+      save.pseudo.turn = (save.pseudo.turn==="p1") ? "p2":"p1";
+      // auto enemy move
+      if(save.pseudo.turn==="p2"){
+        setTimeout(()=>{
+          if(!save.pseudo.on) return;
+          const move = Math.random()<0.55 ? "exploit":"pitch";
+          pseudoApply("p2", move);
+          save.pseudo.turn="p1";
+          persist();
+          renderAll();
+        }, 420);
+      }
+    }
+
+    persist();
+    renderAll();
+  }
+
+  // ========== Portals / Interact ==========
+  function enterPortal(p){ startArena(p.arena); }
+  function interact(){
+    if(save.mode==="arena" || save.mode==="pseudo") return;
+    if(save.editor.open) return;
+    if(save.dialog.open) return;
+
+    if(player.nearNpc){ openDialog(player.nearNpc); return; }
+    if(player.nearPortal){ audio.sfx.portal(); enterPortal(player.nearPortal); return; }
+    if(player.nearQuest){ if(tryCompleteQuest()) return; }
+    toast("Nada para interagir aqui.");
+  }
+
+  // ========== Loop ==========
+  const sprite = makeSpritesheet(irnd(1,9999));
+  let lastT = now();
+
+  function update(){
+    const t=now();
+    const dt=Math.min(0.05,(t-lastT)/1000);
+    lastT=t;
+
+    if(save.mode==="world" || save.mode==="quests"){
+      updateWorld(dt);
+    }
+    draw();
+    requestAnimationFrame(update);
+  }
+
+  function updateWorld(dt){
+    let mx=0,my=0;
+    if(keys["w"]||keys["arrowup"]) my-=1;
+    if(keys["s"]||keys["arrowdown"]) my+=1;
+    if(keys["a"]||keys["arrowleft"]) mx-=1;
+    if(keys["d"]||keys["arrowright"]) mx+=1;
+
+    if(Math.abs(mx)+Math.abs(my)>0){
+      const mag=Math.hypot(mx,my); mx/=mag; my/=mag;
+      if(Math.abs(mx)>Math.abs(my)) player.facing = mx<0 ? 1 : 2;
+      else player.facing = my<0 ? 3 : 0;
+
+      player.frameT += dt;
+      if(player.frameT>0.10){
+        player.frameT=0;
+        player.frame=(player.frame+1)%4;
+        if(audio.state.on && !audio.state.muted) audio.sfx.step();
+      }
+    } else {
+      player.frameT=0; player.frame=0;
+    }
+
+    const sp=player.speed*dt;
+    const radius=0.32;
+    const canMove=(x,y)=>{
+      const pts=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
+      for(const [px,py] of pts){
+        const tx=Math.floor(px), ty=Math.floor(py);
+        if(solidAt(tx,ty)) return false;
+      }
+      return true;
+    };
+
+    let nx=player.x+mx*sp, ny=player.y+my*sp;
+    let fx=player.x, fy=player.y;
+    if(canMove(nx, player.y)) fx=nx;
+    if(canMove(fx, ny)) fy=ny;
+
+    player.x=clamp(fx, 1.2, world.size.w-2.2);
+    player.y=clamp(fy, 1.2, world.size.h-2.2);
+
+    const tsize=world.size.tile;
+    cam.x=clamp(player.x*tsize - CW/2, 0, world.size.w*tsize - CW);
+    cam.y=clamp(player.y*tsize - CH/2, 0, world.size.h*tsize - CH);
+
+    player.nearNpc=null;
+    for(const npc of world.npcs){
+      const d=Math.abs(npc.x-player.x)+Math.abs(npc.y-player.y);
+      if(d<=1.2){ player.nearNpc=npc; break; }
+    }
+    player.nearPortal=null;
+    for(const p of world.portals){
+      const d=Math.abs(p.x-player.x)+Math.abs(p.y-player.y);
+      if(d<=1.1){ player.nearPortal=p; break; }
+    }
+    player.nearQuest=false;
+    const q=activeQuest();
+    if(q && !q.done){
+      const d=Math.abs(q.target.x-player.x)+Math.abs(q.target.y-player.y);
+      if(d<=1.1) player.nearQuest=true;
+    }
+  }
+
+  // ========== Draw ==========
+  function drawTile(kind, px, py, t){
+    if(kind===0) return;
+    if(kind>=1 && kind<=4){
+      g.fillStyle = kind===1 ? "rgba(255,255,255,0.03)" :
+                    kind===2 ? "rgba(124,92,255,0.10)" :
+                    kind===3 ? "rgba(52,211,153,0.10)" :
+                               "rgba(251,191,36,0.08)";
+      g.fillRect(px,py,t,t);
+      g.strokeStyle="rgba(255,255,255,0.06)";
+      g.strokeRect(px+1,py+1,t-2,t-2);
+      return;
+    }
+    if(kind===5){
+      g.fillStyle="rgba(251,191,36,0.14)";
+      g.fillRect(px+2,py+2,t-4,t-4);
+      g.strokeStyle="rgba(251,191,36,0.65)";
+      g.lineWidth=2*DPR;
+      g.strokeRect(px+4,py+4,t-8,t-8);
+      return;
+    }
+    if(kind===6 || kind===7){
+      g.fillStyle= kind===6 ? "rgba(124,92,255,0.15)" : "rgba(52,211,153,0.15)";
+      g.beginPath(); g.arc(px+t/2, py+t/2, t*0.28, 0, Math.PI*2); g.fill();
+      return;
+    }
+  }
+
+  function draw(){
+    g.clearRect(0,0,CW,CH);
+
+    if(save.mode==="arena"){
+      drawArena();
+      return;
+    }
+    if(save.mode==="pseudo"){
+      drawPseudoArena();
+      return;
+    }
+
+    const t=world.size.tile;
+    const sx=Math.floor(cam.x/t), sy=Math.floor(cam.y/t);
+    const ex=Math.ceil((cam.x+CW)/t), ey=Math.ceil((cam.y+CH)/t);
+
+    // ground
+    for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++){
+      const k=tile("ground",x,y);
+      const px=x*t-cam.x, py=y*t-cam.y;
+      drawTile(k===0?1:k, px, py, t);
+    }
+    // deco
+    for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++){
+      const k=tile("deco",x,y);
+      if(!k) continue;
+      drawTile(k, x*t-cam.x, y*t-cam.y, t);
+    }
+    // obstacles
+    for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++){
+      const k=tile("obst",x,y);
+      if(!k) continue;
+      const px=x*t-cam.x, py=y*t-cam.y;
+      g.fillStyle="rgba(255,255,255,0.10)";
+      g.fillRect(px,py,t,t);
+      g.fillStyle="rgba(0,0,0,0.22)";
+      g.fillRect(px+2,py+2,t-4,t-4);
+    }
+
+    // NPCs
+    for(const npc of world.npcs){
+      const px=npc.x*t-cam.x + t/2;
+      const py=npc.y*t-cam.y + t/2;
+      g.fillStyle="rgba(124,92,255,0.22)";
+      g.beginPath(); g.arc(px,py,t*0.35,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(255,255,255,0.88)";
+      g.font=`${Math.floor(11*DPR)}px ui-sans-serif, system-ui`;
+      g.textAlign="center"; g.textBaseline="middle";
+      g.fillText("NPC", px, py);
+    }
+    // portals
+    for(const p of world.portals){
+      const px=p.x*t-cam.x, py=p.y*t-cam.y;
+      g.strokeStyle="rgba(251,191,36,0.75)";
+      g.lineWidth=2*DPR;
+      g.strokeRect(px+3,py+3,t-6,t-6);
+      g.fillStyle="rgba(251,191,36,0.10)";
+      g.fillRect(px+5,py+5,t-10,t-10);
+    }
+
+    // player sprite
+    const px=player.x*t-cam.x;
+    const py=player.y*t-cam.y;
+    const dir=player.facing;
+    const moving=(keys["w"]||keys["arrowup"]||keys["s"]||keys["arrowdown"]||keys["a"]||keys["arrowleft"]||keys["d"]||keys["arrowright"]);
+    const row=dir; // walk rows 0..3
+    const col=moving?player.frame:0;
+
+    g.imageSmoothingEnabled=false;
+    g.drawImage(sprite.cv, col*sprite.W, row*sprite.H, sprite.W, sprite.H, px - sprite.W/2, py - sprite.H/2, sprite.W, sprite.H);
+    g.imageSmoothingEnabled=true;
+
+    // overlay
+    for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++){
+      const k=tile("over",x,y);
+      if(!k) continue;
+      const px=x*t-cam.x, py=y*t-cam.y;
+      g.fillStyle="rgba(124,92,255,0.08)";
+      g.fillRect(px,py,t,t);
+      g.strokeStyle="rgba(255,255,255,0.05)";
+      g.strokeRect(px+1,py+1,t-2,t-2);
+    }
+
+    ui.hudTitle.textContent = world.name;
+    ui.hudDesc.textContent =
+      save.editor.open ? "Editor aberto: clique para pintar. (Feche para jogar)" :
+      player.nearNpc ? `NPC: ${player.nearNpc.name} (Espaço)` :
+      player.nearPortal ? `Portal → ${player.nearPortal.arena.name} (Espaço)` :
+      player.nearQuest ? "Alvo da quest aqui (Espaço)" :
+      "WASD/Setas move • Espaço interage • Editor cria conteúdo";
+  }
+
+  function drawArena(){
+    g.clearRect(0,0,CW,CH);
+    const cx=CW*0.5, cy=CH*0.56;
+    const R=Math.min(CW,CH)*0.33 * (1+0.02*Math.sin(now()/180));
+    g.fillStyle="rgba(124,92,255,0.08)";
+    g.beginPath(); g.arc(cx,cy,R*1.05,0,Math.PI*2); g.fill();
+    g.lineWidth=6*DPR;
+    g.strokeStyle="rgba(255,255,255,0.18)";
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
+
+    const p=arena.me, e=arena.enemy;
+    function drawF(x,y,f){
+      const hp=f.hp/f.hpMax;
+      g.fillStyle="rgba(255,255,255,0.10)";
+      g.beginPath(); g.arc(x,y,26*DPR,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(255,255,255,0.85)";
+      g.font=`${Math.floor(16*DPR)}px ui-sans-serif, system-ui`;
+      g.textAlign="center"; g.textBaseline="middle";
+      g.fillText("⚔️", x, y);
+
+      g.lineWidth=5*DPR;
+      g.strokeStyle="rgba(255,255,255,0.20)";
+      g.beginPath(); g.arc(x,y,34*DPR,-Math.PI*0.85,Math.PI*0.85); g.stroke();
+      g.strokeStyle="rgba(52,211,153,0.95)";
+      g.beginPath(); g.arc(x,y,34*DPR,-Math.PI*0.85,-Math.PI*0.85+(Math.PI*1.7)*hp); g.stroke();
+
+      g.fillStyle="rgba(255,255,255,0.85)";
+      g.font=`${Math.floor(12*DPR)}px ui-sans-serif, system-ui`;
+      g.fillText(`${f.name}`, x, y-48*DPR);
+      g.fillStyle="rgba(170,180,255,0.9)";
+      g.fillText(`HP ${f.hp}/${f.hpMax} • EN ${f.en}/${f.enMax}`, x, y+48*DPR);
+    }
+    drawF(cx-R*0.60, cy- R*0.10, p);
+    drawF(cx+R*0.60, cy- R*0.10, e);
+
+    ui.hudTitle.textContent="Arena Zyplay — Combate";
+    ui.hudDesc.textContent="Ações no painel direito. Crítico 20 / Falha crítica 1.";
+  }
+
+  function drawPseudoArena(){
+    g.clearRect(0,0,CW,CH);
+    const cx=CW*0.5, cy=CH*0.56;
+    const R=Math.min(CW,CH)*0.33;
+    g.fillStyle="rgba(52,211,153,0.06)";
+    g.beginPath(); g.arc(cx,cy,R*1.05,0,Math.PI*2); g.fill();
+    g.lineWidth=6*DPR;
+    g.strokeStyle="rgba(255,255,255,0.18)";
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
+
+    ui.hudTitle.textContent="Arena Zyplay — “Online” Simulado";
+    ui.hudDesc.textContent="Dinâmica pronta. Para PvP real precisa backend WS.";
+  }
+
+  // ========== Editor ==========
+  function openEditor(){
+    save.editor.open=true;
+    ui.editorBack.style.display="flex";
+    syncEditorUI();
+    persist();
+    toast("Editor aberto.");
+  }
+  function closeEditor(){
+    save.editor.open=false;
+    ui.editorBack.style.display="none";
+    persist();
+    toast("Editor fechado.");
+    renderAll();
+  }
+  function syncEditorUI(){
+    ui.edWorldName.value=world.name;
+    ui.edWorldTagline.value=world.tagline;
+    ui.edLayer.value=save.editor.layer;
+    ui.edBrush.value=String(save.editor.brush);
+    ui.edSize.value=String(save.editor.size);
+    ui.edPaint.value=save.editor.paint?"on":"off";
+    renderNpcList();
+    renderPortalList();
+    renderDialogEditor();
+  }
+
+  function renderNpcList(){
+    ui.edNpcList.innerHTML="";
+    for(const npc of world.npcs){
+      const wrap=document.createElement("div");
+      wrap.className="listItem";
+      wrap.innerHTML=`
+        <div style="font-weight:900">${npc.name}</div>
+        <div class="small">id: <span class="tag">${npc.id}</span> pos: (${npc.x},${npc.y})</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn secondary" data-sel="${npc.id}">Selecionar</button>
+          <button class="btn secondary" data-move="${npc.id}">Mover p/ player</button>
+          <button class="btn bad" data-del="${npc.id}">Excluir</button>
+        </div>
+      `;
+      ui.edNpcList.appendChild(wrap);
+    }
+    ui.edNpcList.querySelectorAll("button[data-sel]").forEach(b=>{
+      b.onclick=()=>{
+        save.editor.selectedNpc=b.getAttribute("data-sel");
+        persist(); renderDialogEditor(); renderNpcList();
+      };
+    });
+    ui.edNpcList.querySelectorAll("button[data-move]").forEach(b=>{
+      b.onclick=()=>{
+        const id=b.getAttribute("data-move");
+        const npc=world.npcs.find(n=>n.id===id);
+        if(!npc) return;
+        npc.x=Math.round(player.x); npc.y=Math.round(player.y);
+        persist(); toast("NPC movido."); renderNpcList(); renderAll();
+      };
+    });
+    ui.edNpcList.querySelectorAll("button[data-del]").forEach(b=>{
+      b.onclick=()=>{
+        const id=b.getAttribute("data-del");
+        world.npcs=world.npcs.filter(n=>n.id!==id);
+        if(save.editor.selectedNpc===id) save.editor.selectedNpc=null;
+        persist(); toast("NPC removido."); renderNpcList(); renderDialogEditor(); renderAll();
+      };
+    });
+  }
+
+  function renderPortalList(){
+    ui.edPortalList.innerHTML="";
+    world.portals.forEach((p,idx)=>{
+      const wrap=document.createElement("div");
+      wrap.className="listItem";
+      wrap.innerHTML=`
+        <div style="font-weight:900">${p.arena.name}</div>
+        <div class="small">id: <span class="tag">${p.id}</span> pos: (${p.x},${p.y}) diff:${p.arena.difficulty}</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn secondary" data-moveP="${idx}">Mover p/ player</button>
+          <button class="btn bad" data-delP="${idx}">Excluir</button>
+        </div>
+      `;
+      ui.edPortalList.appendChild(wrap);
+    });
+    ui.edPortalList.querySelectorAll("button[data-moveP]").forEach(b=>{
+      b.onclick=()=>{
+        const idx=parseInt(b.getAttribute("data-moveP"),10);
+        const p=world.portals[idx]; if(!p) return;
+        p.x=Math.round(player.x); p.y=Math.round(player.y);
+        persist(); toast("Portal movido."); renderPortalList(); renderAll();
+      };
+    });
+    ui.edPortalList.querySelectorAll("button[data-delP]").forEach(b=>{
+      b.onclick=()=>{
+        const idx=parseInt(b.getAttribute("data-delP"),10);
+        world.portals.splice(idx,1);
+        persist(); toast("Portal removido."); renderPortalList(); renderAll();
+      };
+    });
+  }
+
+  function renderDialogEditor(){
+    const id=save.editor.selectedNpc;
+    const npc=world.npcs.find(n=>n.id===id) || null;
+    ui.edNpcTag.textContent=npc?npc.name:"nenhum";
+    ui.edDialogArea.innerHTML="";
+    if(!npc){
+      ui.edDialogArea.innerHTML=`<div class="small">Selecione um NPC para editar diálogo.</div>`;
+      return;
+    }
+    const keys=Object.keys(npc.nodes||{}).sort((a,b)=>a.localeCompare(b));
+    for(const k of keys){
+      const node=npc.nodes[k];
+      const box=document.createElement("div");
+      box.className="listItem";
+      const opts=(node.options||[]).map((op,idx)=>`
+        <div class="small" style="margin-top:6px">
+          <b>•</b> ${op.label}
+          <span class="tag">${op.action?.type||"none"}</span>
+          <button class="btn secondary" data-edit="${npc.id}|${k}|${idx}" style="padding:6px 10px">Editar</button>
+          <button class="btn bad" data-delopt="${npc.id}|${k}|${idx}" style="padding:6px 10px">X</button>
+        </div>
+      `).join("");
+      box.innerHTML=`
+        <div class="row" style="justify-content:space-between">
+          <div style="font-weight:900">Nó: <span class="tag">${k}</span>${npc.root===k?' <span class="tag">ROOT</span>':''}</div>
+          <div class="row">
+            <button class="btn secondary" data-setroot="${k}" style="padding:6px 10px">Set ROOT</button>
+            <button class="btn bad" data-delnode="${k}" style="padding:6px 10px">Excluir nó</button>
+          </div>
+        </div>
+        <div class="small" style="margin-top:8px">Texto</div>
+        <textarea data-nodeText="${k}">${node.text||""}</textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn good" data-addopt="${k}">+ Opção</button>
+        </div>
+        ${opts}
+      `;
+      ui.edDialogArea.appendChild(box);
+    }
+
+    ui.edDialogArea.querySelectorAll("textarea[data-nodeText]").forEach(t=>{
+      t.oninput=()=>{
+        const k=t.getAttribute("data-nodeText");
+        npc.nodes[k].text=t.value;
+        persist();
+      };
+    });
+    ui.edDialogArea.querySelectorAll("button[data-setroot]").forEach(b=>{
+      b.onclick=()=>{
+        npc.root=b.getAttribute("data-setroot");
+        persist(); toast("ROOT atualizado."); renderDialogEditor();
+      };
+    });
+    ui.edDialogArea.querySelectorAll("button[data-delnode]").forEach(b=>{
+      b.onclick=()=>{
+        const k=b.getAttribute("data-delnode");
+        if(npc.root===k){ toast("Não pode excluir o ROOT. Troque o ROOT antes."); return; }
+        delete npc.nodes[k];
+        persist(); toast("Nó removido."); renderDialogEditor();
+      };
+    });
+    ui.edDialogArea.querySelectorAll("button[data-addopt]").forEach(b=>{
+      b.onclick=()=>{
+        const k=b.getAttribute("data-addopt");
+        npc.nodes[k].options=npc.nodes[k].options||[];
+        npc.nodes[k].options.push({label:"(nova opção)", action:{type:"close"}});
+        persist(); renderDialogEditor();
+      };
+    });
+    ui.edDialogArea.querySelectorAll("button[data-delopt]").forEach(b=>{
+      b.onclick=()=>{
+        const [nid,k,idxs]=b.getAttribute("data-delopt").split("|");
+        const idx=parseInt(idxs,10);
+        npc.nodes[k].options.splice(idx,1);
+        persist(); renderDialogEditor();
+      };
+    });
+    ui.edDialogArea.querySelectorAll("button[data-edit]").forEach(b=>{
+      b.onclick=()=>{
+        const [nid,k,idxs]=b.getAttribute("data-edit").split("|");
+        const idx=parseInt(idxs,10);
+        const op=npc.nodes[k].options[idx];
+
+        op.label = prompt("Texto da opção:", op.label) ?? op.label;
+        const type = prompt("Ação type (close|flag|buy|skill|gotoPortal|genQuests):", op.action?.type||"close") ?? (op.action?.type||"close");
+        op.action = op.action || {};
+        op.action.type=type;
+
+        if(type==="flag"){
+          op.action.flag = prompt("flag:", op.action.flag||"intel") || op.action.flag || "intel";
+        }
+        if(type==="buy"){
+          op.action.item = prompt("item (repairKit):", op.action.item||"repairKit") || op.action.item || "repairKit";
+          op.action.price = parseInt(prompt("price:", String(op.action.price||10))||String(op.action.price||10),10);
+        }
+        if(type==="skill"){
+          op.action.stat = prompt("stat (soc|tech|atk):", op.action.stat||"soc") || op.action.stat || "soc";
+          op.action.dc = parseInt(prompt("dc:", String(op.action.dc||14))||"14",10);
+          op.action.ok = op.action.ok || {gold:+6,xp:+3};
+          op.action.fail = op.action.fail || {xp:+1};
+        }
+        if(type==="gotoPortal"){
+          op.action.portalIndex = parseInt(prompt("portalIndex (0,1,2...):", String(op.action.portalIndex||0))||"0",10);
+        }
+        if(type==="genQuests"){
+          op.action.count = parseInt(prompt("count:", String(op.action.count||2))||"2",10);
+        }
+        persist(); renderDialogEditor();
+      };
+    });
+  }
+
+  // paint click
+  canvas.addEventListener("pointerdown",(e)=>{
+    if(!save.editor.open || !save.editor.paint) return;
+    const t=world.size.tile;
+    const rect=canvas.getBoundingClientRect();
+    const px=(e.clientX-rect.left)*DPR;
+    const py=(e.clientY-rect.top)*DPR;
+    const tx=Math.floor((px+cam.x)/t);
+    const ty=Math.floor((py+cam.y)/t);
+    paintAt(tx,ty);
+  });
+
+  function paintAt(x,y){
+    if(!inBounds(x,y)) return;
+    const layer=save.editor.layer;
+    const brush=parseInt(save.editor.brush,10);
+    const size=parseInt(save.editor.size,10);
+    const half=Math.floor(size/2);
+    for(let dy=-half; dy< -half+size; dy++){
+      for(let dx=-half; dx< -half+size; dx++){
+        const xx=x+dx, yy=y+dy;
+        if(xx<=0||yy<=0||xx>=world.size.w-1||yy>=world.size.h-1) continue;
+        world.layers[layer][yy][xx]=brush;
+      }
+    }
+    persist();
+    toast(`Pintado ${layer}=${brush}`);
+  }
+
+  // ========== Render panels ==========
+  function renderDialogHtml(){
+    const npc=currentNpc();
+    if(!npc) return "";
+    const node=npc.nodes?.[save.dialog.node];
+    if(!node) return "";
+    const opts=(node.options||[]).map((op,idx)=>`<button class="btn ${idx===0?"good":"secondary"}" data-opt="${idx}">${op.label}</button>`).join("");
+    return `
+      <div class="sep"></div>
+      <div class="small"><b>Diálogo</b></div>
+      <div class="listItem">
+        <div style="font-weight:900">${npc.name}</div>
+        <div class="small" style="margin-top:6px">${node.text}</div>
+        <div class="row" style="margin-top:10px">${opts}<button class="btn bad" id="dlgClose">Fechar</button></div>
+      </div>
+    `;
+  }
+  function hookDialogButtons(){
+    if(!save.dialog.open) return;
+    const npc=currentNpc();
+    const node=npc?.nodes?.[save.dialog.node];
+    if(!node) return;
+    ui.leftView.querySelectorAll("button[data-opt]").forEach(b=>{
+      b.onclick=()=>{
+        audio.sfx.click();
+        const idx=parseInt(b.getAttribute("data-opt"),10);
+        const op=node.options[idx];
+        applyAction(op.action);
+        renderAll();
+      };
+    });
+    const closeBtn=$("dlgClose");
+    if(closeBtn) closeBtn.onclick=()=>{ audio.sfx.click(); closeDialog(); };
+  }
+
+  function renderLeft(){
+    if(save.mode==="world" || save.mode==="quests"){
+      const q=activeQuest();
+      ui.leftView.innerHTML=`
+        <div class="small"><b>Mundo</b></div>
+        <div class="small">${world.tagline}</div>
+        <div class="sep"></div>
+        <div class="row">
+          <button class="btn good" id="btnInteract">Espaço = Interagir</button>
+          <button class="btn secondary" id="btnQuest">Gerar Quest</button>
+        </div>
+        <div class="sep"></div>
+        <div class="small"><b>Quest ativa</b></div>
+        <div class="small">${q?(q.done?("✅ "+q.title):("📌 "+q.title+" — "+q.desc)):"nenhuma"}</div>
+        ${save.dialog.open?renderDialogHtml():""}
+        <div class="sep"></div>
+        <div class="small"><b>Dica</b></div>
+        <div class="small">Colisão na camada Obstáculo. Portais/NPCs são entidades (lista no editor).</div>
+      `;
+      $("btnInteract").onclick=()=>{ audio.sfx.click(); interact(); };
+      $("btnQuest").onclick=()=>{ audio.sfx.click(); genQuest(); renderAll(); };
+      hookDialogButtons();
+      return;
+    }
+
+    if(save.mode==="arena"){
+      ui.leftView.innerHTML=`
+        <div class="small"><b>Arena</b></div>
+        <div class="small">Crítico 20 / Falha crítica 1</div>
+        <div class="sep"></div>
+        <div class="row">
+          <button class="btn bad" id="aExit">🏳️ Desistir</button>
+        </div>
+      `;
+      $("aExit").onclick=()=>{ audio.sfx.click(); endArena(false); };
+      return;
+    }
+
+    if(save.mode==="pseudo"){
+      ui.leftView.innerHTML=`
+        <div class="small"><b>“Online” (simulado)</b></div>
+        <div class="small">Sala local para testar dinâmica/UI. PvP real precisa backend.</div>
+        <div class="sep"></div>
+        <div class="small">Room: <span class="tag">${save.pseudo.room}</span> • Turno: <span class="tag">${save.pseudo.turn}</span></div>
+        <div class="sep"></div>
+        <div class="row">
+          <button class="btn good" id="psExit">Voltar pro Mundo</button>
+        </div>
+        <div class="sep"></div>
+        <div class="small"><b>Log</b></div>
+        <div class="small">${(save.pseudo.log||[]).slice(-8).map(x=>`• ${x}`).join("<br>")}</div>
+      `;
+      $("psExit").onclick=()=>{ audio.sfx.click(); save.mode="world"; persist(); renderAll(); };
+      return;
+    }
+  }
+
+  function renderRight(){
+    const inv=Object.entries(save.inv||{}).map(([k,v])=>{
+      if(v<=0) return "";
+      const name=(k==="repairKit")?"Repair Kit":"Item";
+      const icon=(k==="repairKit")?"🛠️":"📦";
+      return `<span class="tag">${icon} ${name} x${v}</span>`;
+    }).join("") || `<span class="small">vazio</span>`;
+
+    let arenaPanel="";
+    if(save.mode==="arena" && arena.on){
+      const p=arena.me, e=arena.enemy;
+      arenaPanel=`
+        <div class="listItem">
+          <div style="font-weight:900">⚔️ Arena Zyplay • Round ${arena.round}</div>
+          <div class="sep"></div>
+          <div class="small"><b>${p.name}</b> — HP ${p.hp}/${p.hpMax} • EN ${p.en}/${p.enMax} • ATK+${p.atk} • SOC+${p.soc} • DEF ${p.def}</div>
+          <div class="small"><b>${e.name}</b> — HP ${e.hp}/${e.hpMax} • EN ${e.en}/${e.enMax} • ATK+${e.atk} • SOC+${e.soc} • DEF ${e.def}</div>
+          <div class="sep"></div>
+          <div class="row">
+            <button class="btn" id="actExploit">⚔️ Exploit (1 EN)</button>
+            <button class="btn good" id="actPitch">🗣️ Pitch (2 EN)</button>
+          </div>
+          <div class="hint">Exploit = ataque técnico. Pitch = ataque social (drena EN).</div>
+        </div>
+      `;
+    }
+
+    let pseudoPanel="";
+    if(save.mode==="pseudo" && save.pseudo.on){
+      const st=save.pseudo.state;
+      pseudoPanel=`
+        <div class="listItem">
+          <div style="font-weight:900">🛰️ Pseudo-Online • Turno ${save.pseudo.turn}</div>
+          <div class="small"><b>P1</b> ${st.p1.nick} • HP ${st.p1.hp}/${st.p1.hpMax} • EN ${st.p1.en}/${st.p1.enMax}</div>
+          <div class="small"><b>P2</b> ${st.p2.nick} • HP ${st.p2.hp}/${st.p2.hpMax} • EN ${st.p2.en}/${st.p2.enMax}</div>
+          <div class="sep"></div>
+          <div class="row">
+            <button class="btn" id="psExploit" ${save.pseudo.turn!=="p1"?"disabled":""}>⚔️ Exploit</button>
+            <button class="btn good" id="psPitch" ${save.pseudo.turn!=="p1"?"disabled":""}>🗣️ Pitch</button>
+          </div>
+        </div>
+      `;
+    }
+
+    ui.rightView.innerHTML=`
+      <div class="listItem">
+        <div style="font-weight:900">Perfil</div>
+        <div class="small">Nick: <b>${save.nickname}</b></div>
+        <div class="small">Ouro ${save.gold} • XP ${save.xp}</div>
+        <div class="sep"></div>
+        <div class="small"><b>Inventário</b></div>
+        <div style="margin-top:8px">${inv}</div>
+        <div class="sep"></div>
+        <div class="small"><b>Stats</b></div>
+        <div class="small">HP ${save.stats.hpMax} • EN ${save.stats.enMax} • ATK ${save.stats.atk} • SOC ${save.stats.soc} • TECH ${save.stats.tech} • DEF ${save.stats.def}</div>
+      </div>
+      <div class="sep"></div>
+      ${arenaPanel}
+      ${pseudoPanel}
+    `;
+
+    if(save.mode==="arena" && arena.on){
+      $("actExploit").onclick=()=>act("exploit");
+      $("actPitch").onclick=()=>act("pitch");
+    }
+    if(save.mode==="pseudo" && save.pseudo.on){
+      $("psExploit").onclick=()=>pseudoApply("p1","exploit");
+      $("psPitch").onclick=()=>pseudoApply("p1","pitch");
+    }
+
+    ui.rightBadge.textContent = (save.mode==="arena")?`Round ${arena.round}`:(save.mode==="pseudo"?"SIM":"Ouro "+save.gold);
+  }
+
+  function renderAll(){
+    ui.modeBadge.textContent = save.mode.toUpperCase();
+    ui.centerTitle.textContent =
+      save.mode==="arena" ? "Arena" :
+      save.mode==="pseudo" ? "“Online” (Sim)" :
+      save.mode==="quests" ? "Quests" : "Mundo";
+    ui.worldBadge.textContent = world.name;
+
+    ui.audioState.textContent = audio.state.on ? (audio.state.muted?"MUTED":"ON") : "OFF";
+    ui.audioDot.classList.toggle("off", !(audio.state.on && !audio.state.muted));
+
+    renderLeft();
+    renderRight();
+  }
+
+  // ========== Top buttons ==========
+  ui.btnAudio.onclick = async ()=>{
+    if(!audio.state.on){
+      await audio.start();
+      audio.sfx.click();
+      toast("Áudio ON");
+      log("Áudio ativado.");
+    } else {
+      audio.toggleMute();
+      toast(audio.state.muted ? "Mutado" : "Som voltou");
+      log(audio.state.muted ? "Áudio mutado." : "Áudio desmutado.");
+    }
+    renderAll();
+  };
+  ui.btnWorld.onclick=()=>{ audio.sfx.click(); save.mode="world"; persist(); renderAll(); };
+  ui.btnArena.onclick=()=>{
+    audio.sfx.click();
+    const p = player.nearPortal || world.portals[0];
+    if(!p){ toast("Sem portal."); return; }
+    enterPortal(p);
+  };
+  ui.btnQuests.onclick=()=>{ audio.sfx.click(); save.mode="quests"; persist(); renderAll(); };
+  ui.btnPseudoOnline.onclick=()=>{ audio.sfx.click(); startPseudoOnline(); };
+  ui.btnEditor.onclick=()=>{ audio.sfx.click(); openEditor(); };
+  ui.btnHelp.onclick=()=>{ audio.sfx.click(); toast("WASD/Setas move • Espaço interage • Editor: clique pinta"); };
+
+  // editor buttons
+  ui.edClose.onclick=()=>{ audio.sfx.click(); closeEditor(); };
+  ui.edSave.onclick=()=>{
+    audio.sfx.click();
+    world.name = ui.edWorldName.value.trim() || world.name;
+    world.tagline = ui.edWorldTagline.value.trim() || world.tagline;
+    persist();
+    toast("Salvo.");
+    renderAll();
+  };
+  ui.edReset.onclick=()=>{
+    audio.sfx.click();
+    world = makeWorld();
+    save = { ...defaultSave(), ...save, mode:"world" };
+    player.x=world.spawn.x; player.y=world.spawn.y;
+    persist();
+    toast("Reset aplicado.");
+    syncEditorUI();
+    renderAll();
+  };
+  ui.edExport.onclick=()=>{
+    audio.sfx.click();
+    ui.edBox.value = JSON.stringify({world, save:{nickname:save.nickname, stats:save.stats}}, null, 2);
+    toast("Export pronto (copie).");
+  };
+  ui.edImport.onclick=()=>{
+    audio.sfx.click();
+    if(!ui.edBox.value.trim()){ toast("Cole um export."); return; }
+    try{
+      const obj=JSON.parse(ui.edBox.value);
+      if(!obj.world) throw new Error("Sem world.");
+      world=obj.world;
+      if(obj.save?.nickname) save.nickname=obj.save.nickname;
+      if(obj.save?.stats) save.stats=obj.save.stats;
+      player.x=world.spawn.x; player.y=world.spawn.y;
+      persist();
+      toast("Importado!");
+      syncEditorUI();
+      renderAll();
+    }catch(e){
+      toast("Erro import: "+e.message);
+      audio.sfx.fail();
+    }
+  };
+
+  ui.edLayer.onchange=()=>{ save.editor.layer=ui.edLayer.value; persist(); };
+  ui.edBrush.onchange=()=>{ save.editor.brush=parseInt(ui.edBrush.value,10); persist(); };
+  ui.edSize.onchange=()=>{ save.editor.size=parseInt(ui.edSize.value,10); persist(); };
+  ui.edPaint.onchange=()=>{ save.editor.paint=(ui.edPaint.value==="on"); persist(); };
+
+  ui.edAddNpc.onclick=()=>{
+    audio.sfx.click();
+    const npc={
+      id:uid("npc"),
+      name:"Novo NPC",
+      x:Math.round(player.x), y:Math.round(player.y),
+      root:"n0",
+      nodes:{ n0:{ text:"Olá!", options:[{label:"Fechar", action:{type:"close"}}] } }
+    };
+    world.npcs.push(npc);
+    save.editor.selectedNpc=npc.id;
+    persist();
+    toast("NPC criado.");
+    syncEditorUI();
+    renderAll();
+  };
+  ui.edAddPortal.onclick=()=>{
+    audio.sfx.click();
+    const p={
+      id:uid("p"),
+      x:Math.round(player.x), y:Math.round(player.y),
+      arena:{ id:uid("arena"), name:"Arena — Nova", difficulty:1 }
+    };
+    world.portals.push(p);
+    persist();
+    toast("Portal criado.");
+    syncEditorUI();
+    renderAll();
+  };
+  ui.edAddNode.onclick=()=>{
+    audio.sfx.click();
+    const npc=world.npcs.find(n=>n.id===save.editor.selectedNpc);
+    if(!npc){ toast("Selecione um NPC."); return; }
+    const k=prompt("Nome do nó (ex: n1):","n1");
+    if(!k) return;
+    if(npc.nodes[k]){ toast("Já existe."); return; }
+    npc.nodes[k]={text:"(texto)", options:[{label:"Fechar", action:{type:"close"}}]};
+    persist();
+    renderDialogEditor();
+  };
+
+  // ========== Init ==========
+  function init(){
+    resize();
+    if(!Array.isArray(save.quests)) save.quests=[];
+    if(save.quests.length===0) genQuest();
+    renderAll();
+    log("Arena Zyplay carregado.");
+    log("Mundo + Editor + Quests + Arena local + “Online” simulado (UI pronta).");
+    requestAnimationFrame(update);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
