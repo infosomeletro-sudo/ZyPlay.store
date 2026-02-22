@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>1º Ano — Simulador de Estoque | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+  :root{
+    --bg:#0b0f19; --panel:#10182b; --line:rgba(255,255,255,.10);
+    --text:#eaf0ff; --muted:#a9b7d0; --ok:#23d5ab; --bad:#ff4d6d;
+    --brand:#0ea35a; --shadow:0 14px 40px rgba(0,0,0,.35); --r:18px; --r2:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+      radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),
+      var(--bg);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .app{width:min(1200px,100%); display:grid; grid-template-columns:1.1fr .9fr; gap:14px;}
+  @media (max-width: 980px){.app{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line); background:rgba(16,24,43,.45); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+  .head{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,.03)}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:1000}
+  .badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--ok));display:grid;place-items:center}
+  .brand small{display:block;color:var(--muted);font-weight:700}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  button{border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:900; transition:.15s}
+  button:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  button.primary{border-color:rgba(14,163,90,.35); background:rgba(14,163,90,.16)}
+  button.danger{border-color:rgba(255,77,109,.35); background:rgba(255,77,109,.12)}
+  .body{padding:16px; display:flex; flex-direction:column; gap:12px}
+  .card{padding:14px; border:1px solid var(--line); border-radius:var(--r); background:rgba(255,255,255,.03)}
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  @media (max-width: 560px){.grid{grid-template-columns:1fr}}
+  label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+  input,select{
+    width:100%; padding:10px 12px; border-radius:12px;
+    border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none
+  }
+  .msg{min-height:18px; color:var(--muted); font-size:13px}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left}
+  th{color:var(--text); font-weight:1000}
+  .pill{display:inline-flex;gap:8px;align-items:center;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);font-weight:800;font-size:12px}
+  .right{padding:16px; display:flex; flex-direction:column; gap:12px}
+  .kpi{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  @media (max-width: 980px){.kpi{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width: 560px){.kpi{grid-template-columns:repeat(1,1fr)}}
+  .kpi .box{padding:12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)}
+  .kpi .k{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+  .kpi .v{font-weight:1000; font-size:18px; margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="panel">
+    <div class="head">
+      <div class="brand">
+        <div class="badge">Z</div>
+        <div>Simulador de Estoque <small>1º Ano • ZyPlay</small></div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="btnAdd">Adicionar produto</button>
+        <button id="btnMove">Registrar movimento</button>
+        <button class="danger" id="btnReset">Limpar tudo</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="card">
+        <div class="grid">
+          <div>
+            <label>Produto</label>
+            <input id="pName" placeholder="Ex: Parafuso, Caixa, Teclado..." maxlength="40">
+          </div>
+          <div>
+            <label>Categoria</label>
+            <input id="pCat" placeholder="Ex: A, B, C / Limpeza / Escritório" maxlength="30">
+          </div>
+          <div>
+            <label>Custo unitário (R$)</label>
+            <input id="pCost" type="number" step="0.01" min="0" placeholder="Ex: 12.50">
+          </div>
+          <div>
+            <label>Quantidade inicial</label>
+            <input id="pQty" type="number" step="1" min="0" placeholder="Ex: 10">
+          </div>
+        </div>
+        <div class="msg" id="msg1"></div>
+      </div>
+
+      <div class="card">
+        <div class="grid">
+          <div>
+            <label>Selecionar produto</label>
+            <select id="sel"></select>
+          </div>
+          <div>
+            <label>Tipo de movimento</label>
+            <select id="type">
+              <option value="IN">Entrada (+)</option>
+              <option value="OUT">Saída (-)</option>
+              <option value="LOSS">Perda/Avaria (-)</option>
+            </select>
+          </div>
+          <div>
+            <label>Quantidade</label>
+            <input id="mQty" type="number" step="1" min="1" placeholder="Ex: 3">
+          </div>
+          <div>
+            <label>Observação</label>
+            <input id="note" placeholder="Ex: compra, venda, avaria..." maxlength="40">
+          </div>
+        </div>
+        <div class="msg" id="msg2"></div>
+      </div>
+
+      <div class="card">
+        <div class="pill">Inventário atual</div>
+        <div style="height:10px"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Qtd</th>
+              <th>Custo (R$)</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="inv"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="head">
+      <div class="brand"><div style="font-weight:1000">Relatório</div></div>
+      <div class="controls">
+        <button id="btnExport">Exportar CSV</button>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card kpi">
+        <div class="box"><div class="k">Itens</div><div class="v" id="kItems">0</div></div>
+        <div class="box"><div class="k">Qtd total</div><div class="v" id="kQty">0</div></div>
+        <div class="box"><div class="k">Valor total</div><div class="v" id="kVal">0,00</div></div>
+      </div>
+
+      <div class="card">
+        <div class="pill">Movimentações</div>
+        <div style="height:10px"></div>
+        <table>
+          <thead>
+            <tr><th>Hora</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Obs</th></tr>
+          </thead>
+          <tbody id="log"></tbody>
+        </table>
+        <div class="msg" id="msg3"></div>
+      </div>
+
+      <div class="card">
+        <div style="color:var(--muted);font-size:12.5px;line-height:1.45">
+          • Salva automaticamente no navegador (offline/online)<br>
+          • Sons internos (acerto/erro/ação)<br>
+          • Exporta CSV para abrir em planilha
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // ===== Som (Opção A) =====
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let ctx=null;
+  function beep(kind="ok"){
+    try{
+      if(!ctx) ctx=new AudioCtx();
+      const t0=ctx.currentTime;
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type="sine";
+      o.frequency.value = kind==="ok"? 740 : kind==="done"? 520 : 220;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+(kind==="done"?0.22:0.18));
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0+(kind==="done"?0.24:0.20));
+    }catch(e){}
+  }
+
+  const KEY = "zyplay_1ano_estoque_v1";
+  const $ = id => document.getElementById(id);
+
+  let state = { items: [], moves: [] };
+
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw) state = JSON.parse(raw);
+    }catch(e){}
+  }
+
+  function money(n){
+    return (Math.round(n*100)/100).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function now(){
+    const d = new Date();
+    return d.toLocaleString("pt-BR");
+  }
+
+  function setMsg(id, text, cls){
+    const el = $(id);
+    el.className = "msg" + (cls ? " " + cls : "");
+    el.textContent = text || "";
+  }
+
+  function refreshSelect(){
+    const sel = $("sel");
+    sel.innerHTML = "";
+    state.items.forEach((it, idx)=>{
+      const op = document.createElement("option");
+      op.value = String(idx);
+      op.textContent = `${it.name} (qtd ${it.qty})`;
+      sel.appendChild(op);
+    });
+    if(!state.items.length){
+      const op = document.createElement("option");
+      op.value = "";
+      op.textContent = "Sem produtos — adicione um";
+      sel.appendChild(op);
+    }
+  }
+
+  function refreshInv(){
+    const tbody = $("inv");
+    tbody.innerHTML = "";
+    let totalItems = 0, totalQty = 0, totalVal = 0;
+
+    state.items.forEach(it=>{
+      totalItems++;
+      totalQty += it.qty;
+      const val = it.qty * it.cost;
+      totalVal += val;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong style="color:var(--text)">${it.name}</strong></td>
+        <td style="color:var(--muted)">${it.cat||"-"}</td>
+        <td>${it.qty}</td>
+        <td>${money(it.cost)}</td>
+        <td><strong style="color:var(--text)">${money(val)}</strong></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    $("kItems").textContent = totalItems;
+    $("kQty").textContent = totalQty;
+    $("kVal").textContent = money(totalVal);
+  }
+
+  function refreshLog(){
+    const tbody = $("log");
+    tbody.innerHTML = "";
+    state.moves.slice().reverse().slice(0, 20).forEach(m=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="color:var(--muted)">${m.ts}</td>
+        <td><strong style="color:var(--text)">${m.name}</strong></td>
+        <td>${m.type}</td>
+        <td>${m.qty}</td>
+        <td style="color:var(--muted)">${m.note||"-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAll(){
+    refreshSelect();
+    refreshInv();
+    refreshLog();
+  }
+
+  function addProduct(){
+    const name = ($("pName").value||"").trim();
+    const cat = ($("pCat").value||"").trim();
+    const cost = Number($("pCost").value);
+    const qty  = Number($("pQty").value);
+
+    if(!name){ setMsg("msg1","Informe o nome do produto.","bad"); beep("bad"); return; }
+    if(!Number.isFinite(cost) || cost < 0){ setMsg("msg1","Custo inválido.","bad"); beep("bad"); return; }
+    if(!Number.isFinite(qty)  || qty < 0){ setMsg("msg1","Quantidade inválida.","bad"); beep("bad"); return; }
+
+    // evita duplicata por nome
+    if(state.items.some(i=>i.name.toLowerCase()===name.toLowerCase())){
+      setMsg("msg1","Já existe um produto com esse nome.","bad"); beep("bad"); return;
+    }
+
+    state.items.push({name, cat, cost, qty});
+    state.moves.push({ts: now(), name, type:"ADD", qty, note:"Cadastro"});
+    save();
+    renderAll();
+    setMsg("msg1","Produto adicionado com sucesso!","ok");
+    beep("ok");
+
+    $("pName").value=""; $("pCat").value=""; $("pCost").value=""; $("pQty").value="";
+  }
+
+  function move(){
+    if(!state.items.length){ setMsg("msg2","Adicione um produto primeiro.","bad"); beep("bad"); return; }
+    const idx = Number($("sel").value);
+    const type = $("type").value;
+    const qty = Number($("mQty").value);
+    const note = ($("note").value||"").trim();
+
+    if(!Number.isInteger(idx) || idx<0 || idx>=state.items.length){ setMsg("msg2","Selecione um produto válido.","bad"); beep("bad"); return; }
+    if(!Number.isFinite(qty) || qty<=0){ setMsg("msg2","Quantidade inválida.","bad"); beep("bad"); return; }
+
+    const it = state.items[idx];
+
+    if(type==="IN"){
+      it.qty += qty;
+      setMsg("msg2","Entrada registrada.","ok");
+      beep("ok");
+    } else {
+      if(it.qty < qty){
+        setMsg("msg2",`Estoque insuficiente. Disponível: ${it.qty}.`,"bad");
+        beep("bad");
+        return;
+      }
+      it.qty -= qty;
+      setMsg("msg2", type==="OUT" ? "Saída registrada." : "Perda/Avaria registrada.", "ok");
+      beep(type==="OUT" ? "ok" : "bad");
+    }
+
+    state.moves.push({ts: now(), name: it.name, type, qty, note});
+    save();
+    renderAll();
+
+    $("mQty").value=""; $("note").value="";
+  }
+
+  function resetAll(){
+    if(!confirm("Tem certeza que deseja apagar todo o inventário e movimentações?")) return;
+    state = {items:[], moves:[]};
+    save();
+    renderAll();
+    setMsg("msg3","Dados apagados.","bad");
+    beep("bad");
+  }
+
+  function exportCSV(){
+    const rows = [["Produto","Categoria","Quantidade","Custo","Valor"]];
+    state.items.forEach(it=>{
+      rows.push([it.name, it.cat||"", String(it.qty), String(it.cost), String(it.qty*it.cost)]);
+    });
+    const csv = rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inventario_zyplay.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    setMsg("msg3","CSV exportado.","ok");
+    beep("done");
+  }
+
+  $("btnAdd").addEventListener("click", addProduct);
+  $("btnMove").addEventListener("click", move);
+  $("btnReset").addEventListener("click", resetAll);
+  $("btnExport").addEventListener("click", exportCSV);
+
+  load();
+  renderAll();
+</script>
+</body>
+</html>
