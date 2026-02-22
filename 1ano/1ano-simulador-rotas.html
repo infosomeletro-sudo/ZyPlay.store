@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>1º Ano — Simulador de Rotas | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+  :root{
+    --bg:#0b0f19; --panel:#10182b; --line:rgba(255,255,255,.10);
+    --text:#eaf0ff; --muted:#a9b7d0; --ok:#23d5ab; --bad:#ff4d6d;
+    --brand:#0ea35a; --shadow:0 14px 40px rgba(0,0,0,.35); --r:18px; --r2:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+      radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),
+      var(--bg);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .panel{width:min(1100px,100%); border:1px solid var(--line); background:rgba(16,24,43,.45); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+  .head{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,.03)}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:1000}
+  .badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--ok));display:grid;place-items:center}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  button{border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:900; transition:.15s}
+  button:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  button.primary{border-color:rgba(14,163,90,.35); background:rgba(14,163,90,.16)}
+  .body{padding:16px; display:grid; grid-template-columns:1fr .9fr; gap:12px}
+  @media (max-width: 980px){.body{grid-template-columns:1fr}}
+  .card{padding:14px; border:1px solid var(--line); border-radius:var(--r); background:rgba(255,255,255,.03)}
+  label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+  input,select{
+    width:100%; padding:10px 12px; border-radius:12px;
+    border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none
+  }
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  @media (max-width: 560px){.grid{grid-template-columns:1fr}}
+  .kpi{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  @media (max-width: 560px){.kpi{grid-template-columns:1fr}}
+  .box{padding:12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)}
+  .k{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+  .v{font-weight:1000; font-size:18px; margin-top:4px}
+  .msg{min-height:18px; color:var(--muted); font-size:13px}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+  .route{padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.18); cursor:pointer; transition:.15s}
+  .route:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  .route strong{display:block}
+  .route span{display:block;color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.35}
+  .sel{border-color:rgba(35,213,171,.45); background:rgba(35,213,171,.10)}
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="head">
+    <div class="brand"><div class="badge">Z</div><div>Simulador de Rotas <small style="display:block;color:var(--muted);font-weight:700">1º Ano • ZyPlay</small></div></div>
+    <div class="controls">
+      <button class="primary" id="btnNew">Nova missão</button>
+      <button id="btnCalc">Calcular</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label>Distância (km)</label>
+          <input id="km" type="number" min="1" step="1" value="120">
+        </div>
+        <div>
+          <label>Carga (kg)</label>
+          <input id="kg" type="number" min="1" step="1" value="800">
+        </div>
+        <div>
+          <label>Prioridade</label>
+          <select id="prio">
+            <option value="FAST">Rápido</option>
+            <option value="CHEAP">Mais barato</option>
+            <option value="BAL">Equilibrado</option>
+          </select>
+        </div>
+        <div>
+          <label>Clima/estrada</label>
+          <select id="cond">
+            <option value="OK">Normal</option>
+            <option value="RAIN">Chuva</option>
+            <option value="BAD">Estrada ruim</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="msg" id="msg">Escolha uma rota e clique em Calcular.</div>
+
+      <div style="height:12px"></div>
+      <div id="routes"></div>
+    </div>
+
+    <div class="card">
+      <div class="kpi">
+        <div class="box"><div class="k">Tempo</div><div class="v" id="t">—</div></div>
+        <div class="box"><div class="k">Custo</div><div class="v" id="c">—</div></div>
+        <div class="box"><div class="k">Eficiência</div><div class="v" id="e">—</div></div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="card" style="background:rgba(255,255,255,.02)">
+        <div style="color:var(--muted);font-size:12.5px;line-height:1.45">
+          A eficiência é uma nota (0–100) calculada por custo + tempo, considerando prioridade e condições.<br>
+          Missão: escolher a rota mais adequada para a prioridade escolhida.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Som (Opção A)
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let ctx=null;
+  function beep(kind="ok"){
+    try{
+      if(!ctx) ctx=new AudioCtx();
+      const t0=ctx.currentTime;
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type="sine";
+      o.frequency.value = kind==="ok"? 780 : kind==="done"? 600 : 220;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+(kind==="done"?0.22:0.18));
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0+(kind==="done"?0.24:0.20));
+    }catch(e){}
+  }
+
+  const $ = id => document.getElementById(id);
+  let selected = null;
+  let options = [];
+
+  function money(n){
+    return "R$ " + (Math.round(n*100)/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function genRoutes(){
+    // 3 rotas com características
+    options = [
+      {id:"A", name:"Rota A (Rodovia)", baseSpeed:75, costKm:2.10, risk:0.05, note:"Mais rápida, pedágio incluso."},
+      {id:"B", name:"Rota B (Mista)",   baseSpeed:62, costKm:1.70, risk:0.07, note:"Equilibrada, tráfego moderado."},
+      {id:"C", name:"Rota C (Econômica)", baseSpeed:55, costKm:1.35, risk:0.10, note:"Mais barata, pode atrasar."},
+    ];
+    selected = null;
+    renderRoutes();
+    $("t").textContent="—"; $("c").textContent="—"; $("e").textContent="—";
+    $("msg").textContent="Nova missão: selecione uma rota e calcule.";
+    $("msg").className="msg";
+  }
+
+  function renderRoutes(){
+    const box = $("routes");
+    box.innerHTML = "";
+    options.forEach(o=>{
+      const div = document.createElement("div");
+      div.className = "route" + (selected===o.id ? " sel" : "");
+      div.innerHTML = `<strong>${o.name}</strong><span>${o.note}</span>`;
+      div.addEventListener("click", ()=>{
+        selected = o.id;
+        renderRoutes();
+        beep("ok");
+      });
+      box.appendChild(div);
+    });
+  }
+
+  function calc(){
+    if(!selected){ $("msg").className="msg bad"; $("msg").textContent="Selecione uma rota primeiro."; beep("bad"); return; }
+
+    const km = Math.max(1, Number($("km").value)||1);
+    const kg = Math.max(1, Number($("kg").value)||1);
+    const prio = $("prio").value;
+    const cond = $("cond").value;
+
+    const opt = options.find(o=>o.id===selected);
+
+    // Condições
+    let speedFactor = 1;
+    let costFactor = 1;
+    if(cond==="RAIN"){ speedFactor = 0.85; costFactor = 1.05; }
+    if(cond==="BAD"){  speedFactor = 0.75; costFactor = 1.10; }
+
+    // Peso influencia custo
+    const weightFactor = 1 + Math.min(1.5, kg/2000); // até 2.5x
+    const speed = opt.baseSpeed * speedFactor;
+    const hours = km / speed;
+
+    const cost = km * opt.costKm * costFactor * weightFactor;
+
+    // Eficiência (0-100) conforme prioridade
+    // normaliza tempo e custo por faixas típicas
+    const timeScore = Math.max(0, 100 - (hours * 18)); // 5.5h ~1
+    const costScore = Math.max(0, 100 - (cost / 80));  // 8000 ~0
+
+    let eff = 0;
+    if(prio==="FAST") eff = 0.70*timeScore + 0.30*costScore;
+    if(prio==="CHEAP") eff = 0.30*timeScore + 0.70*costScore;
+    if(prio==="BAL") eff = 0.50*timeScore + 0.50*costScore;
+
+    eff = Math.max(0, Math.min(100, Math.round(eff)));
+
+    $("t").textContent = (hours.toFixed(2)) + " h";
+    $("c").textContent = money(cost);
+    $("e").textContent = eff + " / 100";
+
+    $("msg").className = eff>=70 ? "msg ok" : eff>=45 ? "msg" : "msg bad";
+    $("msg").textContent =
+      eff>=70 ? "Boa escolha para a prioridade definida!" :
+      eff>=45 ? "Escolha razoável, mas pode melhorar." :
+      "Escolha fraca para a prioridade. Reavalie a rota.";
+
+    beep(eff>=70 ? "done" : eff>=45 ? "ok" : "bad");
+  }
+
+  $("btnNew").addEventListener("click", ()=>{genRoutes(); beep("done");});
+  $("btnCalc").addEventListener("click", calc);
+
+  genRoutes();
+</script>
+</body>
+</html>
