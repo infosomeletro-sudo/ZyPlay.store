@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Verdadeiro ou Falso | Saúde Ocupacional | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --muted:#a9b7d0;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+.container{
+  width:100%;
+  max-width:800px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+h1{margin-top:0}
+.statement{
+  margin:20px 0;
+  font-size:18px;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+button:hover{background:rgba(255,255,255,.08)}
+.true{background:rgba(35,213,171,.2)}
+.false{background:rgba(255,77,109,.2)}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.stats{margin-top:15px;display:flex;gap:20px}
+.primary{margin-top:20px;background:rgba(14,163,90,.25)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Verdadeiro ou Falso — Saúde Ocupacional</h1>
+
+<div class="statement" id="statement">Clique em iniciar</div>
+
+<button class="true" onclick="checkAnswer(true)">Verdadeiro</button>
+<button class="false" onclick="checkAnswer(false)">Falso</button>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  <div>Questão: <span id="qnum">0</span></div>
+  <div>Pontos: <span id="score">0</span></div>
+</div>
+
+<button class="primary" onclick="startGame()">Iniciar</button>
+<button onclick="nextQuestion()">Próxima</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const questions = [
+{ text:"O uso de EPI é obrigatório quando houver risco.", answer:true },
+{ text:"Ergonomia não influencia na saúde do trabalhador.", answer:false },
+{ text:"A CIPA tem função preventiva.", answer:true },
+{ text:"Ruído excessivo não causa danos auditivos.", answer:false },
+{ text:"Treinamento reduz riscos de acidentes.", answer:true }
+];
+
+let index=0;
+let score=0;
+let started=false;
+
+function startGame(){
+  index=0;
+  score=0;
+  started=true;
+  showQuestion();
+}
+
+function showQuestion(){
+  if(index>=questions.length){
+    document.getElementById("statement").innerText="Fim do jogo!";
+    return;
+  }
+  document.getElementById("statement").innerText=questions[index].text;
+  document.getElementById("qnum").innerText=index+1;
+}
+
+function checkAnswer(choice){
+  if(!started) return;
+  if(index>=questions.length) return;
+
+  if(choice===questions[index].answer){
+    score+=10;
+    document.getElementById("status").innerText="Correto!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Errado!";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+}
+
+function nextQuestion(){
+  if(!started) return;
+  index++;
+  showQuestion();
+}
+</script>
+
+</body>
+</html>
+manda o proximo
+
+📌 Salve como:
+jogador/jogos/2ano/2ano-cronometrado-seguranca.html
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Desafio Cronometrado | Saúde Ocupacional | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --muted:#a9b7d0;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+  --accent:#0ea35a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+h1{margin-top:0}
+.timer{
+  font-size:22px;
+  font-weight:bold;
+  margin:10px 0;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:rgba(255,255,255,.08)}
+.primary{margin-top:20px;background:rgba(14,163,90,.25);}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.stats{margin-top:15px;display:flex;gap:20px}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Desafio Cronometrado — Segurança do Trabalho</h1>
+
+<div class="timer">Tempo: <span id="time">30</span>s</div>
+<div id="question">Clique em iniciar</div>
+<div id="options"></div>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  <div>Pontos: <span id="score">0</span></div>
+</div>
+
+<button class="primary" onclick="startGame()">Iniciar</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const questions = [
+{
+  q:"Qual NR trata do uso de EPI?",
+  options:["NR-6","NR-10","NR-5","NR-12"],
+  answer:0
+},
+{
+  q:"A ergonomia busca:",
+  options:["Adaptar trabalho ao trabalhador","Punir funcionário","Reduzir salário","Eliminar férias"],
+  answer:0
+},
+{
+  q:"Ruído excessivo pode causar:",
+  options:["Perda auditiva","Melhor concentração","Aumento salarial","Descanso automático"],
+  answer:0
+},
+{
+  q:"CIPA significa:",
+  options:["Comissão Interna de Prevenção de Acidentes","Centro Industrial de Proteção Administrativa","Controle Interno de Pagamento","Comissão de Impostos Públicos"],
+  answer:0
+}
+];
+
+let score=0;
+let timeLeft=30;
+let timer;
+let started=false;
+
+function startGame(){
+  score=0;
+  timeLeft=30;
+  started=true;
+  document.getElementById("score").innerText=score;
+  document.getElementById("time").innerText=timeLeft;
+  nextQuestion();
+  timer=setInterval(updateTimer,1000);
+}
+
+function updateTimer(){
+  timeLeft--;
+  document.getElementById("time").innerText=timeLeft;
+  if(timeLeft<=0){
+    clearInterval(timer);
+    document.getElementById("question").innerText="Tempo esgotado!";
+    document.getElementById("options").innerHTML="";
+    beep("bad");
+  }
+}
+
+function nextQuestion(){
+  if(!started) return;
+  const q=questions[Math.floor(Math.random()*questions.length)];
+  document.getElementById("question").innerText=q.q;
+  const optionsDiv=document.getElementById("options");
+  optionsDiv.innerHTML="";
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(i,q.answer);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(choice,correct){
+  if(choice===correct){
+    score+=10;
+    document.getElementById("status").innerText="Correto!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Errado!";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+  nextQuestion();
+}
+</script>
+
+</body>
+</html>
