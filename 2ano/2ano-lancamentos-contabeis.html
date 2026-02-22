@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Lançamentos Contábeis | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+h1{margin-top:0}
+.scenario{
+  margin:20px 0;
+  font-size:17px;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.stats{margin-top:15px;display:flex;gap:20px}
+.primary{margin-top:20px;background:rgba(14,163,90,.25)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Lançamentos Contábeis — Débito e Crédito</h1>
+
+<div class="scenario" id="scenario">Clique em iniciar</div>
+<div id="options"></div>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  <div>Questão: <span id="round">0</span></div>
+  <div>Pontos: <span id="score">0</span></div>
+</div>
+
+<button class="primary" onclick="startGame()">Iniciar</button>
+<button onclick="nextScenario()">Próximo Lançamento</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const lancamentos = [
+{
+  text:"Compra de mercadorias à vista.",
+  correct:"Débito em Estoque / Crédito em Caixa"
+},
+{
+  text:"Pagamento de aluguel.",
+  correct:"Débito em Despesa / Crédito em Caixa"
+},
+{
+  text:"Venda à prazo.",
+  correct:"Débito em Clientes / Crédito em Receita"
+},
+{
+  text:"Recebimento de cliente.",
+  correct:"Débito em Caixa / Crédito em Clientes"
+}
+];
+
+let index=0;
+let score=0;
+let started=false;
+
+function startGame(){
+  index=0;
+  score=0;
+  started=true;
+  showScenario();
+}
+
+function showScenario(){
+  if(index>=lancamentos.length){
+    document.getElementById("scenario").innerText="Fim do jogo!";
+    document.getElementById("options").innerHTML="";
+    return;
+  }
+
+  const l=lancamentos[index];
+  document.getElementById("scenario").innerText=l.text;
+  document.getElementById("round").innerText=index+1;
+
+  const alternativas=[
+    l.correct,
+    "Débito em Receita / Crédito em Caixa",
+    "Débito em Caixa / Crédito em Despesa",
+    "Débito em Fornecedores / Crédito em Estoque"
+  ];
+
+  alternativas.sort(()=>Math.random()-0.5);
+
+  const optionsDiv=document.getElementById("options");
+  optionsDiv.innerHTML="";
+
+  alternativas.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(opt,l.correct);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(choice,correct){
+  if(!started) return;
+  if(choice===correct){
+    score+=10;
+    document.getElementById("status").innerText="Lançamento correto!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Lançamento incorreto.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+}
+
+function nextScenario(){
+  if(!started) return;
+  index++;
+  showScenario();
+}
+</script>
+
+</body>
+</html>
