@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Investigação de Acidente | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --muted:#a9b7d0;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+h1{margin-top:0}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:rgba(255,255,255,.08)}
+.primary{margin-top:20px;background:rgba(14,163,90,.25);}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.stats{margin-top:15px;display:flex;gap:20px}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Simulador — Investigação de Acidente</h1>
+
+<div id="scenario">Clique em iniciar</div>
+<div id="options"></div>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  <div>Caso: <span id="case">0</span></div>
+  <div>Pontos: <span id="score">0</span></div>
+</div>
+
+<button class="primary" onclick="startGame()">Iniciar</button>
+<button onclick="nextCase()">Próximo Caso</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const cases = [
+{
+  scenario:"Funcionário escorregou em piso molhado e sofreu queda.",
+  options:[
+    "Falta de sinalização adequada",
+    "Uso incorreto de capacete",
+    "Erro contábil",
+    "Falta de treinamento administrativo"
+  ],
+  answer:0
+},
+{
+  scenario:"Trabalhador apresentou perda auditiva após meses de trabalho.",
+  options:[
+    "Exposição prolongada a ruído sem proteção",
+    "Problema financeiro da empresa",
+    "Erro no estoque",
+    "Uso incorreto de planilha"
+  ],
+  answer:0
+},
+{
+  scenario:"Funcionário teve intoxicação após manipular produto químico.",
+  options:[
+    "Ausência de EPI adequado",
+    "Erro de marketing",
+    "Falha no sistema",
+    "Problema de transporte"
+  ],
+  answer:0
+},
+{
+  scenario:"Colaborador apresentou dor lombar constante.",
+  options:[
+    "Postura inadequada e falta de ergonomia",
+    "Excesso de férias",
+    "Erro tributário",
+    "Problema contábil"
+  ],
+  answer:0
+}
+];
+
+let index=0;
+let score=0;
+let started=false;
+
+function startGame(){
+  index=0;
+  score=0;
+  started=true;
+  showCase();
+}
+
+function showCase(){
+  if(index>=cases.length){
+    document.getElementById("scenario").innerText="Fim da simulação!";
+    document.getElementById("options").innerHTML="";
+    return;
+  }
+
+  const c=cases[index];
+  document.getElementById("scenario").innerText=c.scenario;
+  document.getElementById("case").innerText=index+1;
+
+  const optionsDiv=document.getElementById("options");
+  optionsDiv.innerHTML="";
+
+  c.options.forEach((opt,i)=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(i);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(i){
+  if(!started) return;
+  const c=cases[index];
+  if(i===c.answer){
+    score+=10;
+    document.getElementById("status").innerText="Investigação correta!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Análise incorreta.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+}
+
+function nextCase(){
+  if(!started) return;
+  index++;
+  showCase();
+}
+</script>
+
+</body>
+</html>
