@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>1º Ano — Desafio Lead Time | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+  :root{
+    --bg:#0b0f19; --panel:#10182b; --line:rgba(255,255,255,.10);
+    --text:#eaf0ff; --muted:#a9b7d0; --ok:#23d5ab; --bad:#ff4d6d;
+    --brand:#0ea35a; --shadow:0 14px 40px rgba(0,0,0,.35); --r:18px; --r2:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+      radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),
+      var(--bg);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .app{width:min(1100px,100%); display:grid; grid-template-columns:1.1fr .9fr; gap:14px;}
+  @media (max-width: 980px){.app{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line); background:rgba(16,24,43,.45); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+  .head{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,.03)}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:1000}
+  .badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--ok));display:grid;place-items:center}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  button{border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:900; transition:.15s}
+  button:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  button.primary{border-color:rgba(14,163,90,.35); background:rgba(14,163,90,.16)}
+  button.danger{border-color:rgba(255,77,109,.35); background:rgba(255,77,109,.12)}
+  .body{padding:16px; display:flex; flex-direction:column; gap:12px}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  @media (max-width: 560px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)}
+  .k{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+  .v{font-weight:1000; font-size:18px; margin-top:4px}
+  .card{padding:14px; border:1px solid var(--line); border-radius:var(--r); background:rgba(255,255,255,.03)}
+  .msg{min-height:18px; color:var(--muted); font-size:13px}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+  .steps{display:grid; gap:10px}
+  .step{padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.18); cursor:pointer; transition:.15s}
+  .step:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  .done{border-color:rgba(35,213,171,.45); background:rgba(35,213,171,.10)}
+  .right{padding:16px; display:flex; flex-direction:column; gap:12px}
+  input{width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left}
+  th{color:var(--text); font-weight:1000}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="panel">
+    <div class="head">
+      <div class="brand"><div class="badge">Z</div><div>Desafio Lead Time <small style="display:block;color:var(--muted);font-weight:700">1º Ano • ZyPlay</small></div></div>
+      <div class="controls">
+        <button class="primary" id="btnStart">Iniciar pedido</button>
+        <button id="btnNew">Novo pedido</button>
+        <button class="danger" id="btnReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="stats">
+        <div class="stat"><div class="k">Pedido</div><div class="v" id="order">—</div></div>
+        <div class="stat"><div class="k">Tempo</div><div class="v" id="time">00:00</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="errs">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+      </div>
+
+      <div class="card">
+        <div class="msg" id="msg">Clique em “Iniciar pedido”.</div>
+      </div>
+
+      <div class="card">
+        <div style="color:var(--muted);font-size:12.5px;line-height:1.45;margin-bottom:10px">
+          Complete as etapas na ordem correta para reduzir o lead time:
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="head">
+      <div style="font-weight:1000">Ranking Local</div>
+      <div class="controls">
+        <button class="primary" id="btnSave">Salvar</button>
+        <button class="danger" id="btnClear">Limpar</button>
+      </div>
+    </div>
+    <div class="right">
+      <div class="card">
+        <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:6px">Nome do aluno</label>
+        <input id="name" placeholder="Ex: Turma 1A" maxlength="32">
+        <div class="msg" id="rmsg"></div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>#</th><th>Nome</th><th>Pontos</th></tr></thead>
+          <tbody id="rank"></tbody>
+        </table>
+      </div>
+      <div class="card" style="color:var(--muted);font-size:12.5px;line-height:1.45">
+        Dica: quanto menor o tempo e menos erros, maior a pontuação.
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // Som (Opção A)
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let ctx=null;
+  function beep(kind="ok"){
+    try{
+      if(!ctx) ctx=new AudioCtx();
+      const t0=ctx.currentTime;
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type="sine";
+      o.frequency.value = kind==="ok"? 820 : kind==="done"? 640 : 220;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+(kind==="done"?0.22:0.18));
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0+(kind==="done"?0.24:0.20));
+    }catch(e){}
+  }
+
+  const $ = id => document.getElementById(id);
+  const RKEY = "zyplay_rank_1ano_leadtime_v1";
+
+  const STEPS_ORDER = [
+    "Receber pedido",
+    "Verificar estoque",
+    "Separar itens (picking)",
+    "Conferir itens",
+    "Embalar (packing)",
+    "Emitir documentação",
+    "Despachar transporte",
+    "Confirmar envio ao cliente"
+  ];
+
+  const PRODUCTS = ["Caixas","Parafusos","Etiquetas","Papel A4","Toners","Teclados","Mouses","Cabos","Luvas","Uniformes"];
+
+  let started=false;
+  let orderId="";
+  let t0=0;
+  let timer=null;
+  let errors=0;
+  let doneCount=0;
+  let steps = [];
+
+  function fmtTime(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const m = Math.floor(s/60);
+    const r = s%60;
+    return String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");
+  }
+
+  function currentScore(){
+    if(!started) return 0;
+    const elapsed = Date.now()-t0;
+    const timePenalty = Math.floor(elapsed/1500); // a cada 1.5s tira 1 ponto
+    const errPenalty = errors*8;
+    const base = doneCount*20;
+    return Math.max(0, base - timePenalty - errPenalty);
+  }
+
+  function shuffle(a){
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function newOrder(){
+    orderId = "PED-" + Math.floor(1000 + Math.random()*9000);
+    const item = PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];
+    const qty = Math.floor(1 + Math.random()*8);
+    $("order").textContent = `${orderId} • ${qty}x ${item}`;
+  }
+
+  function renderSteps(){
+    const box = $("steps");
+    box.innerHTML = "";
+    steps.forEach((s, idx)=>{
+      const div = document.createElement("div");
+      div.className = "step" + (s.done ? " done" : "");
+      div.textContent = s.name;
+      div.addEventListener("click", ()=>clickStep(idx));
+      box.appendChild(div);
+    });
+  }
+
+  function start(){
+    started = true;
+    errors = 0;
+    doneCount = 0;
+    steps = shuffle(STEPS_ORDER.map(name=>({name, done:false})));
+    newOrder();
+    $("msg").className="msg";
+    $("msg").textContent="Complete as etapas na ordem correta (do processo).";
+    $("errs").textContent = "0";
+    $("score").textContent = "0";
+
+    t0 = Date.now();
+    if(timer) clearInterval(timer);
+    timer = setInterval(()=>{
+      $("time").textContent = fmtTime(Date.now()-t0);
+      $("score").textContent = String(currentScore());
+    }, 200);
+
+    renderSteps();
+    beep("done");
+  }
+
+  function reset(){
+    started = false;
+    if(timer) clearInterval(timer);
+    timer=null;
+    $("time").textContent="00:00";
+    $("order").textContent="—";
+    $("errs").textContent="0";
+    $("score").textContent="0";
+    $("msg").className="msg";
+    $("msg").textContent="Clique em “Iniciar pedido”.";
+    steps = [];
+    renderSteps();
+  }
+
+  function clickStep(idx){
+    if(!started) return;
+    const targetName = STEPS_ORDER[doneCount]; // próximo correto
+    const picked = steps[idx];
+
+    if(picked.done) return;
+
+    if(picked.name === targetName){
+      picked.done = true;
+      doneCount++;
+      $("msg").className="msg ok";
+      $("msg").textContent = "✅ Etapa correta!";
+      beep("ok");
+      if(doneCount === STEPS_ORDER.length){
+        finish();
+      }
+    }else{
+      errors++;
+      $("errs").textContent = String(errors);
+      $("msg").className="msg bad";
+      $("msg").textContent = `❌ Ordem incorreta. Próximo correto: ${targetName}.`;
+      beep("bad");
+    }
+    renderSteps();
+    $("score").textContent = String(currentScore());
+  }
+
+  function finish(){
+    if(timer) clearInterval(timer);
+    timer=null;
+    $("msg").className="msg ok";
+    $("msg").textContent = `Concluído! Pontos: ${currentScore()} — Erros: ${errors}.`;
+    beep("done");
+  }
+
+  function readRank(){
+    try{ return JSON.parse(localStorage.getItem(RKEY)||"[]"); }catch(e){ return []; }
+  }
+  function writeRank(r){
+    localStorage.setItem(RKEY, JSON.stringify(r.slice(0,10)));
+  }
+  function renderRank(){
+    const r = readRank().sort((a,b)=>b.points-a.points).slice(0,10);
+    const tb = $("rank");
+    tb.innerHTML="";
+    r.forEach((it,i)=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${i+1}</td><td>${it.name}</td><td><strong style="color:var(--text)">${it.points}</strong></td>`;
+      tb.appendChild(tr);
+    });
+  }
+  function saveRank(){
+    if(!started && $("score").textContent==="0"){
+      $("rmsg").className="msg bad";
+      $("rmsg").textContent="Jogue uma rodada antes de salvar.";
+      beep("bad");
+      return;
+    }
+    const name = ($("name").value||"").trim() || "Sem nome";
+    const points = Number($("score").textContent)||0;
+    const r = readRank();
+    r.push({name, points, ts: Date.now()});
+    writeRank(r);
+    renderRank();
+    $("rmsg").className="msg ok";
+    $("rmsg").textContent="Salvo no ranking!";
+    beep("done");
+  }
+  function clearRank(){
+    localStorage.removeItem(RKEY);
+    renderRank();
+    $("rmsg").className="msg";
+    $("rmsg").textContent="Ranking limpo.";
+    beep("bad");
+  }
+
+  $("btnStart").addEventListener("click", start);
+  $("btnNew").addEventListener("click", ()=>{ if(started) start(); else start(); });
+  $("btnReset").addEventListener("click", reset);
+  $("btnSave").addEventListener("click", saveRank);
+  $("btnClear").addEventListener("click", clearRank);
+
+  renderRank();
+  reset();
+</script>
+</body>
+</html>
