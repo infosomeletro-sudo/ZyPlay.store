@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>1º Ano — Quiz Logística Essencial | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+  :root{
+    --bg:#0b0f19; --panel:#10182b; --card:rgba(255,255,255,.06);
+    --line:rgba(255,255,255,.10); --text:#eaf0ff; --muted:#a9b7d0;
+    --ok:#23d5ab; --bad:#ff4d6d; --brand:#0ea35a; --brand2:#0b2a52;
+    --r:18px; --r2:14px; --shadow:0 14px 40px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+      radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),
+      var(--bg);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .app{width:min(1050px,100%); display:grid; grid-template-columns:1.2fr .8fr; gap:14px;}
+  @media (max-width: 940px){.app{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line); background:rgba(16,24,43,.45); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+  .head{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,.03)}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:1000}
+  .badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--ok));display:grid;place-items:center;box-shadow:0 10px 26px rgba(14,163,90,.18)}
+  .brand small{display:block;color:var(--muted);font-weight:700}
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  button{border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:999px; cursor:pointer; font-weight:900; transition:.15s}
+  button:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  button.primary{border-color:rgba(14,163,90,.35); background:rgba(14,163,90,.16)}
+  button.danger{border-color:rgba(255,77,109,.35); background:rgba(255,77,109,.12)}
+  .body{padding:16px; display:flex; flex-direction:column; gap:12px}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  @media (max-width: 520px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{padding:12px; border:1px solid var(--line); border-radius:14px; background:rgba(255,255,255,.03)}
+  .k{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+  .v{font-weight:1000; font-size:18px; margin-top:4px}
+  .qcard{padding:14px; border:1px solid var(--line); border-radius:var(--r); background:rgba(255,255,255,.03)}
+  .qmeta{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:13px}
+  .q{margin-top:10px; font-size:18px; font-weight:1000; line-height:1.25}
+  .opts{margin-top:12px; display:grid; gap:10px}
+  .opt{padding:12px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.18); cursor:pointer; transition:.15s; font-weight:850}
+  .opt:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+  .opt.ok{border-color:rgba(35,213,171,.45); background:rgba(35,213,171,.12)}
+  .opt.bad{border-color:rgba(255,77,109,.45); background:rgba(255,77,109,.10)}
+  .msg{min-height:18px; color:var(--muted); font-size:13px}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+  .side{padding:16px; display:flex; flex-direction:column; gap:12px}
+  .card{padding:14px; border:1px solid var(--line); border-radius:var(--r); background:rgba(255,255,255,.03)}
+  input{width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:var(--text); outline:none}
+  .table{width:100%; border-collapse:collapse; font-size:13px; color:var(--muted)}
+  .table th,.table td{padding:8px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left}
+  .table th{color:var(--text); font-weight:900}
+  .pill{display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted); font-weight:800; font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="panel">
+    <div class="head">
+      <div class="brand">
+        <div class="badge">Z</div>
+        <div>Quiz Logística Essencial <small>1º Ano • ZyPlay</small></div>
+      </div>
+      <div class="controls">
+        <button class="primary" id="btnStart">Iniciar</button>
+        <button id="btnNext">Próxima</button>
+        <button class="danger" id="btnReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="stats">
+        <div class="stat"><div class="k">Questão</div><div class="v" id="statQ">0/10</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="statOk">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="statBad">0</div></div>
+        <div class="stat"><div class="k">Tempo</div><div class="v" id="statT">00:00</div></div>
+      </div>
+
+      <div class="qcard">
+        <div class="qmeta">
+          <span class="pill" id="pillMode">Modo: prova rápida</span>
+          <span class="pill">Enter: próxima • Clique: responder</span>
+        </div>
+        <div class="q" id="qText">Clique em Iniciar</div>
+        <div class="opts" id="opts"></div>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="head">
+      <div class="brand">
+        <div style="font-weight:1000">Ranking da Turma</div>
+      </div>
+      <div class="controls">
+        <button id="btnSave" class="primary">Salvar</button>
+        <button id="btnClear" class="danger">Limpar</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:6px">Nome do aluno</label>
+        <input id="name" placeholder="Ex: Ana, João, Turma 1A..." maxlength="32">
+        <div style="height:10px"></div>
+        <div class="pill">Pontuação: <strong id="score" style="color:var(--text)">0</strong></div>
+      </div>
+
+      <div class="card">
+        <table class="table">
+          <thead><tr><th>#</th><th>Nome</th><th>Pontos</th></tr></thead>
+          <tbody id="rank"></tbody>
+        </table>
+        <div class="msg" id="rankMsg"></div>
+      </div>
+
+      <div class="card">
+        <div style="color:var(--muted);font-size:12.5px;line-height:1.45">
+          • Funciona offline/online<br>
+          • Sons internos (sem arquivos)<br>
+          • Ranking salvo no navegador (localStorage)
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // ====== Som (Opção A) ======
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let ctx = null;
+  function beep(type="ok"){
+    try{
+      if(!ctx) ctx = new AudioCtx();
+      const t0 = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = type==="ok" ? 880 : type==="done" ? 660 : 220;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.18, t0+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+(type==="done"?0.22:0.18));
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0);
+      o.stop(t0+(type==="done"?0.24:0.20));
+    }catch(e){}
+  }
+
+  // ====== Banco de questões ======
+  const QUESTIONS = [
+    {q:"O que é lead time?", a:0, o:[
+      "Tempo total do pedido até a entrega",
+      "Quantidade máxima do estoque",
+      "Valor do frete por km",
+      "Capacidade do armazém"
+    ]},
+    {q:"Curva ABC é usada principalmente para:", a:1, o:[
+      "Calcular imposto da empresa",
+      "Classificar itens por importância (valor/consumo)",
+      "Medir satisfação do cliente",
+      "Definir layout do armazém"
+    ]},
+    {q:"Picking significa:", a:2, o:[
+      "Empacotar caixas para exportação",
+      "Fazer inventário anual",
+      "Separação de itens para pedidos",
+      "Calcular o saldo do caixa"
+    ]},
+    {q:"Ruptura de estoque é:", a:0, o:[
+      "Falta do produto quando há demanda",
+      "Produto parado por muito tempo",
+      "Produto devolvido pelo cliente",
+      "Produto danificado no transporte"
+    ]},
+    {q:"Cross docking é:", a:3, o:[
+      "Devolver produtos ao fornecedor",
+      "Guardar mercadorias por 90 dias",
+      "Transportar apenas por rodovia",
+      "Receber e redistribuir sem armazenar"
+    ]},
+    {q:"Logística reversa trata de:", a:1, o:[
+      "Vender com desconto",
+      "Retorno de produtos (troca, devolução, reciclagem)",
+      "Aumentar a produção",
+      "Analisar o concorrente"
+    ]},
+    {q:"WMS é um sistema de:", a:2, o:[
+      "Transporte de carga",
+      "Gestão financeira",
+      "Gestão de armazém",
+      "Gestão de impostos"
+    ]},
+    {q:"O objetivo do estoque de segurança é:", a:0, o:[
+      "Evitar ruptura por variações de demanda/atraso",
+      "Aumentar impostos pagos",
+      "Diminuir qualidade do produto",
+      "Aumentar o preço automaticamente"
+    ]},
+    {q:"FIFO (PEPS) significa:", a:3, o:[
+      "Último que entra, primeiro que sai",
+      "Primeiro que entra, último que sai",
+      "Itens mais caros saem primeiro",
+      "Primeiro que entra, primeiro que sai"
+    ]},
+    {q:"Layout de armazém bem planejado ajuda a:", a:1, o:[
+      "Aumentar avarias",
+      "Reduzir tempo de separação e deslocamento",
+      "Aumentar a ruptura de estoque",
+      "Aumentar a inadimplência"
+    ]},
+    {q:"KPI significa:", a:2, o:[
+      "Cadastro de Produto Interno",
+      "Plano de Inventário",
+      "Indicador-chave de desempenho",
+      "Controle de Impostos"
+    ]},
+    {q:"Giro de estoque alto geralmente indica:", a:0, o:[
+      "Boa rotatividade e menor estoque parado",
+      "Problemas de vendas",
+      "Aumento de avarias",
+      "Mais ruptura sempre"
+    ]},
+  ];
+
+  // ====== Estado ======
+  const TOTAL = 10;
+  let deck = [];
+  let idx = 0;
+  let ok = 0;
+  let bad = 0;
+  let locked = false;
+  let started = false;
+
+  let t0 = 0;
+  let timer = null;
+
+  // ====== Ranking ======
+  const RKEY = "zyplay_rank_1ano_quiz_logistica_v1";
+
+  const $ = (id)=>document.getElementById(id);
+
+  function shuffle(a){
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function fmtTime(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const m = Math.floor(s/60);
+    const r = s%60;
+    return String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");
+  }
+
+  function score(){
+    // pontos: acerto 10, erro -3, bônus por tempo
+    const base = ok*10 - bad*3;
+    const elapsed = started ? (Date.now()-t0) : 0;
+    const bonus = started ? Math.max(0, Math.floor((120000 - elapsed)/4000)) : 0; // até +30
+    return Math.max(0, base + bonus);
+  }
+
+  function updateHUD(){
+    $("statQ").textContent = `${Math.min(idx+1, TOTAL)}/${TOTAL}`;
+    $("statOk").textContent = ok;
+    $("statBad").textContent = bad;
+    $("score").textContent = score();
+  }
+
+  function start(){
+    started = true;
+    ok = 0; bad = 0; idx = 0;
+    deck = shuffle([...QUESTIONS]).slice(0, TOTAL);
+    locked = false;
+    t0 = Date.now();
+    if(timer) clearInterval(timer);
+    timer = setInterval(()=> $("statT").textContent = fmtTime(Date.now()-t0), 250);
+    $("statT").textContent = "00:00";
+    $("msg").textContent = "";
+    render();
+    updateHUD();
+    beep("done");
+  }
+
+  function reset(){
+    started = false;
+    locked = false;
+    if(timer) clearInterval(timer);
+    timer = null;
+    $("statT").textContent = "00:00";
+    $("qText").textContent = "Clique em Iniciar";
+    $("opts").innerHTML = "";
+    $("msg").textContent = "";
+    ok = 0; bad = 0; idx = 0;
+    updateHUD();
+  }
+
+  function render(){
+    if(!started) return;
+    locked = false;
+    const item = deck[idx];
+    $("qText").textContent = item.q;
+    $("opts").innerHTML = "";
+    item.o.forEach((txt, i)=>{
+      const b = document.createElement("div");
+      b.className = "opt";
+      b.textContent = txt;
+      b.addEventListener("click", ()=>answer(i, b));
+      $("opts").appendChild(b);
+    });
+    $("msg").className="msg";
+    $("msg").textContent = "Escolha uma alternativa.";
+  }
+
+  function answer(i, el){
+    if(!started || locked) return;
+    locked = true;
+    const item = deck[idx];
+    const nodes = [...$("opts").children];
+    nodes.forEach((n, k)=>{
+      if(k===item.a) n.classList.add("ok");
+    });
+    if(i===item.a){
+      ok++;
+      $("msg").className="msg ok";
+      $("msg").textContent="✅ Correto!";
+      beep("ok");
+    }else{
+      bad++;
+      el.classList.add("bad");
+      $("msg").className="msg bad";
+      $("msg").textContent="❌ Incorreto.";
+      beep("bad");
+    }
+    updateHUD();
+  }
+
+  function next(){
+    if(!started) return;
+    if(!locked){
+      $("msg").className="msg";
+      $("msg").textContent="Responda antes de ir para a próxima.";
+      return;
+    }
+    idx++;
+    if(idx >= TOTAL){
+      finish();
+      return;
+    }
+    render();
+    updateHUD();
+  }
+
+  function finish(){
+    if(timer) clearInterval(timer);
+    timer = null;
+    $("msg").className="msg ok";
+    $("msg").textContent = `Fim! Pontos: ${score()} — Acertos: ${ok}, Erros: ${bad}.`;
+    beep("done");
+  }
+
+  // ===== Ranking funcs =====
+  function readRank(){
+    try{
+      const raw = localStorage.getItem(RKEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function writeRank(arr){
+    localStorage.setItem(RKEY, JSON.stringify(arr.slice(0,10)));
+  }
+  function renderRank(){
+    const r = readRank().sort((a,b)=>b.points-a.points).slice(0,10);
+    const tbody = $("rank");
+    tbody.innerHTML = "";
+    r.forEach((it, i)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${i+1}</td><td>${it.name}</td><td><strong style="color:var(--text)">${it.points}</strong></td>`;
+      tbody.appendChild(tr);
+    });
+    $("rankMsg").textContent = r.length ? "" : "Sem ranking ainda. Jogue e clique em Salvar.";
+  }
+
+  function saveScore(){
+    if(!started){
+      $("rankMsg").textContent = "Inicie e finalize uma rodada antes de salvar.";
+      return;
+    }
+    const name = ($("name").value || "").trim() || "Sem nome";
+    const points = score();
+    const r = readRank();
+    r.push({name, points, ts: Date.now()});
+    writeRank(r);
+    renderRank();
+    $("rankMsg").textContent = "Salvo no ranking!";
+    beep("done");
+  }
+
+  function clearRank(){
+    localStorage.removeItem(RKEY);
+    renderRank();
+    $("rankMsg").textContent = "Ranking limpo.";
+    beep("bad");
+  }
+
+  $("btnStart").addEventListener("click", start);
+  $("btnReset").addEventListener("click", reset);
+  $("btnNext").addEventListener("click", next);
+  $("btnSave").addEventListener("click", saveScore);
+  $("btnClear").addEventListener("click", clearRank);
+
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") next();
+    if(e.key === "Escape") reset();
+  });
+
+  renderRank();
+  reset();
+</script>
+</body>
+</html>
