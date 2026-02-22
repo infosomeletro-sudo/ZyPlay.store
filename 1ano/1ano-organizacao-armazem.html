@@ -1,0 +1,148 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>1º Ano — Organização do Armazém | ZyPlay</title><meta name="theme-color" content="#0b5f3c"/>
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--sh:0 14px 40px rgba(0,0,0,.35);--r:18px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.p{width:min(1100px,100%);border:1px solid var(--line);background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.b{padding:16px;display:grid;grid-template-columns:1fr .85fr;gap:12px}
+@media(max-width:960px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.03)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.cell{aspect-ratio:1/1;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);
+display:grid;place-items:center;font-weight:1000;cursor:pointer;user-select:none;transition:.12s}
+.cell:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.zoneR{border-color:rgba(35,213,171,.55);background:rgba(35,213,171,.14)}
+.zoneP{border-color:rgba(245,200,66,.55);background:rgba(245,200,66,.12)}
+.zoneF{border-color:rgba(255,77,109,.55);background:rgba(255,77,109,.10)}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--m);font-weight:800;font-size:12px}
+</style></head><body>
+<div class="p">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div><div>Organização do Armazém <small style="display:block;color:var(--m);font-weight:700">1º Ano • ZyPlay</small></div></div>
+    <div class="ctrl"><button class="primary" id="new">Nova rodada</button><button id="check">Avaliar</button></div>
+  </div>
+  <div class="b">
+    <div class="card">
+      <div class="pill">Clique nas células e atribua zona: Rápido (R), Pesado (P), Frágil (F)</div>
+      <div style="height:10px"></div>
+      <div class="grid" id="grid"></div>
+      <div style="height:10px"></div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:1000;margin-bottom:8px">Objetivo (didático)</div>
+      <div style="color:var(--m);line-height:1.55;font-size:13.5px">
+        • Itens de giro rápido devem ficar perto da saída (lado direito).<br>
+        • Itens pesados devem ficar mais próximos do piso/área de carga (linha de baixo).<br>
+        • Itens frágeis devem ficar longe de pesados e com menos tráfego (canto superior esquerdo).<br><br>
+        <strong style="color:var(--t)">Controles:</strong><br>
+        Clique numa célula alterna: vazio → R → P → F → vazio.
+      </div>
+      <div style="height:10px"></div>
+      <div class="pill">Saída/Expedição: colunas 5–6</div>
+      <div class="pill">Carga Pesada: linha 6</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const N=6; // 6x6
+let cells=[];
+
+function render(){
+  const g=$("grid"); g.innerHTML="";
+  cells.forEach((v,i)=>{
+    const d=document.createElement("div");
+    d.className="cell";
+    d.textContent=v||"";
+    if(v==="R") d.classList.add("zoneR");
+    if(v==="P") d.classList.add("zoneP");
+    if(v==="F") d.classList.add("zoneF");
+    d.onclick=()=>toggle(i);
+    g.appendChild(d);
+  });
+}
+function toggle(i){
+  const v=cells[i];
+  cells[i]= v==="" ? "R" : v==="R" ? "P" : v==="P" ? "F" : "";
+  render();
+  beep("ok");
+}
+
+function score(){
+  // regras simples:
+  // R: melhor perto da saída (col 4-5)
+  // P: melhor na última linha (row 5)
+  // F: melhor no canto superior esquerdo (row 0-1 col 0-1)
+  let s=0, bad=0;
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      const v=cells[r*N+c];
+      if(!v) continue;
+      if(v==="R"){
+        const dist = Math.abs(c-(N-1)); // perto da saída
+        s += Math.max(0, 8 - dist*2);
+        if(c<3) bad++;
+      }
+      if(v==="P"){
+        const dist = Math.abs(r-(N-1));
+        s += Math.max(0, 8 - dist*2);
+        if(r<3) bad++;
+      }
+      if(v==="F"){
+        const dist = Math.abs(r-0)+Math.abs(c-0);
+        s += Math.max(0, 10 - dist*2);
+        if(r>2 || c>2) bad++;
+      }
+    }
+  }
+  s = Math.max(0, Math.floor(s - bad*2));
+  return {s, bad};
+}
+
+function evaluate(){
+  const {s,bad}=score();
+  const el=$("msg");
+  if(s>=60){
+    el.className="msg ok"; el.textContent=`Excelente layout! Pontos: ${s} (penalidades: ${bad}).`;
+    beep("done");
+  }else if(s>=35){
+    el.className="msg"; el.textContent=`Bom, mas dá pra melhorar. Pontos: ${s} (penalidades: ${bad}).`;
+    beep("ok");
+  }else{
+    el.className="msg bad"; el.textContent=`Layout fraco. Reorganize zonas. Pontos: ${s} (penalidades: ${bad}).`;
+    beep("bad");
+  }
+}
+
+function newRound(){
+  cells = Array.from({length:N*N}, ()=>"");
+  $("msg").className="msg"; $("msg").textContent="Monte seu layout e clique em Avaliar.";
+  render(); beep("done");
+}
+
+$("new").onclick=newRound;
+$("check").onclick=evaluate;
+
+newRound();
+</script></body></html>
