@@ -1,0 +1,162 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>1º Ano — V/F Logística | ZyPlay</title><meta name="theme-color" content="#0b5f3c"/>
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--sh:0 14px 40px rgba(0,0,0,.35);--r:18px}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.app{width:min(1050px,100%);display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+@media(max-width:920px){.app{grid-template-columns:1fr}}
+.p{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:flex;flex-direction:column;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.s{padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.4px}.v{font-weight:1000;font-size:18px;margin-top:4px}
+.card{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.03)}
+.q{font-size:18px;font-weight:1000;line-height:1.25}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.big{flex:1;min-width:200px;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.18);font-weight:1000;cursor:pointer;transition:.15s}
+.big:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}th{color:var(--t);font-weight:1000}
+input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);color:var(--t);outline:none}
+</style></head><body>
+<div class="app">
+<section class="p">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div><div>Verdadeiro ou Falso — Logística <small style="display:block;color:var(--m);font-weight:700">1º Ano • ZyPlay</small></div></div>
+    <div class="ctrl"><button class="primary" id="start">Iniciar</button><button id="next">Próxima</button><button class="danger" id="reset">Reset</button></div>
+  </div>
+  <div class="b">
+    <div class="stats">
+      <div class="s"><div class="k">Questão</div><div class="v" id="sq">0/12</div></div>
+      <div class="s"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+      <div class="s"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+      <div class="s"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+    </div>
+    <div class="card">
+      <div class="q" id="q">Clique em Iniciar</div>
+      <div class="row">
+        <div class="big" id="trueBtn">✅ Verdadeiro</div>
+        <div class="big" id="falseBtn">❌ Falso</div>
+      </div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+</section>
+
+<aside class="p">
+  <div class="h">
+    <div style="font-weight:1000">Ranking</div>
+    <div class="ctrl"><button class="primary" id="save">Salvar</button><button class="danger" id="clear">Limpar</button></div>
+  </div>
+  <div class="b">
+    <div class="card">
+      <label style="display:block;color:var(--m);font-size:12px;margin-bottom:6px">Nome do aluno</label>
+      <input id="name" placeholder="Ex: Turma 1A" maxlength="32">
+      <div class="msg" id="rmsg"></div>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>#</th><th>Nome</th><th>Pontos</th></tr></thead><tbody id="rank"></tbody></table>
+    </div>
+  </div>
+</aside>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const Q=[
+{t:"Lead time é o tempo total do pedido até a entrega.",a:true},
+{t:"Cross docking depende de armazenagem longa para ser eficiente.",a:false},
+{t:"Ruptura de estoque é falta do produto quando há demanda.",a:true},
+{t:"Curva ABC classifica itens por importância (valor/consumo).",a:true},
+{t:"Picking é o processo de separação de itens para pedidos.",a:true},
+{t:"Logística reversa trata do retorno de produtos (troca/reciclagem).",a:true},
+{t:"Estoque de segurança serve para aumentar impostos.",a:false},
+{t:"FIFO (PEPS) é primeiro que entra, primeiro que sai.",a:true},
+{t:"WMS é sistema de gestão de armazém.",a:true},
+{t:"Giro de estoque alto geralmente indica estoque parado.",a:false},
+{t:"Layout de armazém ruim reduz deslocamento e tempo.",a:false},
+{t:"KPIs são indicadores-chave de desempenho.",a:true},
+];
+
+const $=id=>document.getElementById(id);
+const RKEY="zyplay_rank_1ano_vf_log_v1";
+
+let deck=[],i=0,ok=0,bad=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function score(){return Math.max(0, ok*10 - bad*3)}
+function hud(){ $("sq").textContent=`${Math.min(i+1,deck.length)}/${deck.length}`; $("ok").textContent=ok; $("bad").textContent=bad; $("sc").textContent=score(); }
+
+function start(){
+  deck=shuffle([...Q]); i=0; ok=0; bad=0; answered=false;
+  $("msg").textContent="Responda V ou F."; $("msg").className="msg";
+  render(); hud(); beep("done");
+}
+function render(){
+  if(!deck.length){ $("q").textContent="Clique em Iniciar"; return; }
+  $("q").textContent=deck[i].t;
+  answered=false;
+}
+function answer(val){
+  if(!deck.length || answered) return;
+  answered=true;
+  const item=deck[i];
+  if(val===item.a){ ok++; $("msg").className="msg ok"; $("msg").textContent="✅ Correto!"; beep("ok"); }
+  else { bad++; $("msg").className="msg bad"; $("msg").textContent="❌ Incorreto."; beep("bad"); }
+  hud();
+}
+function next(){
+  if(!deck.length) return;
+  if(!answered){ $("msg").className="msg"; $("msg").textContent="Responda antes de avançar."; beep("bad"); return; }
+  i++;
+  if(i>=deck.length){
+    $("msg").className="msg ok";
+    $("msg").textContent=`Fim! Pontos: ${score()} — Acertos: ${ok}, Erros: ${bad}.`;
+    beep("done"); return;
+  }
+  $("msg").className="msg"; $("msg").textContent="Responda V ou F.";
+  render(); hud();
+}
+function reset(){
+  deck=[]; i=0; ok=0; bad=0; answered=false;
+  $("q").textContent="Clique em Iniciar"; $("msg").textContent="";
+  hud();
+}
+
+function readRank(){ try{return JSON.parse(localStorage.getItem(RKEY)||"[]")}catch(e){return []} }
+function writeRank(r){ localStorage.setItem(RKEY, JSON.stringify(r.slice(0,10))) }
+function renderRank(){
+  const r=readRank().sort((a,b)=>b.points-a.points).slice(0,10);
+  $("rank").innerHTML="";
+  r.forEach((it,idx)=>{const tr=document.createElement("tr");tr.innerHTML=`<td>${idx+1}</td><td>${it.name}</td><td><strong style="color:var(--t)">${it.points}</strong></td>`;$("rank").appendChild(tr);});
+}
+function saveRank(){
+  if(!deck.length){ $("rmsg").className="msg bad"; $("rmsg").textContent="Jogue uma rodada antes de salvar."; beep("bad"); return; }
+  const name=($("name").value||"").trim()||"Sem nome";
+  const r=readRank(); r.push({name, points:score(), ts:Date.now()});
+  writeRank(r); renderRank();
+  $("rmsg").className="msg ok"; $("rmsg").textContent="Salvo no ranking!"; beep("done");
+}
+function clearRank(){ localStorage.removeItem(RKEY); renderRank(); $("rmsg").className="msg"; $("rmsg").textContent="Ranking limpo."; beep("bad"); }
+
+$("start").onclick=start; $("next").onclick=next; $("reset").onclick=reset;
+$("trueBtn").onclick=()=>answer(true); $("falseBtn").onclick=()=>answer(false);
+$("save").onclick=saveRank; $("clear").onclick=clearRank;
+
+renderRank(); reset();
+</script></body></html>
