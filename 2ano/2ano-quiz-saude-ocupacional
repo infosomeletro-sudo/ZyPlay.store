@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Saúde Ocupacional | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --muted:#a9b7d0;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+  --accent:#0ea35a;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+
+h1{
+  margin-top:0;
+}
+
+button{
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button:hover{
+  background:rgba(255,255,255,.08);
+}
+
+.primary{
+  background:rgba(14,163,90,.25);
+  border-color:rgba(14,163,90,.5);
+}
+
+.option{
+  display:block;
+  width:100%;
+  text-align:left;
+  margin-top:10px;
+}
+
+.status{
+  margin-top:15px;
+  font-weight:bold;
+}
+
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+
+.stats{
+  margin-top:15px;
+  display:flex;
+  gap:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Quiz — Saúde Ocupacional</h1>
+  <div id="question">Clique em iniciar</div>
+  <div id="options"></div>
+
+  <div class="status" id="status"></div>
+
+  <div class="stats">
+    <div>Questão: <span id="qnum">0</span></div>
+    <div>Acertos: <span id="correct">0</span></div>
+    <div>Pontos: <span id="score">0</span></div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <button class="primary" onclick="startGame()">Iniciar</button>
+    <button onclick="nextQuestion()">Próxima</button>
+  </div>
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.type="sine";
+  osc.frequency.value = type==="ok" ? 800 : 200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const questions = [
+{
+  q:"O que é EPI?",
+  options:["Equipamento de Proteção Individual","Empresa de Produção Industrial","Estudo de Processo Interno","Evento de Perigo Imediato"],
+  answer:0
+},
+{
+  q:"A NR-6 trata sobre:",
+  options:["Ergonomia","EPI","Incêndio","Ruído"],
+  answer:1
+},
+{
+  q:"Acidente de trabalho é:",
+  options:["Somente queda","Somente choque elétrico","Evento que causa lesão durante trabalho","Discussão entre colegas"],
+  answer:2
+},
+{
+  q:"A CIPA tem como objetivo:",
+  options:["Punir funcionários","Prevenir acidentes","Fiscalizar salários","Controlar impostos"],
+  answer:1
+},
+{
+  q:"Ergonomia busca:",
+  options:["Aumentar produção","Adaptar trabalho ao trabalhador","Reduzir salário","Eliminar férias"],
+  answer:1
+}
+];
+
+let index=0;
+let correct=0;
+let score=0;
+let started=false;
+
+function startGame(){
+  index=0;
+  correct=0;
+  score=0;
+  started=true;
+  showQuestion();
+}
+
+function showQuestion(){
+  if(index>=questions.length){
+    document.getElementById("question").innerText="Fim do Quiz!";
+    document.getElementById("options").innerHTML="";
+    document.getElementById("status").innerText="Pontuação Final: "+score;
+    return;
+  }
+
+  const q = questions[index];
+  document.getElementById("question").innerText=q.q;
+  document.getElementById("qnum").innerText=index+1;
+
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML="";
+
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement("button");
+    btn.className="option";
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(i);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(i){
+  if(!started) return;
+
+  const q=questions[index];
+  if(i===q.answer){
+    correct++;
+    score+=10;
+    document.getElementById("status").innerText="Resposta correta!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Resposta incorreta!";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+
+  document.getElementById("correct").innerText=correct;
+  document.getElementById("score").innerText=score;
+}
+
+function nextQuestion(){
+  if(!started) return;
+  index++;
+  showQuestion();
+}
+</script>
+
+</body>
+</html>
