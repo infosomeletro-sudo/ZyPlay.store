@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — PEPS x UEPS | Inventário | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --text:#eaf0ff;--muted:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui;background:var(--bg);color:var(--text);
+  display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px
+}
+.container{
+  width:100%;max-width:1000px;background:var(--panel);
+  border:1px solid var(--line);border-radius:16px;padding:20px
+}
+h1{margin-top:0}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted)}
+button{
+  margin-top:15px;padding:10px 14px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);
+  color:white;font-weight:bold;cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:10px;font-weight:bold}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.stats{margin-top:15px}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>PEPS x UEPS — Avaliação de Estoque</h1>
+<p>Venda de 30 unidades. Qual método gera o maior Custo das Mercadorias Vendidas (CMV)?</p>
+
+<table>
+<thead>
+<tr>
+<th>Lote</th>
+<th>Quantidade</th>
+<th>Valor Unitário (R$)</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Lote 1</td><td>20</td><td>10</td></tr>
+<tr><td>Lote 2</td><td>20</td><td>15</td></tr>
+</tbody>
+</table>
+
+<button onclick="responder('PEPS')">PEPS (FIFO)</button>
+<button onclick="responder('UEPS')">UEPS (LIFO)</button>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  Pontos: <span id="score">0</span>
+</div>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+let score=0;
+
+function responder(metodo){
+  // PEPS: vende primeiro lote 1 (20x10=200) + 10 do lote2 (10x15=150) = 350
+  const cmvPEPS = 350;
+
+  // UEPS: vende primeiro lote 2 (20x15=300) + 10 do lote1 (10x10=100) = 400
+  const cmvUEPS = 400;
+
+  let correto = cmvUEPS > cmvPEPS ? "UEPS" : "PEPS";
+
+  if(metodo === correto){
+    score += 10;
+    document.getElementById("status").innerText="Correto! UEPS gera maior CMV.";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score -= 5;
+    document.getElementById("status").innerText="Errado! Revise os cálculos.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+
+  document.getElementById("score").innerText=score;
+}
+</script>
+
+</body>
+</html>
