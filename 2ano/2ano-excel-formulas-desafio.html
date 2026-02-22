@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Desafio Fórmulas Excel/Sheets | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --text:#eaf0ff;--muted:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui;background:var(--bg);color:var(--text);
+  display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px
+}
+.container{
+  width:100%;max-width:1000px;background:var(--panel);
+  border:1px solid var(--line);border-radius:16px;padding:20px
+}
+h1{margin-top:0}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted)}
+button{
+  margin-top:15px;padding:10px 14px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);
+  color:white;font-weight:bold;cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:10px;font-weight:bold}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.stats{margin-top:15px}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Desafio — Fórmulas no Excel/Google Sheets</h1>
+<p>Qual fórmula resolve corretamente a situação apresentada?</p>
+
+<div id="pergunta"></div>
+<div id="opcoes"></div>
+
+<button onclick="proxima()">Próxima</button>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  Pontos: <span id="score">0</span>
+</div>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const perguntas=[
+{
+  q:"Somar valores das células A1 até A10.",
+  correta:"=SOMA(A1:A10)",
+  erradas:["=MEDIA(A1:A10)","=SOMA(A1;A10)","=A1+A10"]
+},
+{
+  q:"Calcular média das células B1 até B5.",
+  correta:"=MEDIA(B1:B5)",
+  erradas:["=SOMA(B1:B5)","=MEDIA(B1;B5)","=B1/B5"]
+},
+{
+  q:"Contar células preenchidas no intervalo C1:C10.",
+  correta:"=CONT.VALORES(C1:C10)",
+  erradas:["=SOMA(C1:C10)","=CONT.SE(C1:C10)","=CONT.NUM(C1:C10)"]
+},
+{
+  q:"Verificar se A1 é maior que 100.",
+  correta:"=SE(A1>100;\"SIM\";\"NÃO\")",
+  erradas:["=SOMA(A1>100)","=MEDIA(A1)","=CONT.SE(A1>100)"]
+}
+];
+
+let indice=0;
+let score=0;
+
+function mostrar(){
+  if(indice>=perguntas.length){
+    document.getElementById("pergunta").innerHTML="<h3>Fim do desafio!</h3>";
+    document.getElementById("opcoes").innerHTML="";
+    return;
+  }
+
+  const p=perguntas[indice];
+  document.getElementById("pergunta").innerHTML="<strong>"+p.q+"</strong>";
+
+  const opcoes=[p.correta,...p.erradas].sort(()=>Math.random()-0.5);
+  const div=document.getElementById("opcoes");
+  div.innerHTML="";
+
+  opcoes.forEach(op=>{
+    const btn=document.createElement("button");
+    btn.innerText=op;
+    btn.onclick=()=>responder(op===p.correta);
+    div.appendChild(btn);
+  });
+}
+
+function responder(correto){
+  if(correto){
+    score+=10;
+    document.getElementById("status").innerText="Correto!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Errado!";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+}
+
+function proxima(){
+  indice++;
+  mostrar();
+}
+
+mostrar();
+</script>
+
+</body>
+</html>
