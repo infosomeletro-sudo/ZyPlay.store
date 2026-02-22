@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2º Ano — Balanço Patrimonial | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--text:#eaf0ff;--muted:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--accent:#0ea35a;--r:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.wrap{width:min(1050px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+h1{margin:0 0 6px 0}
+p{margin:0 0 14px 0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);cursor:pointer;font-weight:900}
+.pill:hover{background:rgba(255,255,255,.06)}
+.pill.done{border-color:rgba(35,213,171,.45);background:rgba(35,213,171,.12);cursor:default;opacity:.95}
+.boxTitle{font-weight:1000;margin-bottom:10px}
+.slot{border:1px dashed rgba(255,255,255,.18);border-radius:14px;padding:10px;background:rgba(0,0,0,.12);min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.slot strong{font-size:14px}
+.badge{font-size:12px;color:var(--muted);font-weight:900}
+button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:1000}
+button:hover{background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);padding:10px}
+.k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+.msg{min-height:18px;color:var(--muted);font-size:13px;margin-top:10px}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+hr{border:none;border-top:1px solid rgba(255,255,255,.10);margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Jogo — Balanço Patrimonial (Ativo x Passivo/PL)</h1>
+  <p>Objetivo: classificar os itens. Clique em um item e depois clique no lado certo: <strong>Ativo</strong> ou <strong>Passivo/PL</strong>.</p>
+
+  <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="row">
+      <button class="primary" id="start">Iniciar</button>
+      <button id="next">Próxima rodada</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+    <div class="row" style="color:var(--muted);font-weight:900;font-size:12px">
+      Clique 1: seleciona item • Clique 2: escolhe o lado
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="boxTitle">Itens da Rodada</div>
+      <div class="row" id="items"></div>
+      <div class="msg" id="hint">Clique em Iniciar.</div>
+    </div>
+
+    <div class="card">
+      <div class="boxTitle">Classificação</div>
+
+      <div class="slot" id="slotA">
+        <strong>ATIVO</strong>
+        <span class="badge">Clique aqui para enviar</span>
+      </div>
+      <div style="height:10px"></div>
+      <div class="slot" id="slotP">
+        <strong>PASSIVO / PATRIMÔNIO LÍQUIDO</strong>
+        <span class="badge">Clique aqui para enviar</span>
+      </div>
+
+      <hr>
+      <div class="msg" id="msg"></div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Rodada</div><div class="v" id="round">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const POOL=[
+  {n:"Caixa", t:"A"}, {n:"Banco Conta Movimento", t:"A"}, {n:"Clientes (Duplicatas a Receber)", t:"A"},
+  {n:"Estoques", t:"A"}, {n:"Máquinas e Equipamentos", t:"A"}, {n:"Veículos", t:"A"},
+  {n:"Fornecedores", t:"P"}, {n:"Empréstimos a Pagar", t:"P"}, {n:"Salários a Pagar", t:"P"},
+  {n:"Impostos a Recolher", t:"P"}, {n:"Capital Social", t:"P"}, {n:"Lucros/Prejuízos Acumulados", t:"P"},
+];
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+let round=0, ok=0, bad=0, score=0;
+let deck=[], selected=null, running=false;
+
+function hud(){
+  $("round").textContent=String(round);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("score").textContent=String(score);
+}
+
+function setMsg(el, text, cls){
+  const e=$(el);
+  e.className="msg"+(cls?" "+cls:"");
+  e.textContent=text||"";
+}
+
+function renderItems(){
+  const box=$("items");
+  box.innerHTML="";
+  deck.forEach((it,idx)=>{
+    const b=document.createElement("div");
+    b.className="pill"+(it.done?" done":"");
+    b.textContent=it.n;
+    b.onclick=()=>select(idx);
+    if(selected===idx && !it.done){
+      b.style.outline="2px solid rgba(245,200,66,.55)";
+      b.style.background="rgba(245,200,66,.12)";
+    }
+    box.appendChild(b);
+  });
+}
+
+function select(idx){
+  if(!running) return;
+  if(deck[idx].done) return;
+  selected=idx;
+  setMsg("msg", `Selecionado: ${deck[idx].n}. Agora clique em ATIVO ou PASSIVO/PL.`, "");
+  renderItems();
+  beep("ok");
+}
+
+function send(to){
+  if(!running) return;
+  if(selected===null){ setMsg("msg","Selecione um item primeiro.","bad"); beep("bad"); return; }
+  const it=deck[selected];
+  if(it.done) { selected=null; renderItems(); return; }
+
+  const correct = (to===it.t);
+  if(correct){
+    ok++; score+=10;
+    setMsg("msg", `✅ Correto! ${it.n} → ${to==="A"?"ATIVO":"PASSIVO/PL"}.`, "ok");
+    beep("ok");
+  }else{
+    bad++; score=Math.max(0, score-4);
+    setMsg("msg", `❌ Incorreto. ${it.n} não pertence a esse lado.`, "bad");
+    beep("bad");
+  }
+  it.done=true;
+  selected=null;
+  renderItems();
+  hud();
+
+  if(deck.every(x=>x.done)){
+    setMsg("hint","Rodada concluída! Clique em Próxima rodada.","ok");
+    beep("done");
+  }
+}
+
+function start(){
+  round=1; ok=0; bad=0; score=0;
+  newRound();
+  hud();
+  setMsg("hint","Classifique todos os itens da rodada.","");
+  beep("done");
+}
+
+function newRound(){
+  running=true;
+  selected=null;
+  deck=shuffle([...POOL]).slice(0,8).map(x=>({ ...x, done:false }));
+  renderItems();
+  setMsg("msg","Selecione um item e envie para o lado correto.","");
+  setMsg("hint",`Rodada ${round}: 8 itens para classificar.`, "");
+  hud();
+}
+
+function next(){
+  if(round===0){ setMsg("hint","Clique em Iniciar primeiro.","bad"); beep("bad"); return; }
+  round++;
+  newRound();
+  beep("done");
+}
+
+function reset(){
+  running=false; round=0; ok=0; bad=0; score=0; deck=[]; selected=null;
+  $("items").innerHTML="";
+  setMsg("hint","Clique em Iniciar.","");
+  setMsg("msg","", "");
+  hud();
+  beep("bad");
+}
+
+$("slotA").onclick=()=>send("A");
+$("slotP").onclick=()=>send("P");
+$("start").onclick=start;
+$("next").onclick=next;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
