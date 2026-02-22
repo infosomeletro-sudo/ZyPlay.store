@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Classificação de Contas | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px;
+}
+h1{margin-top:0}
+.item{
+  margin:20px 0;
+  font-size:18px;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.stats{margin-top:15px;display:flex;gap:20px}
+.primary{margin-top:20px;background:rgba(14,163,90,.25)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Classificação de Contas</h1>
+
+<div class="item" id="item">Clique em iniciar</div>
+<div id="options"></div>
+
+<div class="status" id="status"></div>
+
+<div class="stats">
+  <div>Questão: <span id="round">0</span></div>
+  <div>Pontos: <span id="score">0</span></div>
+</div>
+
+<button class="primary" onclick="startGame()">Iniciar</button>
+<button onclick="nextItem()">Próxima Conta</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const contas = [
+{ nome:"Caixa", tipo:"Ativo" },
+{ nome:"Fornecedores", tipo:"Passivo" },
+{ nome:"Capital Social", tipo:"Patrimônio Líquido" },
+{ nome:"Receita de Vendas", tipo:"Receita" },
+{ nome:"Despesa com Aluguel", tipo:"Despesa" },
+{ nome:"Banco Conta Movimento", tipo:"Ativo" },
+{ nome:"Salários a Pagar", tipo:"Passivo" }
+];
+
+let index=0;
+let score=0;
+let started=false;
+
+function startGame(){
+  index=0;
+  score=0;
+  started=true;
+  showItem();
+}
+
+function showItem(){
+  if(index>=contas.length){
+    document.getElementById("item").innerText="Fim do jogo!";
+    document.getElementById("options").innerHTML="";
+    return;
+  }
+
+  const conta=contas[index];
+  document.getElementById("item").innerText=conta.nome;
+  document.getElementById("round").innerText=index+1;
+
+  const options=["Ativo","Passivo","Patrimônio Líquido","Receita","Despesa"];
+  const optionsDiv=document.getElementById("options");
+  optionsDiv.innerHTML="";
+
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(opt);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(choice){
+  if(!started) return;
+  const conta=contas[index];
+  if(choice===conta.tipo){
+    score+=10;
+    document.getElementById("status").innerText="Classificação correta!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=5;
+    document.getElementById("status").innerText="Classificação incorreta.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+  document.getElementById("score").innerText=score;
+}
+
+function nextItem(){
+  if(!started) return;
+  index++;
+  showItem();
+}
+</script>
+
+</body>
+</html>
