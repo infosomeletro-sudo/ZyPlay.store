@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>1º Ano — Caça-termos Logística | ZyPlay</title><meta name="theme-color" content="#0b5f3c"/>
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--sh:0 14px 40px rgba(0,0,0,.35);--r:18px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.p{width:min(980px,100%);border:1px solid var(--line);background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.b{padding:16px;display:grid;grid-template-columns:1fr .8fr;gap:12px}
+@media(max-width:900px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.03)}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.cell{aspect-ratio:1/1;display:grid;place-items:center;border-radius:10px;border:1px solid rgba(255,255,255,.10);
+background:rgba(0,0,0,.18);cursor:pointer;font-weight:1000;user-select:none;transition:.12s}
+.cell:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.sel{border-color:rgba(245,200,66,.5);background:rgba(245,200,66,.12)}
+.hit{border-color:rgba(35,213,171,.55);background:rgba(35,213,171,.14)}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+ul{margin:0;padding-left:18px;color:var(--m);line-height:1.6}
+small{color:var(--m)}
+</style></head><body>
+<div class="p">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div><div>Caça-termos Logística <small style="display:block;color:var(--m);font-weight:700">1º Ano • ZyPlay</small></div></div>
+    <div class="ctrl"><button class="primary" id="new">Novo tabuleiro</button><button id="clearSel">Limpar seleção</button></div>
+  </div>
+  <div class="b">
+    <div class="card">
+      <div class="grid" id="grid"></div>
+      <div style="height:10px"></div>
+      <div class="msg" id="msg"></div>
+      <small>Como jogar: clique nas letras para formar a palavra (em sequência). Depois clique novamente na última letra.</small>
+    </div>
+    <div class="card">
+      <div style="font-weight:1000;margin-bottom:8px">Encontre:</div>
+      <ul id="words"></ul>
+      <div style="height:10px"></div>
+      <div class="msg" id="stat"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const WORDS=["ESTOQUE","PICKING","LEADTIME","WMS","ROTA","CUSTO","DEMANDA","KPI","ARMAZEM","PEDIDO"];
+const SIZE=10;
+
+let board=[], selected=[], found=new Set();
+
+function randLetter(){
+  const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return A[Math.floor(Math.random()*A.length)];
+}
+
+function placeWord(word){
+  // horizontal ou vertical
+  const vertical=Math.random()<0.5;
+  const len=word.length;
+  const maxR=vertical? SIZE-len : SIZE-1;
+  const maxC=vertical? SIZE-1 : SIZE-len;
+  for(let tries=0;tries<200;tries++){
+    const r=Math.floor(Math.random()*(maxR+1));
+    const c=Math.floor(Math.random()*(maxC+1));
+    let ok=true;
+    for(let i=0;i<len;i++){
+      const rr=r+(vertical?i:0), cc=c+(vertical?0:i);
+      const cur=board[rr][cc];
+      if(cur!=="" && cur!==word[i]){ ok=false; break; }
+    }
+    if(!ok) continue;
+    for(let i=0;i<len;i++){
+      const rr=r+(vertical?i:0), cc=c+(vertical?0:i);
+      board[rr][cc]=word[i];
+    }
+    return true;
+  }
+  return false;
+}
+
+function gen(){
+  board=Array.from({length:SIZE},()=>Array.from({length:SIZE},()=> ""));
+  found=new Set();
+  selected=[];
+  WORDS.forEach(w=>placeWord(w));
+  for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) if(board[r][c]==="") board[r][c]=randLetter();
+  render();
+  renderWords();
+  msg("Novo tabuleiro gerado.","ok");
+  updateStat();
+}
+
+function render(){
+  const g=$("grid"); g.innerHTML="";
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      const d=document.createElement("div");
+      d.className="cell";
+      d.textContent=board[r][c];
+      d.dataset.r=r; d.dataset.c=c;
+      d.onclick=()=>clickCell(r,c,d);
+      g.appendChild(d);
+    }
+  }
+}
+
+function renderWords(){
+  const ul=$("words"); ul.innerHTML="";
+  WORDS.forEach(w=>{
+    const li=document.createElement("li");
+    li.textContent = found.has(w) ? `✅ ${w}` : w;
+    li.style.color = found.has(w) ? "var(--ok)" : "var(--m)";
+    ul.appendChild(li);
+  });
+}
+
+function msg(t,cls){
+  const el=$("msg");
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function updateStat(){
+  $("stat").className="msg";
+  $("stat").textContent=`Encontradas: ${found.size}/${WORDS.length}`;
+  if(found.size===WORDS.length){
+    $("stat").className="msg ok";
+    $("stat").textContent=`Parabéns! Você encontrou todas (${WORDS.length}).`;
+    beep("done");
+  }
+}
+
+function clearSelection(){
+  selected=[];
+  document.querySelectorAll(".cell").forEach(c=>c.classList.remove("sel"));
+  msg("Seleção limpa.","");
+}
+
+function clickCell(r,c,el){
+  // se já está selecionado como parte do caminho, ignora
+  const key=`${r},${c}`;
+  if(selected.some(s=>s.key===key)) return;
+  selected.push({r,c,key});
+  el.classList.add("sel");
+
+  // regra simples: ao selecionar >=3, tenta formar palavra linear
+  if(selected.length>=3){
+    const word = selected.map(s=>board[s.r][s.c]).join("");
+    const word2 = [...selected].reverse().map(s=>board[s.r][s.c]).join("");
+    if(WORDS.includes(word) && !found.has(word)){
+      found.add(word);
+      markHit();
+      msg(`✅ Achou: ${word}`,"ok");
+      beep("ok");
+      renderWords(); updateStat(); selected=[];
+      return;
+    }
+    if(WORDS.includes(word2) && !found.has(word2)){
+      found.add(word2);
+      markHit();
+      msg(`✅ Achou: ${word2}`,"ok");
+      beep("ok");
+      renderWords(); updateStat(); selected=[];
+      return;
+    }
+  }
+
+  // se seleção ficar grande demais, considera erro
+  if(selected.length>10){
+    msg("Seleção grande demais. Tente outra palavra.","bad");
+    beep("bad");
+    clearSelection();
+  }
+}
+
+function markHit(){
+  selected.forEach(s=>{
+    const cell=[...document.querySelectorAll(".cell")].find(x=>x.dataset.r==s.r && x.dataset.c==s.c);
+    if(cell){ cell.classList.remove("sel"); cell.classList.add("hit"); }
+  });
+}
+
+$("new").onclick=gen;
+$("clearSel").onclick=clearSelection;
+
+gen();
+</script></body></html>
