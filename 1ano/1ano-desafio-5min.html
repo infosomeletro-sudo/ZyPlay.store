@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>1º Ano — Desafio 5 Minutos | ZyPlay</title><meta name="theme-color" content="#0b5f3c"/>
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--sh:0 14px 40px rgba(0,0,0,.35);--r:18px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.p{width:min(980px,100%);border:1px solid var(--line);background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:flex;flex-direction:column;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.s{padding:12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.4px}.v{font-weight:1000;font-size:18px;margin-top:4px}
+.card{padding:14px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.03)}
+.q{font-size:18px;font-weight:1000;line-height:1.25}
+.opts{display:grid;gap:10px;margin-top:12px}
+.opt{padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.18);cursor:pointer;font-weight:900;transition:.15s}
+.opt:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+</style></head><body>
+<div class="p">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div><div>Desafio 5 Minutos — Logística <small style="display:block;color:var(--m);font-weight:700">1º Ano • ZyPlay</small></div></div>
+    <div class="ctrl"><button class="primary" id="start">Começar</button><button class="danger" id="reset">Reset</button></div>
+  </div>
+  <div class="b">
+    <div class="stats">
+      <div class="s"><div class="k">Tempo</div><div class="v" id="t">05:00</div></div>
+      <div class="s"><div class="k">Questões</div><div class="v" id="qN">0</div></div>
+      <div class="s"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+      <div class="s"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+    </div>
+
+    <div class="card">
+      <div class="q" id="q">Clique em Começar</div>
+      <div class="opts" id="opts"></div>
+      <div class="msg" id="msg"></div>
+    </div>
+
+    <div class="card" style="color:var(--m);font-size:12.5px;line-height:1.45">
+      Regras: 1 acerto = +10. Erro = -3. Quanto mais rápido, melhor.
+    </div>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const Q=[
+{q:"O que é picking?",a:2,o:["Embalagem","Inventário","Separação de itens","Cálculo tributário"]},
+{q:"Curva ABC serve para:",a:1,o:["Definir imposto","Classificar itens por importância","Medir clima","Auditar folha"]},
+{q:"Ruptura de estoque é:",a:0,o:["Falta quando há demanda","Excesso de estoque","Devolução","Avaria"]},
+{q:"FIFO (PEPS) significa:",a:3,o:["Último entra, primeiro sai","Primeiro entra, último sai","Mais caro sai primeiro","Primeiro entra, primeiro sai"]},
+{q:"Cross docking é:",a:2,o:["Armazenar por 90 dias","Reduzir vendas","Receber e redistribuir sem armazenar","Aumentar custo fixo"]},
+{q:"Lead time é:",a:1,o:["Custo do frete","Tempo do pedido até entrega","Peso da carga","Taxa de perda"]},
+{q:"WMS é sistema de:",a:0,o:["Gestão de armazém","Gestão de salários","Gestão de impostos","Gestão de RH"]},
+{q:"Estoques de segurança servem para:",a:2,o:["Aumentar avarias","Aumentar impostos","Evitar ruptura por variações","Reduzir vendas"]},
+];
+
+const $=id=>document.getElementById(id);
+let running=false, t=300, timer=null, ok=0, bad=0, total=0, cur=null, locked=false;
+
+function fmt(sec){const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
+function score(){return Math.max(0, ok*10 - bad*3);}
+function pickQ(){cur=Q[Math.floor(Math.random()*Q.length)]; $("q").textContent=cur.q; $("opts").innerHTML=""; locked=false;
+cur.o.forEach((txt,i)=>{const b=document.createElement("div");b.className="opt";b.textContent=txt;b.onclick=()=>ans(i,b);$("opts").appendChild(b);});
+$("msg").className="msg"; $("msg").textContent="";}
+
+function ans(i, el){
+  if(!running || locked) return;
+  locked=true; total++; $("qN").textContent=String(total);
+  if(i===cur.a){ok++; $("msg").className="msg ok"; $("msg").textContent="✅ Correto!"; beep("ok");}
+  else{bad++; el.style.borderColor="rgba(255,77,109,.5)"; $("msg").className="msg bad"; $("msg").textContent="❌ Incorreto."; beep("bad");}
+  $("ok").textContent=String(ok); $("sc").textContent=String(score());
+  setTimeout(()=>{ if(running) pickQ(); }, 450);
+}
+
+function start(){
+  if(running) return;
+  running=true; t=300; ok=0; bad=0; total=0;
+  $("t").textContent=fmt(t); $("ok").textContent="0"; $("sc").textContent="0"; $("qN").textContent="0";
+  pickQ(); beep("done");
+  timer=setInterval(()=>{
+    t--; $("t").textContent=fmt(t);
+    if(t<=0){ stop(); }
+  },1000);
+}
+function stop(){
+  running=false; clearInterval(timer); timer=null;
+  $("msg").className="msg ok"; $("msg").textContent=`Fim! Pontos: ${score()} — Acertos: ${ok}, Erros: ${bad}.`;
+  beep("done");
+}
+function reset(){
+  running=false; if(timer) clearInterval(timer); timer=null;
+  t=300; ok=0; bad=0; total=0; locked=false; cur=null;
+  $("t").textContent="05:00"; $("q").textContent="Clique em Começar"; $("opts").innerHTML=""; $("msg").textContent="";
+  $("ok").textContent="0"; $("sc").textContent="0"; $("qN").textContent="0";
+}
+$("start").onclick=start; $("reset").onclick=reset;
+reset();
+</script></body></html>
