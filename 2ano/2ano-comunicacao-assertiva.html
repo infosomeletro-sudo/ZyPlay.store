@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2º Ano — Comunicação Assertiva | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(980px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1fr;gap:12px}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.q{font-weight:1000;font-size:18px}
+.opt{width:100%;text-align:left;border-radius:14px;margin-top:10px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+small{color:var(--m)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Comunicação Assertiva <small style="display:block;color:var(--m);font-weight:700">2º Ano • Interação e Crescimento Pessoal • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="start">Iniciar</button>
+      <button id="next">Próxima</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <div class="card">
+      <div class="q" id="q">Clique em Iniciar</div>
+      <div id="opts"></div>
+      <div class="msg" id="msg"></div>
+      <small>Escolha a frase mais assertiva (respeitosa, clara, objetiva).</small>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Questão</div><div class="v" id="n">0</div></div>
+      <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+      <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+      <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+const Q=[
+  {q:"Você precisa que o colega entregue uma parte do trabalho hoje. O melhor é:",
+   a:"Você consegue me entregar sua parte até 16h? Se precisar, posso ajudar a ajustar o que faltar.",
+   w:["Tá demorando demais, faz logo!","Se não fizer, vou reclamar.","Deixa pra lá, não precisa mais."]},
+  {q:"Você discorda de uma ideia na reunião. Como falar?",
+   a:"Entendi seu ponto. Posso propor uma alternativa e a gente compara os impactos antes de decidir?",
+   w:["Isso é ruim, não presta.","Você sempre fala besteira.","Tanto faz, decide aí."]},
+  {q:"Alguém fala alto com você. O que responder?",
+   a:"Prefiro que a gente converse com calma. Assim consigo entender e resolver melhor.",
+   w:["Grite mais que eu também vou!","Vou sair daqui agora!","Você tá doido?"]},
+  {q:"Você não vai conseguir cumprir um prazo. O melhor é:",
+   a:"Não consigo concluir hoje. Posso entregar amanhã às 10h, ou priorizamos só a parte X para hoje.",
+   w:["Não vai dar.","Depois eu vejo.","Não fiz porque ninguém ajudou."]},
+];
+
+let deck=[], i=0, ok=0, bad=0, sc=0, running=false;
+
+function hud(){
+  $("n").textContent = running ? String(i+1) : "0";
+  $("ok").textContent = String(ok);
+  $("bad").textContent = String(bad);
+  $("sc").textContent = String(sc);
+}
+
+function setMsg(t,cls){
+  $("msg").className="msg"+(cls?" "+cls:"");
+  $("msg").textContent=t||"";
+}
+
+function render(){
+  if(i>=deck.length){
+    $("q").textContent="Fim do jogo!";
+    $("opts").innerHTML="";
+    setMsg(`Resultado: ${ok} acertos • ${bad} erros • ${sc} pontos.`, ok>=3 ? "ok" : "");
+    beep("done"); running=false; hud(); return;
+  }
+  const it=deck[i];
+  $("q").textContent = it.q;
+  const opts = shuffle([it.a, ...it.w]);
+  const box=$("opts"); box.innerHTML="";
+  opts.forEach(op=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.textContent=op;
+    b.onclick=()=>pick(op===it.a, it.a);
+    box.appendChild(b);
+  });
+  setMsg("Escolha a melhor frase.", "");
+  hud();
+}
+
+function pick(c,right){
+  if(!running) return;
+  if(c){ ok++; sc+=10; setMsg("✅ Excelente! Comunicação assertiva.", "ok"); beep("ok"); }
+  else { bad++; sc=Math.max(0, sc-4); setMsg(`❌ Não é a melhor. Sugestão: ${right}`, "bad"); beep("bad"); }
+  hud();
+}
+
+function start(){ deck=shuffle([...Q]); i=0; ok=0; bad=0; sc=0; running=true; render(); beep("done"); }
+function next(){ if(!running){ setMsg("Clique em Iniciar.", "bad"); beep("bad"); return; } i++; render(); }
+function reset(){
+  running=false; deck=[]; i=0; ok=0; bad=0; sc=0;
+  $("q").textContent="Clique em Iniciar"; $("opts").innerHTML=""; setMsg("", ""); hud();
+}
+
+$("start").onclick=start;
+$("next").onclick=next;
+$("reset").onclick=reset;
+reset();
+</script>
+</body>
+</html>
