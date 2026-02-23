@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Controle de Estoque | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px
+}
+.container{
+  width:100%;
+  max-width:900px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px
+}
+h1{margin-top:0}
+input{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  margin-right:10px
+}
+button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:10px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+.box{
+  margin-top:15px;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:8px
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Simulador — Controle de Estoque</h1>
+
+<div>
+Produto: <strong>Caneta Azul</strong><br><br>
+Estoque Atual: <strong id="estoque">100</strong> unidades
+</div>
+
+<div class="box">
+<h3>Entrada de Produto</h3>
+<input type="number" id="entrada" placeholder="Quantidade">
+<button onclick="addEntrada()">Registrar Entrada</button>
+</div>
+
+<div class="box">
+<h3>Saída de Produto</h3>
+<input type="number" id="saida" placeholder="Quantidade">
+<button onclick="addSaida()">Registrar Saída</button>
+</div>
+
+<div class="status" id="status"></div>
+
+<div>Pontos: <span id="score">0</span></div>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+let estoque=100;
+let score=0;
+
+function atualizar(){
+  document.getElementById("estoque").innerText=estoque;
+  document.getElementById("score").innerText=score;
+}
+
+function addEntrada(){
+  const qtd=parseInt(document.getElementById("entrada").value);
+  if(!qtd || qtd<=0){
+    document.getElementById("status").innerText="Quantidade inválida.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+    return;
+  }
+  estoque+=qtd;
+  score+=5;
+  document.getElementById("status").innerText="Entrada registrada com sucesso.";
+  document.getElementById("status").className="status ok";
+  beep("ok");
+  atualizar();
+}
+
+function addSaida(){
+  const qtd=parseInt(document.getElementById("saida").value);
+  if(!qtd || qtd<=0 || qtd>estoque){
+    document.getElementById("status").innerText="Saída inválida.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+    return;
+  }
+  estoque-=qtd;
+  score+=10;
+  document.getElementById("status").innerText="Saída registrada corretamente.";
+  document.getElementById("status").className="status ok";
+  beep("ok");
+  atualizar();
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
