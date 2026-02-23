@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3º Ano — Laboratório de Estoque (Entrada/Saída) | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1200px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+label{display:block;color:var(--m);font-size:12px;margin:10px 0 6px}
+input,select{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+th{font-weight:1000}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15);color:var(--m);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+small{color:var(--m)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Laboratório de Estoque <small style="display:block;color:var(--m);font-weight:700">3º Ano • Ferramentas Digitais para Logística • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Novo dia</button>
+      <button id="apply">Lançar</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="k">Planilha (simulada)</div>
+      <div class="pill">Regras: estoque não pode ficar negativo. Ruptura = falta. Excesso = estoque muito alto.</div>
+
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>Produto</th><th>Estoque</th><th>Mínimo</th><th>Máximo</th></tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+
+      <div class="msg" id="msg"></div>
+      <small>Dica: Se cair abaixo do mínimo → alerta de reposição. Se passar do máximo → capital parado.</small>
+    </section>
+
+    <aside class="card">
+      <div class="k">Lançamento do dia</div>
+      <label>SKU</label>
+      <select id="sku"></select>
+
+      <label>Tipo</label>
+      <select id="tipo">
+        <option value="E">Entrada (+)</option>
+        <option value="S">Saída (-)</option>
+      </select>
+
+      <label>Quantidade</label>
+      <input id="qtd" type="number" min="1" step="1" placeholder="Ex: 12">
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <span class="pill">Entrada: compra/retorno</span>
+        <span class="pill">Saída: venda/consumo</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Dias</div><div class="v" id="c">0</div></div>
+        <div class="stat"><div class="k">Alertas</div><div class="v" id="al">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+
+      <div class="msg" id="sum"></div>
+      <small>Objetivo: lançar corretamente e manter estoque dentro do intervalo.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+let day=0, alerts=0, errors=0, score=0;
+
+let items = [
+  {sku:"SKU-101", name:"Papel A4", stock:60, min:25, max:120},
+  {sku:"SKU-205", name:"Toner Impressora", stock:8, min:4, max:18},
+  {sku:"SKU-310", name:"Etiquetas", stock:40, min:15, max:90},
+  {sku:"SKU-444", name:"Mouse", stock:22, min:10, max:50},
+  {sku:"SKU-520", name:"Pasta arquivo", stock:30, min:12, max:70},
+];
+
+function hud(){
+  $("c").textContent=String(day);
+  $("al").textContent=String(alerts);
+  $("bad").textContent=String(errors);
+  $("sc").textContent=String(score);
+}
+
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function render(){
+  const tb=$("tb"); tb.innerHTML="";
+  items.forEach(it=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${it.sku}</td><td>${it.name}</td><td><strong>${it.stock}</strong></td><td>${it.min}</td><td>${it.max}</td>`;
+    tb.appendChild(tr);
+  });
+  const sel=$("sku"); sel.innerHTML="";
+  items.forEach(it=>{
+    const op=document.createElement("option");
+    op.value=it.sku; op.textContent=`${it.sku} — ${it.name}`;
+    sel.appendChild(op);
+  });
+}
+
+function newDay(){
+  day++;
+  // simula evento do dia: demanda aleatória causando saída automática
+  const it = items[rint(0, items.length-1)];
+  const out = rint(1, Math.max(2, Math.floor(it.max/8)));
+  it.stock = Math.max(0, it.stock - out);
+
+  setMsg("msg",`Dia ${day}: houve uma saída automática de ${out} un em ${it.name}. Agora você pode lançar uma entrada/saída adicional.`, "");
+  setMsg("sum","Dica: mantenha dentro do min/max.", "");
+  beep("done");
+  hud();
+  render();
+}
+
+function apply(){
+  const sku=$("sku").value;
+  const tipo=$("tipo").value;
+  const qtd=Number($("qtd").value);
+
+  if(!sku || !Number.isFinite(qtd) || qtd<=0){
+    setMsg("sum","Preencha SKU e quantidade.", "bad"); beep("bad"); return;
+  }
+
+  const it = items.find(x=>x.sku===sku);
+  if(!it) return;
+
+  if(tipo==="S"){
+    if(it.stock - qtd < 0){
+      errors++; score=Math.max(0, score-6);
+      setMsg("sum",`❌ Ruptura! Tentou dar saída de ${qtd}, mas só tem ${it.stock}. (-6)`, "bad");
+      beep("bad");
+      hud(); return;
+    }
+    it.stock -= qtd;
+  }else{
+    it.stock += qtd;
+  }
+
+  score += 4;
+  setMsg("sum",`✅ Lançado: ${tipo==="E"?"Entrada":"Saída"} de ${qtd} em ${it.name}. (+4)`, "ok");
+  beep("ok");
+  hud();
+  render();
+}
+
+function check(){
+  // verifica itens fora do intervalo
+  let a=0;
+  items.forEach(it=>{
+    if(it.stock < it.min) a++;
+    if(it.stock > it.max) a++;
+  });
+
+  if(a===0){
+    score += 10;
+    setMsg("msg","✅ Estoque saudável: todos dentro de min/max. (+10)", "ok");
+    beep("ok");
+  }else{
+    alerts += a;
+    score = Math.max(0, score-4);
+    setMsg("msg",`⚠️ ${a} alerta(s): abaixo do mínimo ou acima do máximo. Ajuste reposição/saídas. (-4)`, "bad");
+    beep("bad");
+  }
+  hud();
+}
+
+function reset(){
+  day=0; alerts=0; errors=0; score=0;
+  items = [
+    {sku:"SKU-101", name:"Papel A4", stock:60, min:25, max:120},
+    {sku:"SKU-205", name:"Toner Impressora", stock:8, min:4, max:18},
+    {sku:"SKU-310", name:"Etiquetas", stock:40, min:15, max:90},
+    {sku:"SKU-444", name:"Mouse", stock:22, min:10, max:50},
+    {sku:"SKU-520", name:"Pasta arquivo", stock:30, min:12, max:70},
+  ];
+  $("qtd").value="";
+  setMsg("msg","Clique em “Novo dia” para começar.", "");
+  setMsg("sum","", "");
+  render();
+  hud();
+}
+
+$("new").onclick=newDay;
+$("apply").onclick=apply;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
