@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Curva ABC | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px
+}
+.container{
+  width:100%;
+  max-width:1000px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px
+}
+h1{margin-top:0}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px
+}
+th,td{
+  padding:8px;
+  border-bottom:1px solid var(--line);
+  text-align:left
+}
+th{color:#a9b7d0}
+select{
+  padding:6px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white
+}
+button{
+  margin-top:15px;
+  padding:10px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Classificação — Curva ABC</h1>
+<p>Classifique os produtos conforme sua importância financeira.</p>
+
+<table>
+<thead>
+<tr>
+<th>Produto</th>
+<th>Valor Anual (R$)</th>
+<th>Classificação (A/B/C)</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
+
+<button onclick="corrigir()">Corrigir</button>
+
+<div class="status" id="status"></div>
+<div>Pontos: <span id="score">0</span></div>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const produtos=[
+{nome:"Toner Impressora",valor:50000,classe:"A"},
+{nome:"Papel A4",valor:20000,classe:"B"},
+{nome:"Caneta Azul",valor:5000,classe:"C"},
+{nome:"Mouse USB",valor:15000,classe:"B"},
+{nome:"Notebook Corporativo",valor:80000,classe:"A"}
+];
+
+let score=0;
+
+function render(){
+  const tabela=document.getElementById("tabela");
+  tabela.innerHTML="";
+
+  produtos.forEach((p,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${p.nome}</td>
+      <td>${p.valor.toLocaleString("pt-BR")}</td>
+      <td>
+        <select id="sel${i}">
+          <option value="">Escolher</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+      </td>
+    `;
+    tabela.appendChild(tr);
+  });
+}
+
+function corrigir(){
+  score=0;
+  let erros=0;
+
+  produtos.forEach((p,i)=>{
+    const escolha=document.getElementById("sel"+i).value;
+    if(escolha===p.classe){
+      score+=10;
+    }else{
+      score-=5;
+      erros++;
+    }
+  });
+
+  document.getElementById("score").innerText=score;
+
+  if(erros===0){
+    document.getElementById("status").innerText="Classificação correta!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    document.getElementById("status").innerText="Há erros na classificação.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>
