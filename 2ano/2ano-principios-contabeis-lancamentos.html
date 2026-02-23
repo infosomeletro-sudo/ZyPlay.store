@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Lançamentos Contábeis | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px
+}
+.container{
+  width:100%;
+  max-width:950px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px
+}
+h1{margin-top:0}
+.question{
+  margin:20px 0;
+  font-size:18px;
+  font-weight:bold
+}
+select{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white
+}
+button{
+  margin-top:15px;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  font-weight:bold;
+  cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{
+  margin-top:15px;
+  font-weight:bold
+}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Lançamentos Contábeis — Débito e Crédito</h1>
+
+<div class="question" id="question">
+Clique em Iniciar
+</div>
+
+<label>Conta Debitável:</label>
+<select id="debito"></select>
+
+<label>Conta Creditável:</label>
+<select id="credito"></select>
+
+<button onclick="startGame()">Iniciar</button>
+<button onclick="verificar()">Verificar</button>
+<button onclick="proxima()">Próxima</button>
+
+<div class="status" id="status"></div>
+<div>Pontos: <span id="score">0</span></div>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const contas=[
+"Caixa",
+"Bancos",
+"Estoque",
+"Receita de Vendas",
+"Despesas Administrativas",
+"Fornecedores",
+"Clientes",
+"Capital Social"
+];
+
+const operacoes=[
+{
+texto:"Compra de mercadorias à vista.",
+debito:"Estoque",
+credito:"Caixa"
+},
+{
+texto:"Venda de mercadorias à vista.",
+debito:"Caixa",
+credito:"Receita de Vendas"
+},
+{
+texto:"Pagamento de despesas administrativas.",
+debito:"Despesas Administrativas",
+credito:"Caixa"
+},
+{
+texto:"Compra de mercadorias a prazo.",
+debito:"Estoque",
+credito:"Fornecedores"
+}
+];
+
+let indice=0;
+let score=0;
+let iniciado=false;
+
+function preencherSelects(){
+  const deb=document.getElementById("debito");
+  const cred=document.getElementById("credito");
+  deb.innerHTML="";
+  cred.innerHTML="";
+  contas.forEach(c=>{
+    deb.innerHTML+=`<option value="${c}">${c}</option>`;
+    cred.innerHTML+=`<option value="${c}">${c}</option>`;
+  });
+}
+
+function startGame(){
+  indice=0;
+  score=0;
+  iniciado=true;
+  preencherSelects();
+  mostrar();
+}
+
+function mostrar(){
+  if(indice>=operacoes.length){
+    document.getElementById("question").innerText="Fim do jogo!";
+    return;
+  }
+  document.getElementById("question").innerText=operacoes[indice].texto;
+}
+
+function verificar(){
+  if(!iniciado) return;
+
+  const deb=document.getElementById("debito").value;
+  const cred=document.getElementById("credito").value;
+
+  if(deb===operacoes[indice].debito && cred===operacoes[indice].credito){
+    score+=20;
+    document.getElementById("status").innerText="Lançamento correto!";
+    document.getElementById("status").className="status ok";
+    beep("ok");
+  }else{
+    score-=10;
+    document.getElementById("status").innerText="Lançamento incorreto.";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+
+  document.getElementById("score").innerText=score;
+}
+
+function proxima(){
+  if(!iniciado) return;
+  indice++;
+  mostrar();
+}
+
+preencherSelects();
+</script>
+
+</body>
+</html>
