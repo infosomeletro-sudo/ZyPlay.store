@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3º Ano — Armazenagem Segura (Mercadorias) | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1150px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.05fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.opt{width:100%;text-align:left;border-radius:14px;margin-top:10px;padding:10px 12px}
+small{color:var(--m)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15);color:var(--m);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Armazenagem Segura <small style="display:block;color:var(--m);font-weight:700">3º Ano • Manipulação de Mercadorias • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Novo cenário</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="k">Cenário</div>
+      <div style="font-weight:1000;font-size:18px" id="q">Clique em “Novo cenário”.</div>
+      <div style="margin-top:10px" class="pill">Objetivo: escolher a conduta correta na armazenagem e manuseio.</div>
+      <div id="opts"></div>
+      <div class="msg" id="msg"></div>
+      <small>Dica: pense em integridade da embalagem, empilhamento, validade, umidade, separação por risco.</small>
+    </section>
+
+    <aside class="card">
+      <div class="k">Pontuação</div>
+      <div class="stats">
+        <div class="stat"><div class="k">Cenários</div><div class="v" id="c">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+      <div class="msg" id="sum"></div>
+      <small>Objetivo: reduzir avarias, perdas e riscos de acidente.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+const CASES=[
+  {
+    q:"Recebimento: chegaram caixas amassadas, mas o fornecedor está com pressa. O que fazer?",
+    a:"Registrar avaria, fotografar, separar e comunicar antes de dar entrada",
+    opts:[
+      "Dar entrada normal para não atrasar",
+      "Registrar avaria, fotografar, separar e comunicar antes de dar entrada",
+      "Jogar fora sem registrar",
+      "Misturar no estoque e resolver depois"
+    ],
+    tip:"Avaria sem registro vira prejuízo."
+  },
+  {
+    q:"Armazenagem: produtos com validade curta e alta rotatividade. Qual método é melhor?",
+    a:"FEFO (primeiro que vence, primeiro que sai) com etiqueta de validade",
+    opts:[
+      "Guardar os mais novos na frente (sempre)",
+      "FEFO (primeiro que vence, primeiro que sai) com etiqueta de validade",
+      "Escolher aleatoriamente na hora da separação",
+      "Deixar tudo misturado para ganhar tempo"
+    ],
+    tip:"Para validade, FEFO é rei."
+  },
+  {
+    q:"Empilhamento: caixas frágeis e pesadas. Qual conduta correta?",
+    a:"Respeitar limite de empilhamento e colocar frágil por cima/área dedicada",
+    opts:[
+      "Empilhar o máximo possível para caber tudo",
+      "Respeitar limite de empilhamento e colocar frágil por cima/área dedicada",
+      "Colocar peso em cima do frágil para não tombar",
+      "Encostar em área úmida para sobrar espaço"
+    ],
+    tip:"Peso em cima do frágil = avaria certa."
+  },
+  {
+    q:"Ambiente: risco de umidade (chuva, piso molhado). O que fazer com caixas de papelão?",
+    a:"Usar pallets/estrados e afastar do piso/parede, mantendo ventilação",
+    opts:[
+      "Deixar no chão porque é mais rápido",
+      "Usar pallets/estrados e afastar do piso/parede, mantendo ventilação",
+      "Encostar na parede externa para não atrapalhar",
+      "Borrifar água para “baixar poeira”"
+    ],
+    tip:"Umidade destrói embalagem e produto."
+  }
+];
+
+let cur=null, chosen=null;
+let c=0, ok=0, bad=0, sc=0;
+
+function hud(){
+  $("c").textContent=String(c);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("sc").textContent=String(sc);
+}
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function newCase(){
+  c++;
+  cur = CASES[rint(0,CASES.length-1)];
+  chosen=null;
+
+  $("q").textContent=cur.q;
+  const box=$("opts"); box.innerHTML="";
+  cur.opts.sort(()=>Math.random()-0.5).forEach(text=>{
+    const b=document.createElement("button");
+    b.className="opt";
+    b.textContent=text;
+    b.onclick=()=>{ chosen=text; setMsg("msg","Opção selecionada. Clique Conferir.",""); beep("done"); };
+    box.appendChild(b);
+  });
+
+  setMsg("msg","Escolha a melhor prática.","");
+  setMsg("sum","", "");
+  beep("done");
+  hud();
+}
+
+function check(){
+  if(!cur){ setMsg("msg","Clique em “Novo cenário”.","bad"); beep("bad"); return; }
+  if(!chosen){ setMsg("msg","Selecione uma opção.","bad"); beep("bad"); return; }
+
+  if(chosen===cur.a){
+    ok++; sc+=12;
+    setMsg("msg","✅ Correto! (+12)","ok");
+    setMsg("sum","Boa! " + cur.tip, "ok");
+    beep("ok");
+  }else{
+    bad++; sc=Math.max(0, sc-5);
+    setMsg("msg",`❌ Melhor prática: ${cur.a}. (-5)`,"bad");
+    setMsg("sum","Dica: " + cur.tip, "");
+    beep("bad");
+  }
+  hud();
+}
+
+function reset(){
+  cur=null; chosen=null;
+  c=0; ok=0; bad=0; sc=0;
+  $("q").textContent="Clique em “Novo cenário”.";
+  $("opts").innerHTML="";
+  setMsg("msg","", ""); setMsg("sum","", "");
+  hud();
+}
+
+$("new").onclick=newCase;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
