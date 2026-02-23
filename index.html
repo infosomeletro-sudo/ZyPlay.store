@@ -3,159 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZyPlay.Store | Plataforma Oficial</title>
+<title>ZyPlay.Store | Plataforma Educacional</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-    font-family: Arial, Helvetica, sans-serif;
-    background: linear-gradient(135deg,#0f172a,#1e293b);
-    color:#fff;
-}
-
-header{
-    background:#111827;
-    padding:25px 20px;
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
     text-align:center;
-    border-bottom:4px solid #16a34a;
+    padding:40px 20px;
 }
 
-header h1{
+h1{
     font-size:34px;
-    margin-bottom:8px;
+    margin-bottom:10px;
 }
 
-header p{
-    font-size:14px;
+p{
     opacity:0.85;
 }
 
-.logos{
-    margin-top:20px;
+.botoes{
+    margin-top:40px;
     display:flex;
-    justify-content:center;
     flex-wrap:wrap;
-    gap:15px;
-}
-
-.logos img{
-    height:45px;
-}
-
-main{
-    padding:60px 20px;
-    text-align:center;
-}
-
-main h2{
-    font-size:26px;
-    margin-bottom:15px;
-}
-
-.buttons{
-    margin-top:35px;
-    display:flex;
     justify-content:center;
-    flex-wrap:wrap;
     gap:20px;
 }
 
-.button{
-    padding:16px 28px;
+.botao{
+    display:inline-block;
+    padding:18px 30px;
     background:#16a34a;
     border-radius:12px;
-    text-decoration:none;
     color:white;
+    text-decoration:none;
     font-weight:bold;
     font-size:16px;
     transition:0.3s;
-    display:inline-block;
+    min-width:220px;
 }
 
-.button:hover{
+.botao:hover{
     background:#22c55e;
-    transform:translateY(-3px);
+    transform:translateY(-4px);
 }
 
-.button.blue{
-    background:#2563eb;
-}
+.azul{ background:#2563eb; }
+.azul:hover{ background:#3b82f6; }
 
-.button.blue:hover{
-    background:#3b82f6;
-}
-
-.button.orange{
-    background:#f59e0b;
-}
-
-.button.orange:hover{
-    background:#fbbf24;
-}
+.laranja{ background:#f59e0b; }
+.laranja:hover{ background:#fbbf24; }
 
 footer{
-    background:#111827;
-    padding:40px 20px;
-    text-align:center;
-    border-top:4px solid #16a34a;
-    margin-top:60px;
+    margin-top:70px;
     font-size:14px;
     line-height:1.6;
-}
-
-footer img{
-    height:40px;
-    margin:10px;
+    border-top:2px solid #16a34a;
+    padding-top:25px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <h1>ZyPlay.Store</h1>
-    <p>Plataforma interativa para os cursos técnicos em Administração e Logística – Estado de Alagoas</p>
+<h1>ZyPlay.Store</h1>
+<p>Plataforma interativa para os cursos técnicos em Administração e Logística – Estado de Alagoas</p>
 
-    <div class="logos">
-        <img src="assets/escola10.png">
-        <img src="assets/alagoas.png">
-        <img src="assets/pronatec.png">
-        <img src="assets/pde-pronatec.png">
-        <img src="assets/labs-palei.png">
-        <img src="assets/clube-juvenil.png">
-    </div>
-</header>
+<div class="botoes">
 
-<main>
-    <h2>Laboratórios Educacionais</h2>
-    <p>Selecione a turma para acessar os jogos pedagógicos.</p>
+    <!-- Pastas exatamente como estão na sua imagem -->
+    <a class="botao" href="1ano/">📘 1º Ano</a>
 
-    <div class="buttons">
-        <a class="button" href="1ano/">1º Ano</a>
+    <a class="botao" href="2ano/">📗 2º Ano</a>
 
-        <!-- Pasta "2º ano" corretamente codificada -->
-        <a class="button" href="2%C2%BA%20ano/">2º Ano</a>
+    <a class="botao" href="3ano/">📕 3º Ano</a>
 
-        <a class="button" href="3ano/">3º Ano</a>
+    <a class="botao azul" href="jogador/jogos/">🎮 Clube Juvenil</a>
 
-        <a class="button blue" href="jogador/jogos/">Clube Juvenil</a>
+    <a class="botao laranja" href="#">🎓 Cursos Online (Em breve)</a>
 
-        <a class="button orange" href="#">Cursos Online (Em breve)</a>
-    </div>
-</main>
+</div>
 
 <footer>
-    Projeto elaborado voluntariamente pelo Professor:
-    <strong>Cláudio Teófilo</strong>, pesquisador, contador e historiador da arte.
-    Estudante de Análise e Desenvolvimento de Sistemas e Estudante de Química Industrial.
-    <br><br>
-    Plataforma interativa para os cursos técnicos em Administração e Logística.
-    <br><br>
-
-    <img src="assets/escola10.png">
-    <img src="assets/pronatec.png">
-    <img src="assets/alagoas.png">
+Projeto elaborado voluntariamente pelo Professor:
+<strong>Cláudio Teófilo</strong>, pesquisador, contador e historiador da arte.
+Estudante de Análise e Desenvolvimento de Sistemas e Estudante de Química Industrial.
+<br><br>
+Plataforma interativa para os cursos técnicos em Administração e Logística.
 </footer>
 
 </body>
