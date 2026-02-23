@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2º Ano — Inventário Rotativo | Estoques | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{--bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);--t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.wrap{width:min(1100px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.05fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+label{display:block;color:var(--m);font-size:12px;margin:10px 0 6px}
+input{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+th{color:var(--t);font-weight:1000}
+small{color:var(--m)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Inventário Rotativo <small style="display:block;color:var(--m);font-weight:700">2º Ano • Sistema e Gerenciamento de Estoques • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Novo item</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="stats">
+        <div class="stat"><div class="k">Rodadas</div><div class="v" id="r">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="card" style="border-radius:14px">
+        <div class="k">Item selecionado</div>
+        <div class="v" id="item">—</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <div>
+            <div class="k">Saldo no sistema</div>
+            <div class="v" id="sys">—</div>
+          </div>
+          <div>
+            <div class="k">Tolerância</div>
+            <div class="v" id="tol">—</div>
+          </div>
+        </div>
+
+        <label>Contagem física (o aluno digita)</label>
+        <input id="phy" type="number" placeholder="Digite a contagem física">
+
+        <label>Diagnóstico</label>
+        <input id="diag" type="text" placeholder="Digite: SOBRA / FALTA / OK">
+
+        <div class="msg" id="msg">Clique em “Novo item”.</div>
+        <small>Regra: se diferença (físico − sistema) for maior que a tolerância → falta/sobra. Se dentro → OK.</small>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div style="font-weight:1000;margin-bottom:8px">Registro</div>
+      <table>
+        <thead><tr><th>Item</th><th>Sistema</th><th>Físico</th><th>Dif.</th><th>Diagnóstico certo</th><th>Sua resposta</th></tr></thead>
+        <tbody id="log"></tbody>
+      </table>
+      <div class="msg" id="sum"></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+const ITENS=[
+  "Caneta azul (cx)","Papel A4 (resma)","Grampo (cx)","Pasta arquivo","Etiqueta adesiva",
+  "Mouse USB","Teclado USB","Cabo HDMI","Toner impressora","Pendrive 32GB"
+];
+
+let rounds=0, ok=0, bad=0, sc=0;
+let cur=null;
+
+function hud(){
+  $("r").textContent=String(rounds);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("sc").textContent=String(sc);
+}
+
+function setMsg(t,cls){
+  $("msg").className="msg"+(cls?" "+cls:"");
+  $("msg").textContent=t||"";
+}
+
+function setSum(t,cls){
+  $("sum").className="msg"+(cls?" "+cls:"");
+  $("sum").textContent=t||"";
+}
+
+function newItem(){
+  rounds++;
+  const item=ITENS[rint(0,ITENS.length-1)];
+  const sys=rint(20,300);
+  const tol=rint(1,8); // tolerância
+  // gera físico com chance de diferença
+  let phy=sys + rint(-20,20);
+  if(phy<0) phy=0;
+
+  const diff = phy - sys;
+  let diag = "OK";
+  if(Math.abs(diff)>tol) diag = diff>0 ? "SOBRA" : "FALTA";
+
+  cur={item,sys,tol,phy,diff,diag};
+
+  $("item").textContent=item;
+  $("sys").textContent=`${sys} un`;
+  $("tol").textContent=`±${tol} un`;
+  $("phy").value="";
+  $("diag").value="";
+  setMsg("Digite a contagem física e o diagnóstico.", "");
+  $("phy").focus();
+  beep("done");
+  hud();
+}
+
+function check(){
+  if(!cur){ setMsg("Clique em “Novo item”.","bad"); beep("bad"); return; }
+
+  const userPhy = Number($("phy").value);
+  const userDiag = ($("diag").value||"").trim().toUpperCase();
+
+  if(!Number.isFinite(userPhy)){
+    setMsg("Digite a contagem física (número).","bad"); beep("bad"); return;
+  }
+
+  const diff = userPhy - cur.sys;
+  let diag = "OK";
+  if(Math.abs(diff)>cur.tol) diag = diff>0 ? "SOBRA" : "FALTA";
+
+  const phyOK = userPhy===cur.phy;
+  const diagOK = userDiag===diag;
+
+  let delta=0;
+  if(phyOK) delta+=10; else delta-=4;
+  if(diagOK) delta+=10; else delta-=4;
+
+  sc=Math.max(0, sc+delta);
+  if(phyOK && diagOK){ ok++; setMsg(`✅ Perfeito! Diferença=${diff} → ${diag} (+${delta}).`,"ok"); beep("ok"); }
+  else { bad++; setMsg(`❌ Correção: físico certo=${cur.phy} | diagnóstico certo=${cur.diag} (${delta}).`,"bad"); beep("bad"); }
+
+  const tr=document.createElement("tr");
+  tr.innerHTML = `<td><strong style="color:var(--t)">${cur.item}</strong></td>
+                  <td>${cur.sys}</td>
+                  <td>${Number.isFinite(userPhy)?userPhy:"—"}</td>
+                  <td>${diff}</td>
+                  <td>${diag}</td>
+                  <td>${userDiag||"—"}</td>`;
+  $("log").appendChild(tr);
+
+  setSum("Dica: inventário rotativo reduz erros e melhora acurácia. Registre divergências e faça ajustes controlados.", "");
+  hud();
+}
+
+function reset(){
+  rounds=0; ok=0; bad=0; sc=0; cur=null;
+  $("item").textContent="—"; $("sys").textContent="—"; $("tol").textContent="—";
+  $("phy").value=""; $("diag").value="";
+  $("log").innerHTML="";
+  setSum("", "");
+  setMsg("Clique em “Novo item”.","");
+  hud();
+}
+
+$("new").onclick=newItem;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
