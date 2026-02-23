@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3º Ano — Roteirização Logística | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+--bg:#0b0f19;--panel:rgba(16,24,43,.45);
+--line:rgba(255,255,255,.10);
+--text:#eaf0ff;--ok:#23d5ab;--bad:#ff4d6d
+}
+*{box-sizing:border-box}
+body{
+margin:0;font-family:system-ui;background:var(--bg);
+color:var(--text);display:flex;justify-content:center;
+align-items:center;min-height:100vh;padding:20px
+}
+.container{
+width:100%;max-width:1000px;
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:16px;padding:20px
+}
+button{
+margin-top:10px;padding:10px 14px;
+border-radius:10px;border:1px solid var(--line);
+background:rgba(255,255,255,.05);
+color:white;font-weight:bold;
+cursor:pointer;width:100%;
+text-align:left
+}
+button:hover{background:rgba(255,255,255,.08)}
+.ok{color:var(--ok);font-weight:bold}
+.bad{color:var(--bad);font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Simulador de Roteirização</h1>
+
+<p id="cenario">Clique em "Novo Cenário"</p>
+
+<div id="opcoes"></div>
+
+<button onclick="novo()">Novo Cenário</button>
+<button onclick="verificar()">Verificar</button>
+
+<p id="resultado"></p>
+<p>Pontos: <span id="score">0</span></p>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function beep(type="ok"){
+if(!audioCtx) audioCtx=new AudioCtx();
+const osc=audioCtx.createOscillator();
+const gain=audioCtx.createGain();
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.frequency.value= type==="ok"?800:200;
+gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+osc.start();
+osc.stop(audioCtx.currentTime+0.2);
+}
+
+const cenarios=[
+{
+texto:"Entregar para 3 clientes. Distâncias (km): A=10, B=25, C=15. Combustível custa R$2 por km. Qual rota é menor custo?",
+respostas:[
+{t:"Rota A (10km)", ok:true},
+{t:"Rota B (25km)", ok:false},
+{t:"Rota C (15km)", ok:false}
+]
+},
+{
+texto:"Entrega urgente. Tempo estimado: Rota 1=40min, Rota 2=65min, Rota 3=50min. Qual melhor escolha?",
+respostas:[
+{t:"Rota 1 (40min)", ok:true},
+{t:"Rota 2 (65min)", ok:false},
+{t:"Rota 3 (50min)", ok:false}
+]
+},
+{
+texto:"Custo total: Rota X=R$120, Rota Y=R$95, Rota Z=R$110. Qual menor custo?",
+respostas:[
+{t:"Rota X", ok:false},
+{t:"Rota Y", ok:true},
+{t:"Rota Z", ok:false}
+]
+}
+];
+
+let atual=null;
+let escolha=null;
+let score=0;
+
+function novo(){
+escolha=null;
+atual=cenarios[Math.floor(Math.random()*cenarios.length)];
+document.getElementById("cenario").innerText=atual.texto;
+const div=document.getElementById("opcoes");
+div.innerHTML="";
+atual.respostas.forEach((r,i)=>{
+const btn=document.createElement("button");
+btn.innerText=r.t;
+btn.onclick=()=>{escolha=i;};
+div.appendChild(btn);
+});
+}
+
+function verificar(){
+if(atual===null || escolha===null){
+document.getElementById("resultado").innerHTML="<span class='bad'>Selecione uma opção.</span>";
+beep("bad");
+return;
+}
+
+if(atual.respostas[escolha].ok){
+score+=15;
+document.getElementById("resultado").innerHTML="<span class='ok'>Boa decisão logística!</span>";
+beep("ok");
+}else{
+score-=5;
+document.getElementById("resultado").innerHTML="<span class='bad'>Analise custo e tempo antes de decidir.</span>";
+beep("bad");
+}
+
+document.getElementById("score").innerText=score;
+}
+</script>
+
+</body>
+</html>
