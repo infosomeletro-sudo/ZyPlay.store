@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3º Ano — Classificação de Tributos | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --text:#eaf0ff;--ok:#23d5ab;--bad:#ff4d6d
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui;background:var(--bg);
+  color:var(--text);display:flex;justify-content:center;
+  align-items:center;min-height:100vh;padding:20px
+}
+.container{
+  width:100%;max-width:1000px;
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:20px
+}
+table{
+  width:100%;border-collapse:collapse;margin-top:15px
+}
+th,td{
+  padding:8px;border-bottom:1px solid var(--line);
+  text-align:center
+}
+select{
+  padding:8px;border-radius:8px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:white
+}
+button{
+  margin-top:15px;padding:10px 14px;border-radius:10px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;font-weight:bold;cursor:pointer
+}
+button:hover{background:rgba(255,255,255,.08)}
+.ok{color:var(--ok);font-weight:bold}
+.bad{color:var(--bad);font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Legislação Fiscal — Classificação de Tributos</h1>
+
+<p>Classifique cada tributo conforme competência:</p>
+<p><strong>F</strong> = Federal<br>
+<strong>E</strong> = Estadual<br>
+<strong>M</strong> = Municipal</p>
+
+<table>
+<tr>
+<th>Tributo</th>
+<th>Classificação</th>
+</tr>
+
+<tr>
+<td>ICMS</td>
+<td>
+<select id="t1">
+<option value="">--</option>
+<option>F</option>
+<option>E</option>
+<option>M</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>ISS</td>
+<td>
+<select id="t2">
+<option value="">--</option>
+<option>F</option>
+<option>E</option>
+<option>M</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>IPI</td>
+<td>
+<select id="t3">
+<option value="">--</option>
+<option>F</option>
+<option>E</option>
+<option>M</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>IPVA</td>
+<td>
+<select id="t4">
+<option value="">--</option>
+<option>F</option>
+<option>E</option>
+<option>M</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>IRPJ</td>
+<td>
+<select id="t5">
+<option value="">--</option>
+<option>F</option>
+<option>E</option>
+<option>M</option>
+</select>
+</td>
+</tr>
+
+</table>
+
+<button onclick="verificar()">Verificar</button>
+
+<p id="resultado"></p>
+<p>Pontos: <span id="score">0</span></p>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function beep(type="ok"){
+  if(!audioCtx) audioCtx=new AudioCtx();
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value= type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+let score=0;
+
+function verificar(){
+  let acertos=0;
+
+  if(document.getElementById("t1").value==="E") acertos++; // ICMS
+  if(document.getElementById("t2").value==="M") acertos++; // ISS
+  if(document.getElementById("t3").value==="F") acertos++; // IPI
+  if(document.getElementById("t4").value==="E") acertos++; // IPVA
+  if(document.getElementById("t5").value==="F") acertos++; // IRPJ
+
+  if(acertos===5){
+    score+=25;
+    document.getElementById("resultado").innerHTML="<span class='ok'>Excelente! Classificação correta.</span>";
+    beep("ok");
+  }else{
+    score-=10;
+    document.getElementById("resultado").innerHTML="<span class='bad'>Revise a competência tributária.</span>";
+    beep("bad");
+  }
+
+  document.getElementById("score").innerText=score;
+}
+</script>
+
+</body>
+</html>
