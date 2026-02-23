@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3º Ano — Ponto de Equilíbrio (Custos) | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1120px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.05fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+label{display:block;color:var(--m);font-size:12px;margin:10px 0 6px}
+input{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+th{font-weight:1000}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+small{color:var(--m)}
+code{color:#cfe3ff}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15);color:var(--m);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Ponto de Equilíbrio <small style="display:block;color:var(--m);font-weight:700">3º Ano • Ferramentas Digitais para Finanças • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Novo cenário</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="k">Desafio</div>
+      <div style="font-weight:1000;font-size:18px" id="q">Clique em “Novo cenário”.</div>
+
+      <div class="pill" style="margin-top:10px">Fórmula (unidades): <code>PE = Custos Fixos ÷ (Preço − Custo Variável)</code></div>
+
+      <table>
+        <thead><tr><th>Item</th><th>Valor</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+
+      <label>Digite o Ponto de Equilíbrio (unidades)</label>
+      <input id="ans" type="number" step="1" placeholder="Ex: 84">
+
+      <div class="msg" id="msg"></div>
+      <small>Dica: (Preço − CV) = margem de contribuição unitária.</small>
+    </section>
+
+    <aside class="card">
+      <div class="k">Pontuação</div>
+      <div class="stats">
+        <div class="stat"><div class="k">Cenários</div><div class="v" id="c">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+      <div class="msg" id="sum"></div>
+      <small>Objetivo: calcular meta mínima de vendas para não ter prejuízo.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function fmt(x){return x.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});}
+
+let cur=null, c=0, ok=0, bad=0, sc=0;
+
+function hud(){
+  $("c").textContent=String(c);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("sc").textContent=String(sc);
+}
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function newScenario(){
+  c++;
+
+  const fixo = rint(1200, 18000);
+  const preco = rint(30, 420);
+  const cv = rint(10, Math.max(11, preco-5));
+
+  const mc = preco - cv;
+  const pe = Math.ceil(fixo / mc); // arredonda para cima (unidades)
+
+  cur={fixo,preco,cv,mc,pe};
+
+  $("q").textContent = "Calcule o Ponto de Equilíbrio (unidades).";
+  $("tb").innerHTML =
+    `<tr><td>Custos fixos (R$)</td><td><strong>${fmt(fixo)}</strong></td></tr>`+
+    `<tr><td>Preço de venda (R$)</td><td><strong>${fmt(preco)}</strong></td></tr>`+
+    `<tr><td>Custo variável unitário (R$)</td><td><strong>${fmt(cv)}</strong></td></tr>`+
+    `<tr><td>Margem contribuição unit. (R$)</td><td>${fmt(mc)}</td></tr>`;
+
+  $("ans").value="";
+  setMsg("msg","Digite a resposta e clique em Conferir.","");
+  setMsg("sum","", "");
+  beep("done");
+  hud();
+}
+
+function check(){
+  if(!cur){ setMsg("msg","Clique em “Novo cenário”.","bad"); beep("bad"); return; }
+  const a = Number($("ans").value);
+  if(!Number.isFinite(a)){ setMsg("msg","Digite um número.","bad"); beep("bad"); return; }
+
+  if(a===cur.pe){
+    ok++; sc+=12;
+    setMsg("msg",`✅ Correto! PE = ${cur.pe} un. (+12)`,"ok");
+    setMsg("sum",`Leitura: com MC=${fmt(cur.mc)}, você precisa vender ${cur.pe} unidades para cobrir ${fmt(cur.fixo)} de fixos.`, "ok");
+    beep("ok");
+  }else{
+    bad++; sc=Math.max(0, sc-5);
+    setMsg("msg",`❌ Incorreto. Correto: ${cur.pe} un. (-5)`,"bad");
+    setMsg("sum",`Cálculo: ${fmt(cur.fixo)} ÷ (${fmt(cur.preco)} − ${fmt(cur.cv)}) = ${fmt(cur.fixo)} ÷ ${fmt(cur.mc)} = ${Math.ceil(cur.fixo/cur.mc)} (arredonda p/ cima).`, "");
+    beep("bad");
+  }
+  hud();
+}
+
+function reset(){
+  cur=null; c=0; ok=0; bad=0; sc=0;
+  $("q").textContent="Clique em “Novo cenário”.";
+  $("tb").innerHTML="";
+  $("ans").value="";
+  setMsg("msg","", ""); setMsg("sum","", "");
+  hud();
+}
+
+$("new").onclick=newScenario;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
