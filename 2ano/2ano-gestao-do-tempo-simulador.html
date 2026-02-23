@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2º Ano — Gestão do Tempo | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c">
+
+<style>
+:root{
+  --bg:#0b0f19;
+  --panel:rgba(16,24,43,.45);
+  --line:rgba(255,255,255,.10);
+  --text:#eaf0ff;
+  --ok:#23d5ab;
+  --bad:#ff4d6d;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px
+}
+.container{
+  width:100%;
+  max-width:1000px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:20px
+}
+h1{margin-top:0}
+.task{
+  margin:10px 0;
+  padding:10px;
+  border:1px solid var(--line);
+  border-radius:8px
+}
+button{
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.05);
+  color:white;
+  cursor:pointer;
+  font-weight:bold
+}
+button:hover{background:rgba(255,255,255,.08)}
+.status{margin-top:15px;font-weight:bold}
+.ok{color:var(--ok)}
+.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Simulador — Gestão do Tempo</h1>
+<p>Você tem 8 horas de trabalho. Escolha tarefas até completar o dia.</p>
+
+<div id="tasks"></div>
+
+<div class="status" id="status"></div>
+<div>Horas restantes: <span id="horas">8</span></div>
+<div>Pontos: <span id="score">0</span></div>
+
+<button onclick="reiniciar()">Reiniciar</button>
+
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(type="ok"){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type="sine";
+  osc.frequency.value = type==="ok"?800:200;
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+const tarefas=[
+{nome:"Finalizar relatório estratégico (3h)",tempo:3,pontos:30},
+{nome:"Responder e-mails urgentes (1h)",tempo:1,pontos:10},
+{nome:"Planejar metas trimestrais (2h)",tempo:2,pontos:20},
+{nome:"Organizar arquivos (2h)",tempo:2,pontos:15},
+{nome:"Reunião de alinhamento (1h)",tempo:1,pontos:10},
+{nome:"Navegar redes sociais (2h)",tempo:2,pontos:-10}
+];
+
+let horas=8;
+let score=0;
+
+function render(){
+  const div=document.getElementById("tasks");
+  div.innerHTML="";
+  tarefas.forEach((t,i)=>{
+    const el=document.createElement("div");
+    el.className="task";
+    el.innerHTML=`
+      ${t.nome}
+      <br>
+      <button onclick="executar(${i})">Executar</button>
+    `;
+    div.appendChild(el);
+  });
+}
+
+function executar(i){
+  if(horas<=0){
+    document.getElementById("status").innerText="Dia encerrado!";
+    return;
+  }
+
+  const t=tarefas[i];
+
+  if(horas>=t.tempo){
+    horas-=t.tempo;
+    score+=t.pontos;
+
+    if(t.pontos>0){
+      document.getElementById("status").innerText="Tarefa produtiva!";
+      document.getElementById("status").className="status ok";
+      beep("ok");
+    }else{
+      document.getElementById("status").innerText="Tarefa improdutiva!";
+      document.getElementById("status").className="status bad";
+      beep("bad");
+    }
+
+  }else{
+    document.getElementById("status").innerText="Tempo insuficiente!";
+    document.getElementById("status").className="status bad";
+    beep("bad");
+  }
+
+  document.getElementById("horas").innerText=horas;
+  document.getElementById("score").innerText=score;
+}
+
+function reiniciar(){
+  horas=8;
+  score=0;
+  document.getElementById("horas").innerText=horas;
+  document.getElementById("score").innerText=score;
+  document.getElementById("status").innerText="";
+}
+
+render();
+</script>
+
+</body>
+</html>
