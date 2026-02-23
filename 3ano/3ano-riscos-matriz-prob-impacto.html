@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3º Ano — Matriz de Riscos (Probabilidade x Impacto) | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1150px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.05fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.opt{width:100%;text-align:left;border-radius:14px;margin-top:10px;padding:10px 12px}
+select,input,textarea{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+small{color:var(--m)}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15);color:var(--m);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Matriz de Riscos <small style="display:block;color:var(--m);font-weight:700">3º Ano • Gestão de Riscos • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Novo risco</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="k">Cenário</div>
+      <div style="font-weight:1000;font-size:18px" id="q">Clique em “Novo risco”.</div>
+      <div style="margin-top:10px" class="pill">Regra: Nível = Probabilidade (1–5) × Impacto (1–5)</div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>Probabilidade (1 a 5)</label>
+          <select id="p">
+            <option value="">—</option>
+            <option value="1">1 (raro)</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5 (muito provável)</option>
+          </select>
+        </div>
+        <div>
+          <label>Impacto (1 a 5)</label>
+          <select id="i">
+            <option value="">—</option>
+            <option value="1">1 (baixo)</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5 (crítico)</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Qual é o NÍVEL do risco? (P×I)</label>
+      <input id="lvl" type="number" placeholder="Ex: 12" />
+
+      <label>Ação recomendada (escolha)</label>
+      <select id="acao">
+        <option value="">—</option>
+        <option value="ACEITAR">Aceitar</option>
+        <option value="MITIGAR">Mitigar</option>
+        <option value="TRANSFERIR">Transferir</option>
+        <option value="EVITAR">Evitar</option>
+      </select>
+
+      <div class="msg" id="msg"></div>
+      <small>Dica: riscos altos → evitar/mitigar; médios → mitigar/transferir; baixos → aceitar.</small>
+    </section>
+
+    <aside class="card">
+      <div class="k">Pontuação</div>
+      <div class="stats">
+        <div class="stat"><div class="k">Riscos</div><div class="v" id="c">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+      <div class="msg" id="sum"></div>
+      <small>Objetivo: saber medir risco e escolher resposta adequada.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+const RISK=[
+  {q:"Fornecedor atrasando entrega de insumo crítico (pode parar operação).", p:4, i:5, hint:"risco alto: plano B + contrato + estoque segurança"},
+  {q:"Falha no backup: perda de dados financeiros e fiscais.", p:3, i:5, hint:"risco alto: rotina de backup e teste de restauração"},
+  {q:"Oscilação de energia no laboratório de informática.", p:4, i:3, hint:"médio/alto: estabilização/UPS"},
+  {q:"Erro de digitação em planilha de inventário.", p:3, i:2, hint:"médio: dupla conferência/validação"},
+  {q:"Roubo de mercadoria em área sem câmera.", p:2, i:5, hint:"alto impacto: segurança/controle de acesso"},
+  {q:"Atraso leve em atividade sem prazo crítico.", p:2, i:1, hint:"baixo: aceitar/monitorar"}
+];
+
+let cur=null, c=0, ok=0, bad=0, sc=0;
+
+function hud(){
+  $("c").textContent=String(c);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("sc").textContent=String(sc);
+}
+
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function actionFor(level){
+  // heurística simples
+  if(level>=16) return ["EVITAR","MITIGAR"];      // muito alto
+  if(level>=9)  return ["MITIGAR","TRANSFERIR"]; // médio-alto
+  if(level>=4)  return ["MITIGAR","ACEITAR"];    // médio
+  return ["ACEITAR"];                            // baixo
+}
+
+function newRisk(){
+  c++;
+  cur = RISK[rint(0,RISK.length-1)];
+  $("q").textContent=cur.q;
+
+  $("p").value="";
+  $("i").value="";
+  $("lvl").value="";
+  $("acao").value="";
+
+  setMsg("msg","Defina P e I, calcule P×I e escolha a ação.", "");
+  setMsg("sum","", "");
+  beep("done");
+  hud();
+}
+
+function check(){
+  if(!cur){ setMsg("msg","Clique em “Novo risco”.","bad"); beep("bad"); return; }
+
+  const p = Number($("p").value);
+  const i = Number($("i").value);
+  const lvl = Number($("lvl").value);
+  const acao = $("acao").value;
+
+  if(!Number.isFinite(p) || !Number.isFinite(i) || !Number.isFinite(lvl) || !acao){
+    setMsg("msg","Preencha tudo: P, I, Nível e Ação.","bad"); beep("bad"); return;
+  }
+
+  const lvlCor = cur.p * cur.i;
+  const lvlOk = (p===cur.p && i===cur.i && lvl===lvlCor);
+
+  const allowed = actionFor(lvlCor);
+  const acaoOk = allowed.includes(acao);
+
+  let delta=0;
+  delta += lvlOk ? 12 : -5;
+  delta += acaoOk ? 10 : -4;
+  sc = Math.max(0, sc + delta);
+
+  if(lvlOk && acaoOk){
+    ok++;
+    setMsg("msg",`✅ Correto! Nível=${lvlCor} e ação adequada. (+${delta})`,"ok");
+    setMsg("sum","Boa! " + cur.hint, "ok");
+    beep("ok");
+  }else{
+    bad++;
+    setMsg("msg",`❌ Correção: P=${cur.p}, I=${cur.i}, Nível=${lvlCor}, ação sugerida: ${allowed.join(" ou ")}. (${delta})`,"bad");
+    setMsg("sum","Dica do caso: " + cur.hint, "");
+    beep("bad");
+  }
+  hud();
+}
+
+function reset(){
+  cur=null; c=0; ok=0; bad=0; sc=0;
+  $("q").textContent="Clique em “Novo risco”.";
+  $("p").value=""; $("i").value=""; $("lvl").value=""; $("acao").value="";
+  setMsg("msg","", ""); setMsg("sum","", "");
+  hud();
+}
+
+$("new").onclick=newRisk;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
