@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2º Ano — Planilhas: Filtros e Dashboard | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1100px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.03)}
+.h .t{font-weight:1000}
+.h .s{color:var(--m);font-size:13px;margin-top:4px}
+.b{padding:16px;display:grid;grid-template-columns:1fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+label{display:block;color:var(--m);font-size:12px;margin:10px 0 6px}
+select,input{
+  padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+select{min-width:220px}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+th{font-weight:1000}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+small{color:var(--m)}
+code{color:#cfe3ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="t">2º Ano — Planilhas: Filtros + Mini Dashboard</div>
+    <div class="s">Treino prático: filtrar dados e ler indicadores (total, média, maior venda) • funciona offline</div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div style="font-weight:1000;margin-bottom:6px">Base de dados (exemplo)</div>
+      <small>Use como se fosse uma planilha. Você vai aplicar filtro por vendedor e responder os indicadores.</small>
+
+      <div class="controls" style="margin-top:10px">
+        <div>
+          <div class="k">Filtro por vendedor</div>
+          <select id="vend">
+            <option value="TODOS">TODOS</option>
+          </select>
+        </div>
+        <div>
+          <div class="k">Filtro por mês</div>
+          <select id="mes">
+            <option value="TODOS">TODOS</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <button class="primary" id="apply">Aplicar filtro</button>
+          <button class="danger" id="reset">Reset</button>
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>Mês</th><th>Vendedor</th><th>Produto</th><th>Valor (R$)</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <div class="msg" id="msg"></div>
+      <small>Dica (Sheets/Excel): você faria isso com <code>Filtro</code>, <code>Tabela Dinâmica</code> e gráficos.</small>
+    </section>
+
+    <aside class="card">
+      <div style="font-weight:1000;margin-bottom:6px">Mini Dashboard (responda)</div>
+
+      <div class="stats">
+        <div class="stat"><div class="k">Total (filtrado)</div><div class="v" id="tot">—</div></div>
+        <div class="stat"><div class="k">Média (filtrada)</div><div class="v" id="avg">—</div></div>
+        <div class="stat"><div class="k">Maior venda</div><div class="v" id="max">—</div></div>
+        <div class="stat"><div class="k">Registros</div><div class="v" id="cnt">—</div></div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <label>Digite o TOTAL (sem R$)</label>
+      <input id="ansTot" type="number" placeholder="Ex: 5400">
+
+      <label>Digite a MÉDIA (sem R$)</label>
+      <input id="ansAvg" type="number" placeholder="Ex: 1350">
+
+      <label>Digite a MAIOR VENDA (sem R$)</label>
+      <input id="ansMax" type="number" placeholder="Ex: 2000">
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="primary" id="check">Conferir</button>
+      </div>
+
+      <div class="msg" id="rmsg"></div>
+      <div class="msg" id="scoreline"></div>
+      <small>Objetivo: aprender a interpretar indicadores depois de aplicar filtro.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+
+const DATA=[
+  {mes:"Jan", vend:"Ana",  prod:"Papel A4",   v:1200},
+  {mes:"Jan", vend:"Bruno",prod:"Toner",      v:2100},
+  {mes:"Fev", vend:"Ana",  prod:"Etiquetas",  v:900},
+  {mes:"Fev", vend:"Carla",prod:"Mouse",      v:1500},
+  {mes:"Mar", vend:"Bruno",prod:"Teclado",    v:1300},
+  {mes:"Mar", vend:"Carla",prod:"Pasta",      v:650},
+  {mes:"Abr", vend:"Ana",  prod:"Canetas",    v:1100},
+  {mes:"Abr", vend:"Bruno",prod:"Papel A4",   v:1400},
+];
+
+let filtered=[...DATA];
+let score=0, tries=0;
+
+function uniq(arr){return [...new Set(arr)]}
+function fillFilters(){
+  const v= $("vend"), m=$("mes");
+  uniq(DATA.map(x=>x.vend)).forEach(n=>{
+    const o=document.createElement("option"); o.value=n; o.textContent=n; v.appendChild(o);
+  });
+  uniq(DATA.map(x=>x.mes)).forEach(n=>{
+    const o=document.createElement("option"); o.value=n; o.textContent=n; m.appendChild(o);
+  });
+}
+
+function renderRows(){
+  const tb=$("rows"); tb.innerHTML="";
+  filtered.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.mes}</td><td>${r.vend}</td><td>${r.prod}</td><td>${r.v.toLocaleString("pt-BR")}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function calc(){
+  const cnt=filtered.length;
+  const tot=filtered.reduce((s,x)=>s+x.v,0);
+  const avg=cnt? (tot/cnt) : 0;
+  const max=cnt? Math.max(...filtered.map(x=>x.v)) : 0;
+
+  $("tot").textContent = tot? tot.toLocaleString("pt-BR") : "0";
+  $("avg").textContent = avg? (Math.round(avg*100)/100).toLocaleString("pt-BR") : "0";
+  $("max").textContent = max? max.toLocaleString("pt-BR") : "0";
+  $("cnt").textContent = String(cnt);
+
+  return {tot, avg: Math.round(avg*100)/100, max};
+}
+
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function apply(){
+  const vend=$("vend").value;
+  const mes=$("mes").value;
+  filtered = DATA.filter(r=>{
+    const okV = (vend==="TODOS") || (r.vend===vend);
+    const okM = (mes==="TODOS") || (r.mes===mes);
+    return okV && okM;
+  });
+  renderRows();
+  calc();
+  setMsg("msg","Filtro aplicado. Agora responda o dashboard.", "");
+  beep("done");
+}
+
+function check(){
+  tries++;
+  const {tot,avg,max}=calc();
+
+  const aTot=Number($("ansTot").value);
+  const aAvg=Number($("ansAvg").value);
+  const aMax=Number($("ansMax").value);
+
+  const okTot = Number.isFinite(aTot) && aTot===tot;
+  const okAvg = Number.isFinite(aAvg) && Math.abs(aAvg-avg) <= 0.01;
+  const okMax = Number.isFinite(aMax) && aMax===max;
+
+  let delta=0;
+  delta += okTot ? 10 : -4;
+  delta += okAvg ? 10 : -4;
+  delta += okMax ? 10 : -4;
+
+  score=Math.max(0, score+delta);
+
+  if(okTot && okAvg && okMax){
+    setMsg("rmsg",`✅ Perfeito! Total=${tot}, Média=${avg}, Maior=${max}. (+${delta})`,"ok");
+    beep("ok");
+  }else{
+    const tips=[];
+    if(!okTot) tips.push(`Total certo=${tot}`);
+    if(!okAvg) tips.push(`Média certa=${avg}`);
+    if(!okMax) tips.push(`Maior certo=${max}`);
+    setMsg("rmsg",`❌ Ainda não. ${tips.join(" • ")} (${delta})`,"bad");
+    beep("bad");
+  }
+  setMsg("scoreline",`Tentativas: ${tries} • Pontos: ${score}`, "");
+}
+
+function reset(){
+  $("vend").value="TODOS";
+  $("mes").value="TODOS";
+  filtered=[...DATA];
+  renderRows();
+  calc();
+  $("ansTot").value=""; $("ansAvg").value=""; $("ansMax").value="";
+  score=0; tries=0;
+  setMsg("msg",""); setMsg("rmsg",""); setMsg("scoreline","");
+  beep("done");
+}
+
+$("apply").onclick=apply;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+fillFilters();
+reset();
+</script>
+</body>
+</html>
