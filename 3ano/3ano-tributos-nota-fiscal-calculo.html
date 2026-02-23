@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3º Ano — Nota Fiscal: Base e Imposto | ZyPlay</title>
+<meta name="theme-color" content="#0b5f3c" />
+<style>
+:root{
+  --bg:#0b0f19;--panel:rgba(16,24,43,.45);--line:rgba(255,255,255,.10);
+  --t:#eaf0ff;--m:#a9b7d0;--ok:#23d5ab;--bad:#ff4d6d;--b:#0ea35a;--r:16px
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--t);
+  background:radial-gradient(1000px 700px at 10% 0%, rgba(14,163,90,.22), transparent 55%),
+  radial-gradient(1000px 700px at 90% 0%, rgba(11,42,82,.18), transparent 55%),var(--bg);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.wrap{width:min(1150px,100%);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.h{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,255,255,.03)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:1000}
+.badge{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--b),var(--ok));display:grid;place-items:center}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap}
+button{
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--t);
+  padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:900;transition:.15s
+}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
+.primary{border-color:rgba(14,163,90,.35);background:rgba(14,163,90,.16)}
+.danger{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+.b{padding:16px;display:grid;grid-template-columns:1.05fr .95fr;gap:12px}
+@media(max-width:980px){.b{grid-template-columns:1fr}}
+.card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.k{color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.35px}
+.msg{min-height:18px;color:var(--m);font-size:13px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+label{display:block;color:var(--m);font-size:12px;margin:10px 0 6px}
+input,select{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.18);color:var(--t);outline:none
+}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.10);text-align:left}
+th{font-weight:1000}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(0,0,0,.15)}
+.v{font-weight:1000;font-size:18px;margin-top:4px}
+small{color:var(--m)}
+code{color:#cfe3ff}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15);color:var(--m);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="h">
+    <div class="brand"><div class="badge">Z</div>
+      <div>Nota Fiscal: Base e Imposto <small style="display:block;color:var(--m);font-weight:700">3º Ano • Legislação Fiscal e Tributária • ZyPlay</small></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="new">Nova NF</button>
+      <button id="check">Conferir</button>
+      <button class="danger" id="reset">Reset</button>
+    </div>
+  </div>
+
+  <div class="b">
+    <section class="card">
+      <div class="k">Desafio</div>
+      <div style="font-weight:1000;font-size:18px" id="q">Clique em “Nova NF”.</div>
+
+      <table>
+        <thead><tr><th>Item</th><th>Qtd</th><th>Preço (R$)</th><th>Total (R$)</th></tr></thead>
+        <tbody id="items"></tbody>
+      </table>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <span class="pill">Base de cálculo = Soma dos itens (sem frete p/ simplificar)</span>
+        <span class="pill">Imposto = Base × Alíquota</span>
+      </div>
+
+      <div class="card" style="border-radius:14px;margin-top:10px">
+        <div class="k">Dados da NF</div>
+        <div id="data" style="margin-top:8px;color:var(--m);font-size:13px">—</div>
+
+        <label>Escolha o tributo do exemplo</label>
+        <select id="tax">
+          <option value="ICMS">ICMS (mercadoria)</option>
+          <option value="ISS">ISS (serviço)</option>
+        </select>
+
+        <label>Digite a BASE de cálculo</label>
+        <input id="base" type="number" step="0.01" placeholder="Ex: 1250.00">
+
+        <label>Digite o IMPOSTO</label>
+        <input id="imp" type="number" step="0.01" placeholder="Ex: 225.00">
+
+        <div class="msg" id="msg"></div>
+        <small>Dica: arredonde em 2 casas.</small>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="k">Pontuação</div>
+      <div class="stats">
+        <div class="stat"><div class="k">NFs</div><div class="v" id="c">0</div></div>
+        <div class="stat"><div class="k">Acertos</div><div class="v" id="ok">0</div></div>
+        <div class="stat"><div class="k">Erros</div><div class="v" id="bad">0</div></div>
+        <div class="stat"><div class="k">Pontos</div><div class="v" id="sc">0</div></div>
+      </div>
+      <div class="msg" id="sum"></div>
+      <small>Objetivo: dominar base de cálculo e alíquota.</small>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AudioCtx=window.AudioContext||window.webkitAudioContext;let ctx=null;
+function beep(k="ok"){try{if(!ctx)ctx=new AudioCtx();const t0=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+o.type="sine";o.frequency.value=k==="ok"?820:k==="done"?640:220;g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t0+(k==="done"?0.22:0.18));
+o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+(k==="done"?0.24:0.20));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function rint(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function round2(x){return Math.round(x*100)/100}
+
+let cur=null, c=0, ok=0, bad=0, sc=0;
+
+function hud(){
+  $("c").textContent=String(c);
+  $("ok").textContent=String(ok);
+  $("bad").textContent=String(bad);
+  $("sc").textContent=String(sc);
+}
+
+function setMsg(id,t,cls){
+  const el=$(id);
+  el.className="msg"+(cls?" "+cls:"");
+  el.textContent=t||"";
+}
+
+function fmt(x){return x.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});}
+
+function newNF(){
+  c++;
+
+  // Gera 3 itens (mercadoria) com valores "limpos"
+  const items = Array.from({length:3}, (_,i)=>{
+    const qtd = rint(1,8);
+    const preco = rint(15,260);
+    return {name:["Papel A4","Canetas (cx)","Etiquetas","Pasta arquivo","Mouse","Teclado"][rint(0,5)], qtd, preco};
+  });
+
+  const base = round2(items.reduce((s,it)=>s + it.qtd*it.preco, 0));
+
+  // alíquotas simples (didático)
+  const aliqICMS = [0.07,0.12,0.18][rint(0,2)];
+  const aliqISS  = [0.02,0.03,0.05][rint(0,2)];
+
+  cur = { items, base, aliqICMS, aliqISS };
+
+  $("q").textContent="Calcule BASE e IMPOSTO conforme o tributo escolhido.";
+  const tb=$("items"); tb.innerHTML="";
+  items.forEach(it=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td>${it.name}</td><td>${it.qtd}</td><td>${fmt(it.preco)}</td><td>${fmt(it.qtd*it.preco)}</td>`;
+    tb.appendChild(tr);
+  });
+
+  $("data").innerHTML =
+    `Base correta (para conferir depois): <strong>(oculta)</strong><br>`+
+    `Alíquota ICMS: <strong>${Math.round(aliqICMS*100)}%</strong><br>`+
+    `Alíquota ISS: <strong>${Math.round(aliqISS*100)}%</strong>`;
+
+  $("tax").value="ICMS";
+  $("base").value="";
+  $("imp").value="";
+  setMsg("msg","Escolha ICMS ou ISS, digite BASE e IMPOSTO e clique Conferir.","");
+  setMsg("sum","", "");
+  beep("done");
+  hud();
+}
+
+function check(){
+  if(!cur){ setMsg("msg","Clique em “Nova NF”.","bad"); beep("bad"); return; }
+
+  const tax = $("tax").value;
+  const aBase = Number($("base").value);
+  const aImp  = Number($("imp").value);
+
+  if(!Number.isFinite(aBase) || !Number.isFinite(aImp)){
+    setMsg("msg","Preencha BASE e IMPOSTO com números.","bad"); beep("bad"); return;
+  }
+
+  const baseOk = Math.abs(aBase - cur.base) <= 0.01;
+
+  const aliq = (tax==="ICMS") ? cur.aliqICMS : cur.aliqISS;
+  const impCor = round2(cur.base * aliq);
+  const impOk = Math.abs(aImp - impCor) <= 0.02;
+
+  let delta=0;
+  delta += baseOk ? 10 : -4;
+  delta += impOk  ? 10 : -4;
+  sc = Math.max(0, sc+delta);
+
+  if(baseOk && impOk){
+    ok++;
+    setMsg("msg",`✅ Certo! Base=${fmt(cur.base)} | ${tax}=${fmt(impCor)} (+${delta})`,"ok");
+    setMsg("sum","Boa! Você acertou base de cálculo e aplicação de alíquota.", "ok");
+    beep("ok");
+  }else{
+    bad++;
+    setMsg("msg",`❌ Correção: Base=${fmt(cur.base)} | ${tax}=${fmt(impCor)} (${delta})`,"bad");
+    setMsg("sum",`Imposto = Base × Alíquota. Aqui: ${fmt(cur.base)} × ${Math.round(aliq*100)}% = ${fmt(impCor)}.`, "");
+    beep("bad");
+  }
+  hud();
+}
+
+function reset(){
+  cur=null; c=0; ok=0; bad=0; sc=0;
+  $("q").textContent="Clique em “Nova NF”.";
+  $("items").innerHTML="";
+  $("data").textContent="—";
+  $("base").value=""; $("imp").value="";
+  setMsg("msg","", ""); setMsg("sum","", "");
+  hud();
+}
+
+$("new").onclick=newNF;
+$("check").onclick=check;
+$("reset").onclick=reset;
+
+reset();
+</script>
+</body>
+</html>
